@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getProfile, redeemCoupon } from "@/lib/rapid-math.functions";
+import { deleteAccount, getProfile, redeemCoupon } from "@/lib/rapid-math.functions";
 import { getCurriculumOverview } from "@/lib/curriculum.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { levelForXp } from "@/lib/drill-engine";
@@ -10,7 +10,19 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Crown, Ticket, Sparkles, ArrowRight } from "lucide-react";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { WebOnly } from "@/lib/native";
 import { resolveIsPro } from "@/lib/plan";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -144,6 +156,7 @@ function ProfilePage() {
 
       {/* Upgrade — only for free users */}
       {!isPro && (
+        <WebOnly>
         <div className="rounded-2xl border-2 border-primary/40 bg-card p-6 shadow-sm">
           <h2 className="font-display text-lg font-semibold">Go Pro</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -152,10 +165,77 @@ function ProfilePage() {
           </p>
           <UpgradeButton label="Upgrade to Pro — $10/mo" className="mt-4 px-5 py-2.5" />
         </div>
+        </WebOnly>
       )}
 
       {/* Coupon redemption — only for free users */}
       {!isPro && <CouponCard />}
+
+      <DeleteAccountCard />
+    </div>
+  );
+}
+
+function DeleteAccountCard() {
+  const deleteFn = useServerFn(deleteAccount);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [deleting, setDeleting] = useState(false);
+
+  async function confirmDelete() {
+    setDeleting(true);
+    try {
+      const res = await deleteFn();
+      if (!res.ok) {
+        toast.error(res.message);
+        return;
+      }
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+      toast.success(res.message);
+      navigate({ to: "/auth", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't delete your account");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-destructive/30 bg-card p-6 shadow-sm">
+      <h2 className="font-display text-lg font-semibold">Delete account</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Permanently delete your account, progress, streaks and history. Any active Pro
+        subscription is cancelled. This can't be undone.
+      </p>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <button
+            disabled={deleting}
+            className="mt-4 rounded-md border border-destructive/40 px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+          >
+            {deleting ? "Deleting…" : "Delete my account"}
+          </button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All your Rapid Math data will be permanently removed. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -213,6 +293,7 @@ function CouponCard() {
           {loading ? "…" : "Redeem"}
         </button>
       </form>
+      <WebOnly>
       <Link
         to="/"
         hash="pricing"
@@ -220,6 +301,7 @@ function CouponCard() {
       >
         Or see Pro pricing <ArrowRight className="h-3 w-3" />
       </Link>
+      </WebOnly>
     </div>
   );
 }

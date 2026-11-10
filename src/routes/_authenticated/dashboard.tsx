@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile } from "@/lib/rapid-math.functions";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { WebOnly } from "@/lib/native";
 import { getCurriculumOverview, getRecentLessons, getTrackSpeedStats, type TrackSpeedStat } from "@/lib/curriculum.functions";
 import {
   TRACKS,
@@ -226,7 +227,11 @@ function Dashboard() {
         </div>
       </section>
 
-      {!overview.isPro && <ProTeaser />}
+      {!overview.isPro && (
+        <WebOnly>
+          <ProTeaser />
+        </WebOnly>
+      )}
     </div>
   );
 }

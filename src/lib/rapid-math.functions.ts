@@ -190,3 +190,47 @@ export const submitSession = createServerFn({ method: "POST" })
 
     return { profile: updated, xpEarned };
   });
+
+/**
+ * Permanently deletes the signed-in user's account and all their data.
+ * Required by App Store guideline 5.1.1(v) for any app that lets people sign up.
+ * Active Paddle subscriptions are cancelled first so a deleted user isn't billed.
+ */
+export const deleteAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: subs, error: subsErr } = await supabaseAdmin
+      .from("subscriptions")
+      .select("paddle_subscription_id, status, environment")
+      .eq("user_id", userId);
+    if (subsErr) throw new Error(subsErr.message);
+
+    for (const sub of subs ?? []) {
+      if (!["active", "trialing", "past_due", "paused"].includes(sub.status)) continue;
+      const live = sub.environment === "live";
+      const apiKey = live ? process.env["PADDLE_LIVE_API_KEY"] : process.env["PADDLE_SANDBOX_API_KEY"];
+      const base = live ? "https://api.paddle.com" : "https://sandbox-api.paddle.com";
+      const res = apiKey
+        ? await fetch(`${base}/subscriptions/${sub.paddle_subscription_id}/cancel`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ effective_from: "immediately" }),
+          })
+        : null;
+      if (!res?.ok) {
+        return {
+          ok: false as const,
+          message:
+            "We couldn't cancel your Pro subscription automatically. Please contact support and we'll delete your account.",
+        };
+      }
+    }
+
+    // Every user table references auth.users with ON DELETE CASCADE.
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (error) throw new Error(error.message);
+    return { ok: true as const, message: "Your account has been deleted." };
+  });

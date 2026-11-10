@@ -4,6 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import { WebOnly } from "@/lib/native";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
 
@@ -84,7 +85,7 @@ function AuthPage() {
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-display font-bold">N</div>
+          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-display font-bold">R</div>
           <span className="font-display text-lg font-semibold">Rapid Math</span>
         </Link>
       </header>
@@ -94,16 +95,17 @@ function AuthPage() {
           <h1 className="font-display text-2xl font-semibold">
             {mode === "signup" ? "Create your account" : "Welcome back"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mb-6 mt-1 text-sm text-muted-foreground">
             {mode === "signup"
               ? "Start training mental math in under 60 seconds."
               : "Sign in to continue your streak."}
           </p>
 
+          <WebOnly>
           <button
             onClick={handleGoogle}
             disabled={loading}
-            className="mt-6 flex w-full items-center justify-center gap-3 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-accent disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-3 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-accent disabled:opacity-50"
           >
             <GoogleIcon />
             Continue with Google
@@ -114,6 +116,7 @@ function AuthPage() {
             <span className="px-3 text-xs text-muted-foreground">or with email</span>
             <div className="flex-1 border-t border-border" />
           </div>
+          </WebOnly>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (

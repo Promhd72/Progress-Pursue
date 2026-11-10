@@ -7,6 +7,7 @@ import { buildPlacement, PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, type PlacementQ
 import { submitPlacement } from "@/lib/curriculum.functions";
 import { Check, X, ArrowRight, Sparkles } from "lucide-react";
 import { CoachingReview, type ReviewItem } from "@/components/CoachingTip";
+import { answerHaptic } from "@/lib/native";
 
 export const Route = createFileRoute("/_authenticated/placement")({
   head: () => ({ meta: [{ title: "Placement test — Rapid Math" }] }),
@@ -108,6 +109,7 @@ function Runner({
     const val = trimmed === "" ? Number.NaN : Number(trimmed.replace(",", "."));
     const isOk = !Number.isNaN(val) && val === q.answer;
     setFlash(isOk ? "ok" : "bad");
+    answerHaptic(isOk);
 
     const nextPerSkill = { ...perSkill };
     if (isOk) {

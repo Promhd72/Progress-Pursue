@@ -18,6 +18,7 @@ import {
   type AdvancedDomain,
 } from "@/lib/advanced-domains";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { WebOnly } from "@/lib/native";
 
 export const Route = createFileRoute("/_authenticated/advanced")({
   validateSearch: (search: Record<string, unknown>): { domain?: AdvancedDomain } => {
@@ -411,8 +412,10 @@ function LockedCard() {
         You've used today's free Advanced scenarios
       </h2>
       <p className="mx-auto max-w-md text-sm text-muted-foreground">
-        Free gives you three boardroom-style scenarios each day. Pro unlocks
-        unlimited Advanced drills — charts, tables, and story problems on tap.
+        Free gives you three boardroom-style scenarios each day.
+        <WebOnly>
+          {" "}Pro unlocks unlimited Advanced drills — charts, tables, and story problems on tap.
+        </WebOnly>
       </p>
       <div className="flex flex-wrap justify-center gap-3 pt-2">
         <UpgradeButton label="Upgrade to Pro — $10/mo" className="px-5 py-2.5" />
@@ -432,8 +435,8 @@ function FreeLimitReached() {
     <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
       <div className="font-semibold text-foreground">That's today's free run.</div>
       <p className="mt-1 text-muted-foreground">
-        Come back tomorrow for three more, or go Pro for unlimited Advanced
-        scenarios right now.
+        Come back tomorrow for three more
+        <WebOnly>, or go Pro for unlimited Advanced scenarios right now</WebOnly>.
       </p>
       <UpgradeButton label="Go Pro — $10/mo" className="mt-3" />
     </div>

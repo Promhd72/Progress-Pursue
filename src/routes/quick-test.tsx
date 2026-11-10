@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { buildPlacement, type PlacementQuestion, TRACK_LABELS } from "@/lib/curriculum";
+import { answerHaptic } from "@/lib/native";
 
 export const Route = createFileRoute("/quick-test")({
   component: QuickTest,
@@ -79,6 +80,7 @@ function QuickTest() {
     const currentQ = questions[currentIndex];
     const trimmed = userAnswer.trim();
     const isCorrect = trimmed !== "" && parseFloat(trimmed) === currentQ.answer;
+    answerHaptic(isCorrect);
 
     const newResults = [...results, { correct: isCorrect, time: timeTaken }];
     setResults(newResults);

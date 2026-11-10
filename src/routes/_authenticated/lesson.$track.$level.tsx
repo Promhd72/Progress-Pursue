@@ -16,6 +16,7 @@ import {
 import { getLessonAccess, submitLesson } from "@/lib/curriculum.functions";
 import { Check, X, ArrowRight, RotateCcw, Lock, Crown } from "lucide-react";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { answerHaptic, finishHaptic, useIsNativeApp } from "@/lib/native";
 import {
   CoachingReview,
   CoachingToggle,
@@ -81,6 +82,7 @@ function Locked({
   track: SkillTrack;
   level: number;
 }) {
+  const native = useIsNativeApp();
   const title =
     reason === "locked_pro"
       ? `Level ${level} is Pro-only`
@@ -89,9 +91,13 @@ function Locked({
       : `You've hit today's free lesson limit`;
   const body =
     reason === "locked_pro"
-      ? `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Upgrade to Pro to unlock the rest.`
+      ? native
+        ? `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Pro accounts unlock the rest.`
+        : `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Upgrade to Pro to unlock the rest.`
       : reason === "locked_progression"
       ? `Pass the previous level (≥80%) to unlock Level ${level}.`
+      : native
+      ? `Free is capped at 3 lessons per day. Come back tomorrow for more.`
       : `Free is capped at 3 lessons per day. Come back tomorrow or go Pro for unlimited training.`;
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
@@ -195,6 +201,7 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
         passed: finalCorrect / questions.length >= PASS_THRESHOLD,
       });
     }
+    finishHaptic();
     setPhase("done");
   }
 
@@ -216,6 +223,7 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
     const val = trimmed === "" ? Number.NaN : Number(trimmed.replace(",", "."));
     const isOk = !Number.isNaN(val) && val === q.answer;
     setFlash(isOk ? "ok" : "bad");
+    answerHaptic(isOk);
     if (isOk) setCorrect((c) => c + 1);
     setReview((r) => [
       ...r,

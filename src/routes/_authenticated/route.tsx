@@ -42,7 +42,7 @@ function AuthedLayout() {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-display font-bold">N</div>
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-display font-bold">R</div>
             <span className="font-display text-lg font-semibold">Rapid Math</span>
           </Link>
           <nav className="flex items-center gap-1">

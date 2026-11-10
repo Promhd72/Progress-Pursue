@@ -5,6 +5,7 @@ import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { toast } from "sonner";
 import { ArrowRight, Crown } from "lucide-react";
 import { getCheckoutInfo } from "@/lib/billing.functions";
+import { useIsNativeApp } from "@/lib/native";
 
 let paddlePromise: Promise<Paddle | undefined> | null = null;
 
@@ -22,7 +23,8 @@ export function isTestPayments() {
 }
 
 export function PaymentTestModeBanner() {
-  if (!isTestPayments()) return null;
+  const native = useIsNativeApp();
+  if (native || !isTestPayments()) return null;
   return (
     <div className="border-b border-amber-500/30 bg-amber-500/10 px-6 py-1.5 text-center text-xs text-amber-700 dark:text-amber-300">
       Test mode — payments use test cards, no real money is charged.
@@ -39,8 +41,13 @@ export function UpgradeButton({
   className?: string;
   variant?: "primary" | "outline";
 }) {
+  const native = useIsNativeApp();
   const infoFn = useServerFn(getCheckoutInfo);
-  const { data } = useQuery({ queryKey: ["checkout-info"], queryFn: () => infoFn() });
+  const { data } = useQuery({
+    queryKey: ["checkout-info"],
+    queryFn: () => infoFn(),
+    enabled: !native,
+  });
   const [busy, setBusy] = useState(false);
 
   async function openCheckout() {
@@ -68,7 +75,8 @@ export function UpgradeButton({
     }
   }
 
-  if (data?.isPro) return null;
+  // App Store guideline 3.1.1: no external checkout inside the iOS app.
+  if (native || data?.isPro) return null;
 
   const base =
     variant === "primary"

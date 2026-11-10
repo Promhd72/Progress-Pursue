@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { isNativeApp } from "@/lib/native";
 import { ArrowRight, Check, TrendingUp, Gift } from "lucide-react";
 import {
   Accordion,
@@ -30,6 +32,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isNativeApp()) navigate({ to: "/dashboard", replace: true });
+  }, [navigate]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* TOP BAR */}
