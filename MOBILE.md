@@ -58,6 +58,30 @@ skipped if they already did it).
 Goal and daily target are stored on the device, not in Supabase, so they don't sync
 across devices yet.
 
+## Step 0: test on your Mac before publishing
+
+This runs a local copy of the site on your Mac and points the app at it, so you can try
+everything in the iPhone Simulator without touching the live site.
+
+1. Install Xcode (Mac App Store) and Node.js 20+ (nodejs.org).
+2. Create a file called `.env.local` in the project folder with your Supabase details
+   (Lovable > Cloud > Settings shows them; the publishable key is the public one):
+   ```
+   VITE_SUPABASE_URL=https://yhvucchhvqrudfcujqoy.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=<publishable / anon key>
+   SUPABASE_URL=https://yhvucchhvqrudfcujqoy.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=<same key>
+   ```
+3. In one Terminal window: `npm install` then `npm run dev:mac` (leave it running).
+4. In a second window: `npm run ios:dev`. Xcode opens; pick an iPhone simulator and press Run.
+
+It uses your real database, so sign up with a test email. Two things won't work locally
+because they need secret server keys that only Lovable has: coupon redemption and
+account deletion. Test those after publishing.
+
+Before building for TestFlight or the App Store, run `npm run ios:sync` to point the app
+back at the live site.
+
 ## Step 1: get the web changes live
 
 The app loads `https://rapidmath.lovable.app`, so the `src/` changes above have to be

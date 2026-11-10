@@ -10,8 +10,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "ios:sync": "cap sync ios",
-    "ios:open": "cap open ios"
+    "ios:sync": "CAP_SERVER_URL= cap sync ios",
+    "ios:open": "cap open ios",
+    "dev:mac": "vite dev --host 127.0.0.1 --port 5173",
+    "ios:dev": "CAP_SERVER_URL=http://127.0.0.1:5173 cap sync ios && cap open ios"
   },
   "dependencies": {
     "@capacitor/app": "8.1.2",
