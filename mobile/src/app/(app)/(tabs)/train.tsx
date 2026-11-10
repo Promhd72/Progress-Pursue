@@ -24,7 +24,7 @@ import {
   ADVANCED_DOMAIN_SYMBOL,
 } from "@/lib/advanced-domains";
 import { getAdvancedProgress } from "@/lib/backend";
-import { FREE_MAX_LEVEL, MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, type SkillTrack } from "@/lib/curriculum";
+import { FREE_MAX_LEVEL, MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, levelSummary, type SkillTrack } from "@/lib/curriculum";
 import { type TrackSpeedStat } from "@/lib/curriculum.functions";
 import { getRecentLessons, getTrackSpeedStats } from "@/lib/backend";
 import { rankForXp } from "@/lib/drill-engine";
@@ -281,8 +281,13 @@ function TrackCard({
         </View>
         <View style={{ flex: 1 }}>
           <Txt variant="label" style={{ fontSize: 17 }}>{TRACK_LABELS[track]}</Txt>
-          <Muted variant="caption">
-            {capped ? `Practising Level ${playLevel} · Pro unlocks ${FREE_MAX_LEVEL + 1}+` : `Level ${currentLevel} · ${highestPassed}/${MAX_LEVEL} passed`}
+          <Muted variant="caption" numberOfLines={1}>
+            {capped
+              ? `Practising L${playLevel}: ${levelSummary(track, playLevel).name} · Pro unlocks more`
+              : `Next: L${currentLevel}, ${levelSummary(track, currentLevel).name}`}
+          </Muted>
+          <Muted variant="caption" style={{ fontSize: 12 }}>
+            {highestPassed}/{MAX_LEVEL} passed
           </Muted>
         </View>
         <Pressable

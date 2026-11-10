@@ -5,7 +5,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CoachingReview, CoachingToggle, useCoachingPreference } from "@/components/Coaching";
 import { DrillHeader, DrillRunner, type DrillAnswer } from "@/components/DrillRunner";
-import { Button, ErrorState, IconBadge, Ionicons, Loading, Muted, Row, Txt } from "@/components/ui";
+import { LearnCard, hasLearned, markLearned } from "@/components/LearnCard";
+import { Button, ErrorState, IconBadge, Ionicons, Loading, Muted, Row, Stars, Txt } from "@/components/ui";
 import {
   FREE_MAX_LEVEL,
   MAX_LEVEL,
@@ -13,6 +14,8 @@ import {
   TRACK_LABELS,
   TRACKS,
   generateLesson,
+  levelSummary,
+  starsFor,
   type SkillTrack,
 } from "@/lib/curriculum";
 import { getLessonAccess, submitLesson } from "@/lib/backend";
@@ -132,6 +135,7 @@ function LessonRunner({
   const [result, setResult] = useState<Result | null>(null);
   const [review, setReview] = useState<DrillAnswer[]>([]);
   const [saving, setSaving] = useState(false);
+  const [learning, setLearning] = useState(() => !hasLearned(track, level));
 
   async function finish(answers: DrillAnswer[]) {
     onProgress(false);
@@ -152,6 +156,21 @@ function LessonRunner({
     }
   }
 
+  if (learning) {
+    return (
+      <View style={styles.runner}>
+        <LearnCard
+          track={track}
+          level={level}
+          onStart={() => {
+            markLearned(track, level);
+            setLearning(false);
+            setStartedAt(Date.now());
+          }}
+        />
+      </View>
+    );
+  }
   if (saving) return <Loading />;
   if (result) {
     const nextLevel = Math.min(level + 1, MAX_LEVEL);
@@ -192,7 +211,18 @@ function LessonRunner({
         header={({ index, correct }) => (
           <DrillHeader
             left={`Question ${index + 1} of ${questions.length} · ${correct} correct`}
-            right={<CoachingToggle enabled={coaching.enabled} onToggle={coaching.toggle} />}
+            right={
+              <Row gap={8}>
+                {index === 0 && correct === 0 && (
+                  <Pressable onPress={() => setLearning(true)} hitSlop={8} accessibilityLabel="See the trick">
+                    <Txt variant="caption" color={colors.primary} style={{ fontFamily: fonts.semibold }}>
+                      The trick
+                    </Txt>
+                  </Pressable>
+                )}
+                <CoachingToggle enabled={coaching.enabled} onToggle={coaching.toggle} />
+              </Row>
+            }
           />
         )}
       />
@@ -220,21 +250,35 @@ function Results({
   onClose: () => void;
 }) {
   const accuracy = Math.round((result.correct / result.total) * 100);
-  const avg = (result.durationMs / result.total / 1000).toFixed(1);
+  const avgSec = result.durationMs / result.total / 1000;
+  const avg = avgSec.toFixed(1);
+  const info = levelSummary(track, level);
+  const stars = starsFor(track, level, result.passed, avgSec);
+  const nextInfo = level < MAX_LEVEL ? levelSummary(track, level + 1) : null;
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 20 }}>
       <View style={{ alignItems: "center", paddingTop: 8 }}>
         <Txt style={{ fontSize: 56 }}>{result.passed ? "🎉" : "💪"}</Txt>
         <Txt variant="title" center style={{ marginTop: 8 }}>
-          {result.passed ? "Level passed!" : "Not quite. Try again."}
+          {result.passed ? `${info.name}: passed!` : "Not quite. Try again."}
         </Txt>
+        {result.passed && (
+          <View style={{ marginTop: 10, alignItems: "center", gap: 6 }}>
+            <Stars count={stars} size={30} />
+            <Muted variant="caption" center>
+              {stars === 3
+                ? `Under ${info.targetSec}s per question. Full marks for speed.`
+                : `${avg}s per question. Beat ${stars === 2 ? info.targetSec : Math.round(info.targetSec * 1.5 * 10) / 10}s for ${stars + 1} stars.`}
+            </Muted>
+          </View>
+        )}
         <Muted center style={{ marginTop: 6 }}>
           {result.passed
             ? level >= MAX_LEVEL
               ? "You've finished this track."
               : proLocked
                 ? `Levels ${level + 1}–10 come with Pro, launching soon. Keep practising to grow your streak.`
-                : `Level ${level + 1} is now unlocked.`
+                : `Unlocked: Level ${level + 1}, ${nextInfo?.name ?? ""}.`
             : `You need ${Math.round(PASS_THRESHOLD * 100)}% to advance.`}
         </Muted>
       </View>
@@ -243,6 +287,16 @@ function Results({
         <View style={{ backgroundColor: colors.amberSoft, borderRadius: radius.md, padding: 14 }}>
           <Txt variant="caption" color={colors.amberText} style={{ fontSize: 14, lineHeight: 20 }}>
             Speed comes with reps. Every lesson you finish makes the next one easier.
+          </Txt>
+        </View>
+      )}
+
+      {result.passed && (
+        <View style={{ backgroundColor: colors.successSoft, borderRadius: radius.md, padding: 14, flexDirection: "row", gap: 10 }}>
+          <Ionicons name="ribbon-outline" size={20} color={colors.success} />
+          <Txt style={{ flex: 1, fontSize: 15, lineHeight: 21 }}>
+            <Txt style={{ fontFamily: fonts.semibold, fontSize: 15 }}>New skill: </Txt>
+            {info.outcome}
           </Txt>
         </View>
       )}
@@ -259,7 +313,7 @@ function Results({
         variant="secondary"
         onPress={() =>
           shareText(
-            `I just hit ${accuracy}% on ${TRACK_LABELS[track]} Level ${level} in Rapid Math, averaging ${avg}s per answer. 🧠⚡`,
+            `I just passed "${info.name}" (${TRACK_LABELS[track]} Level ${level}) in Rapid Math: ${accuracy}% at ${avg}s per answer. 🧠⚡`,
           )
         }
       />
@@ -267,7 +321,7 @@ function Results({
       <CoachingReview items={review} />
 
       <View style={{ gap: 10 }}>
-        {onNext && <Button title={`Next: Level ${level + 1}`} icon="arrow-forward" onPress={onNext} />}
+        {onNext && <Button title={`Next: ${nextInfo?.name ?? `Level ${level + 1}`}`} icon="arrow-forward" onPress={onNext} />}
         <Button title="Try again" variant={onNext ? "secondary" : "primary"} onPress={onReplay} />
         <Button title="Done" variant="ghost" onPress={onClose} />
       </View>
