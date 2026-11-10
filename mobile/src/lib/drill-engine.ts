@@ -115,3 +115,13 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   medium: "Medium",
   hard: "Hard",
 };
+
+/** Rank names for XP tiers (separate from track levels, which are skills). */
+export const RANKS = ["Starter", "Learner", "Quick", "Sharp", "Swift", "Fluent", "Rapid", "Expert", "Elite", "Mastermind"];
+
+export function rankForXp(xp: number) {
+  const l = levelForXp(xp);
+  const name = RANKS[Math.min(l.level, RANKS.length) - 1];
+  const next = l.level < RANKS.length ? RANKS[l.level] : null;
+  return { ...l, name, next };
+}

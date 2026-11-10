@@ -26,10 +26,12 @@ import {
   type SkillTrack,
 } from "./curriculum";
 import {
+  computeLevelStats,
   computeSpeedStats,
   type CurriculumOverview,
   type LessonAccess,
   type LessonAttemptRow,
+  type LevelStats,
   type SubmitLessonResult,
   type SubmitPlacementResult,
   type TrackSpeedStat,
@@ -184,6 +186,10 @@ export async function getCurriculumOverview(): Promise<CurriculumOverview> {
 export async function getRecentLessons(opts?: { data?: unknown }): Promise<LessonAttemptRow[]> {
   const limit = Math.min((opts?.data as { limit?: number } | undefined)?.limit ?? 10, 200);
   return load().lessons.slice(0, limit);
+}
+
+export async function getLevelStats(): Promise<LevelStats> {
+  return computeLevelStats(load().lessons);
 }
 
 export async function getTrackSpeedStats(): Promise<TrackSpeedStat[]> {

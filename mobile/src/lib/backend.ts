@@ -16,6 +16,7 @@ export const getProfile = pick(realProfile.getProfile, demo.getProfile);
 export const getCurriculumOverview = pick(real.getCurriculumOverview, demo.getCurriculumOverview);
 export const getRecentLessons = pick(real.getRecentLessons, demo.getRecentLessons);
 export const getTrackSpeedStats = pick(real.getTrackSpeedStats, demo.getTrackSpeedStats);
+export const getLevelStats = pick(real.getLevelStats, demo.getLevelStats);
 export const getLessonAccess = pick(real.getLessonAccess, demo.getLessonAccess);
 export const submitLesson = pick(real.submitLesson, demo.submitLesson);
 export const submitPlacement = pick(real.submitPlacement, demo.submitPlacement);

@@ -56,8 +56,10 @@ export default function Advanced() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View>
-        <Txt variant="title">Advanced scenarios</Txt>
-        <Muted style={{ marginTop: 4 }}>Read the story, scan the numbers, pick the answer.</Muted>
+        <Txt variant="title">Real-life scenarios</Txt>
+        <Muted style={{ marginTop: 4 }}>
+          Work situations with real numbers. Read the story, scan the chart or table, and pick the answer.
+        </Muted>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
@@ -84,12 +86,19 @@ export default function Advanced() {
       {progress && (
         <Card style={{ gap: 10 }}>
           <Row style={{ justifyContent: "space-between" }}>
-            <Txt variant="label">{progress.mastered}/{progress.total} mastered</Txt>
+            <Txt variant="label">
+              {progress.mastered} of {progress.total} scenarios solved
+            </Txt>
             <Muted variant="caption">
-              {progress.accuracy === null ? "No answers yet" : `${progress.accuracy}% accuracy`}
+              {progress.accuracy === null ? "No answers yet" : `${progress.accuracy}% right`}
             </Muted>
           </Row>
           <ProgressBar value={progress.total > 0 ? progress.mastered / progress.total : 0} />
+          <Muted variant="caption" style={{ fontSize: 13 }}>
+            {progress.total > 0 && progress.mastered === progress.total
+              ? "You've solved every scenario here. Replays keep you sharp."
+              : "A scenario counts as solved once you get it right. Solve them all to complete this topic."}
+          </Muted>
         </Card>
       )}
 

@@ -4,6 +4,7 @@ import { resolveIsPro } from "./plan";
 import {
   TRACKS,
   MAX_LEVEL,
+  starsFor,
   FREE_MAX_LEVEL,
   FREE_DAILY_LESSONS,
   type SkillTrack,
@@ -284,3 +285,36 @@ export function computeSpeedStats(
   return out;
 }
 
+
+export type LevelStat = { stars: number; bestAvgSec: number | null; attempts: number; passed: boolean };
+export type LevelStats = Record<string, LevelStat>; // key: `${track}-${level}`
+
+/** Best stars and speed per level, from lesson history. Shared with demo mode. */
+export function computeLevelStats(
+  rows: { track: string; level: number; passed: boolean; total: number; duration_ms: number }[],
+): LevelStats {
+  const out: LevelStats = {};
+  for (const r of rows) {
+    const key = `${r.track}-${r.level}`;
+    const cur = out[key] ?? { stars: 0, bestAvgSec: null, attempts: 0, passed: false };
+    const avg = r.total > 0 ? r.duration_ms / r.total / 1000 : null;
+    cur.attempts += 1;
+    cur.passed = cur.passed || r.passed;
+    if (r.passed && avg !== null) {
+      cur.stars = Math.max(cur.stars, starsFor(r.track as SkillTrack, r.level, true, avg));
+      cur.bestAvgSec = cur.bestAvgSec === null ? avg : Math.min(cur.bestAvgSec, avg);
+    }
+    out[key] = cur;
+  }
+  return out;
+}
+
+export const getLevelStats = serverFn().handler(async ({ context }): Promise<LevelStats> => {
+  const { supabase, userId } = context;
+  const { data: rows, error } = await supabase
+    .from("lesson_attempts")
+    .select("track, level, passed, total, duration_ms")
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+  return computeLevelStats(rows ?? []);
+});

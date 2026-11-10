@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } fro
 import { Card, ErrorState, Ionicons, Loading, Muted, Pill, Row, Txt, type IconName } from "@/components/ui";
 import { deleteAccount, signOut, updateProfile } from "@/lib/account";
 import { MAX_LEVEL, TRACK_LABELS, TRACKS } from "@/lib/curriculum";
-import { levelForXp } from "@/lib/drill-engine";
+import { rankForXp } from "@/lib/drill-engine";
 import { getReminderPrefs, keyHaptic, trainedTodayFrom, updateReminderPrefs, type ReminderPrefs } from "@/lib/native";
 import { DAILY_TARGETS, getOnboarding, saveOnboarding, type DailyTargetId } from "@/lib/onboarding";
 import { resolveIsPro } from "@/lib/plan";
@@ -32,7 +32,7 @@ export default function Profile() {
   if (profileQ.isLoading) return <Loading />;
   if (!profileQ.data) return <ErrorState message="Check your connection and try again." onRetry={() => profileQ.refetch()} />;
   const p = profileQ.data;
-  const lvl = levelForXp(p.xp);
+  const rank = rankForXp(p.xp);
   const isPro = resolveIsPro(p);
   const trainedToday = trainedTodayFrom(p.last_active_date);
 
@@ -94,7 +94,7 @@ export default function Profile() {
       </Row>
 
       <Row gap={10}>
-        <Mini label="Level" value={`L${lvl.level}`} />
+        <Mini label="Rank" value={rank.name} />
         <Mini label="Total XP" value={p.xp.toLocaleString()} />
         <Mini label="Best streak" value={`${p.longest_streak}d`} />
       </Row>

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Card, ErrorState, Ionicons, Loading, Muted, ProgressBar, Row, Txt, type IconName } from "@/components/ui";
+import { Card, ErrorState, Ionicons, Loading, Muted, ProgressBar, Row, Stars, Txt, type IconName } from "@/components/ui";
 import { ADVANCED_DOMAINS, ADVANCED_DOMAIN_LABELS, ADVANCED_DOMAIN_SYMBOL } from "@/lib/advanced-domains";
 import { getAdvancedProgress } from "@/lib/backend";
 import {
@@ -15,7 +15,7 @@ import {
   type SkillTrack,
 } from "@/lib/curriculum";
 import { keyHaptic } from "@/lib/native";
-import { useOverview } from "@/lib/queries";
+import { useLevelStats, useOverview } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
 
 type Status = "passed" | "next" | "open" | "locked" | "pro";
@@ -48,6 +48,7 @@ export default function Curriculum() {
   const router = useRouter();
   const params = useLocalSearchParams<{ track?: string }>();
   const overviewQ = useOverview();
+  const statsQ = useLevelStats();
   const advancedQ = useQuery({ queryKey: ["advanced-progress"], queryFn: () => getAdvancedProgress() });
   const initial = TRACKS.includes(params.track as SkillTrack)
     ? (params.track as SkillTrack)
@@ -62,6 +63,8 @@ export default function Curriculum() {
   const totalPassed = tracks.reduce((s, r) => s + r.highest_level_passed, 0);
   const total = TRACKS.length * MAX_LEVEL;
   const sel = rowFor(track);
+  const stats = statsQ.data ?? {};
+  const trackStars = Array.from({ length: MAX_LEVEL }, (_, i) => stats[`${track}-${i + 1}`]?.stars ?? 0).reduce((a, b) => a + b, 0);
 
   const play = (level: number) =>
     router.push({ pathname: "/lesson/[track]/[level]", params: { track, level: String(level) } });
@@ -147,9 +150,15 @@ export default function Curriculum() {
 
       <View style={{ gap: 4 }}>
         <Txt variant="heading">{TRACK_LABELS[track]}</Txt>
-        <Muted variant="caption">
-          You're on Level {sel.current_level} · {sel.highest_level_passed}/{MAX_LEVEL} passed
-        </Muted>
+        <Row gap={10} style={{ flexWrap: "wrap" }}>
+          <Muted variant="caption">
+            You're on Level {sel.current_level} · {sel.highest_level_passed}/{MAX_LEVEL} passed
+          </Muted>
+          <Row gap={4}>
+            <Ionicons name="star" size={13} color="#f5a524" />
+            <Muted variant="caption">{trackStars}/{MAX_LEVEL * 3} stars</Muted>
+          </Row>
+        </Row>
       </View>
 
       {STAGES.map((stage) => (
@@ -176,7 +185,7 @@ export default function Curriculum() {
                       play(level);
                     }}
                     style={({ pressed }) => [styles.levelRow, pressed && { backgroundColor: colors.muted }]}
-                    accessibilityLabel={`Level ${level}: ${info.covers}. ${s.label}`}
+                    accessibilityLabel={`Level ${level}, ${info.name}: ${info.outcome} ${s.label}`}
                   >
                     <View style={[styles.badge, { backgroundColor: s.bg }]}>
                       {st === "passed" || st === "next" ? (
@@ -187,11 +196,18 @@ export default function Curriculum() {
                         </Txt>
                       )}
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <Txt variant="label">Level {level}</Txt>
-                      <Muted variant="caption" style={{ fontSize: 14 }}>{info.covers}</Muted>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Row style={{ justifyContent: "space-between" }}>
+                        <Txt variant="label" style={{ flex: 1 }}>
+                          {info.name}
+                        </Txt>
+                        {(stats[`${track}-${level}`]?.stars ?? 0) > 0 && <Stars count={stats[`${track}-${level}`].stars} />}
+                      </Row>
+                      <Muted variant="caption" style={{ fontSize: 14, lineHeight: 19 }}>{info.outcome}</Muted>
                       <Muted variant="caption" style={{ fontSize: 13, marginTop: 2 }}>
-                        e.g. <Txt variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 13 }}>{info.example}</Txt>
+                        Level {level} · e.g.{" "}
+                        <Txt variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 13 }}>{info.example}</Txt>
+                        {"  ·  "}★★★ under {info.targetSec}s
                       </Muted>
                     </View>
                     {playable ? (
@@ -215,7 +231,7 @@ export default function Curriculum() {
 
       <View style={{ gap: 8 }}>
         <View>
-          <Txt variant="heading">Then: Advanced scenarios</Txt>
+          <Txt variant="heading">Then: Real-life scenarios</Txt>
           <Muted variant="caption" style={{ marginTop: 2 }}>
             Story questions with charts and tables that use all five skills together.
           </Muted>
@@ -237,7 +253,7 @@ export default function Curriculum() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Txt variant="label">{ADVANCED_DOMAIN_LABELS[d]}</Txt>
-                    <Muted variant="caption">{p ? `${p.mastered}/${p.total} mastered` : "Not started"}</Muted>
+                    <Muted variant="caption">{p ? `${p.mastered} of ${p.total} solved` : "Not started"}</Muted>
                   </View>
                   <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
                 </Pressable>

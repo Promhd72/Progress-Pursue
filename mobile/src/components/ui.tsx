@@ -323,3 +323,14 @@ const styles = StyleSheet.create({
   },
   radioOn: { borderColor: colors.primary, backgroundColor: colors.primary },
 });
+
+/** 0–3 stars for a level. */
+export function Stars({ count, size = 14 }: { count: number; size?: number }) {
+  return (
+    <View style={{ flexDirection: "row", gap: 1 }} accessibilityLabel={`${count} of 3 stars`}>
+      {[1, 2, 3].map((i) => (
+        <Ionicons key={i} name={i <= count ? "star" : "star-outline"} size={size} color={i <= count ? "#f5a524" : colors.border} />
+      ))}
+    </View>
+  );
+}

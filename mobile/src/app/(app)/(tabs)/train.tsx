@@ -27,7 +27,7 @@ import { getAdvancedProgress } from "@/lib/backend";
 import { FREE_MAX_LEVEL, MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, type SkillTrack } from "@/lib/curriculum";
 import { type TrackSpeedStat } from "@/lib/curriculum.functions";
 import { getRecentLessons, getTrackSpeedStats } from "@/lib/backend";
-import { levelForXp } from "@/lib/drill-engine";
+import { rankForXp } from "@/lib/drill-engine";
 import { dailyTargetFor, getOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
@@ -54,7 +54,7 @@ export default function Train() {
 
   const profile = profileQ.data;
   const overview = overviewQ.data;
-  const lvl = levelForXp(profile.xp);
+  const rank = rankForXp(profile.xp);
   const lessons = lessonsQ.data ?? [];
   const totalCorrect = lessons.reduce((s, l) => s + l.correct, 0);
   const totalQs = lessons.reduce((s, l) => s + l.total, 0);
@@ -87,7 +87,7 @@ export default function Train() {
       />
 
       <View style={styles.grid}>
-        <Stat icon="trophy-outline" label={`Level ${lvl.level}`} value={`${profile.xp.toLocaleString()} XP`} sub={`${lvl.toNext} XP to L${lvl.level + 1}`} tint={colors.primary} bg={colors.primarySoft} />
+        <Stat icon="trophy-outline" label={`Rank · ${rank.name}`} value={`${profile.xp.toLocaleString()} XP`} sub={rank.next ? `${rank.toNext} XP to ${rank.next}` : "Top rank"} tint={colors.primary} bg={colors.primarySoft} />
         <Stat icon="flame-outline" label="Streak" value={`${profile.current_streak}`} sub={`days · best ${profile.longest_streak}`} tint={colors.warm} bg={colors.warmSoft} />
         <Stat icon="locate-outline" label="Accuracy" value={accuracy === null ? "–" : `${accuracy}%`} sub={totalQs > 0 ? "last 20 lessons" : "run a lesson first"} />
         <Stat
@@ -142,10 +142,10 @@ export default function Train() {
 
       <View style={{ gap: 12 }}>
         <View>
-          <Txt variant="heading">Advanced scenarios</Txt>
+          <Txt variant="heading">Real-life scenarios</Txt>
           <Muted variant="caption" style={{ marginTop: 2 }}>
             {advancedQ.data
-              ? `${advancedQ.data.overall.mastered}/${advancedQ.data.overall.total} mastered · story questions with charts`
+              ? `${advancedQ.data.overall.mastered} of ${advancedQ.data.overall.total} solved · work situations with charts`
               : "Story questions with charts"}
           </Muted>
         </View>
@@ -172,7 +172,7 @@ export default function Train() {
                   <ProgressBar value={pct} height={6} />
                 </View>
                 <Muted variant="caption" style={{ marginTop: 6, fontSize: 12 }}>
-                  {p && p.attempts > 0 ? `${p.mastered}/${p.total} mastered` : "Not started"}
+                  {p && p.attempts > 0 ? `${p.mastered} of ${p.total} solved` : `${p?.total ?? 0} scenarios`}
                 </Muted>
               </Pressable>
             );

@@ -65,7 +65,7 @@ function additionTip(a: number, b: number): CoachingTip {
     const rest = small - need;
     const ten = big + need;
     return {
-      method: "Make a 10 first",
+      method: big < 10 ? "Make a 10 first" : "Bridge to the next ten",
       idea: "Round numbers like 10, 20 or 50 are easy to add to. So fill up to the next ten, then add what's left.",
       steps: [
         step(`${big} needs ${need} more to reach ${ten}. Split ${small} into ${need} and ${rest}.`, `${small} = ${need} + ${rest}`),
@@ -178,10 +178,32 @@ function subtractionTip(a: number, b: number): CoachingTip {
     return {
       method: "Count up from the smaller number",
       idea: "When the numbers are close, it's easier to find the gap by counting up from the smaller one.",
-      steps: [step(`Start at ${b} and count up to ${a}.`, `${b} + ${diff} = ${a}`), step(`So the gap is ${diff}.`)],
+      steps: [step(`Start at ${b} and count up to ${a}.`, `${b} + ${diff} = ${a}`), step(`You counted up ${diff}, so that's the answer.`, `${a} − ${b} = ${diff}`)],
       check,
       remember: "Close numbers? Count up from the smaller one.",
       hint: `Start at ${b} and count up until you reach ${a}.`,
+    };
+  }
+
+  // Change from a round amount (100, 500, 1000): count up in friendly hops.
+  if (a % 100 === 0 && a >= 100 && b % 10 !== 0) {
+    const t = nextTen(b);
+    const h = Math.ceil(t / 100) * 100;
+    const hop1 = t - b;
+    const hop2 = h - t;
+    const hop3 = a - h;
+    const steps = [step(`Hop from ${b} up to the next ten, ${t}.`, `${b} + ${hop1} = ${t}`)];
+    if (hop2 > 0) steps.push(step(`Hop from ${t} up to the next hundred, ${h}.`, `${t} + ${hop2} = ${h}`));
+    if (hop3 > 0) steps.push(step(`Hop from ${h} up to ${a}.`, `${h} + ${hop3} = ${a}`));
+    const hops = [hop1, hop2, hop3].filter((x) => x > 0);
+    steps.push(step("Add up the hops. That's the change.", `${hops.join(" + ")} = ${diff}`));
+    return {
+      method: "Count up to the round amount",
+      idea: "This is how a cashier gives change: start at the price and count up to the note in easy hops.",
+      steps,
+      check,
+      remember: "Change from a round amount? Hop to the next ten, then the next hundred, then the total.",
+      hint: `Start at ${b}. How far is it to ${t}?`,
     };
   }
 
@@ -311,6 +333,51 @@ function multiplicationTip(a: number, b: number): CoachingTip {
     }
   }
 
+  // ×11 with a two-digit number: put the digit sum in the middle.
+  if ((a === 11 || b === 11) && Math.max(a, b) >= 12 && Math.max(a, b) <= 99) {
+    const n = a === 11 ? b : a;
+    const t = Math.floor(n / 10);
+    const o = n % 10;
+    const mid = t + o;
+    const steps =
+      mid < 10
+        ? [
+            step(`Split ${n} into its digits: ${t} and ${o}.`),
+            step("Add the two digits.", `${t} + ${o} = ${mid}`),
+            step(`Put that in the middle: ${t}, then ${mid}, then ${o}.`, `${n} × 11 = ${product}`),
+          ]
+        : [
+            step(`Split ${n} into its digits: ${t} and ${o}.`),
+            step("Add the two digits.", `${t} + ${o} = ${mid}`),
+            step(`${mid} is too big for the middle, so keep the ${mid % 10} and carry the 1 onto the ${t}.`, `${t} + 1 = ${t + 1}`),
+            step(`Put it together: ${t + 1}, then ${mid % 10}, then ${o}.`, `${n} × 11 = ${product}`),
+          ];
+    return {
+      method: "×11: add the digits, put it in the middle",
+      idea: `${n} × 11 is ${n} × 10 plus ${n}. That always works out as the two digits with their sum squeezed in between.`,
+      steps,
+      check: `Check: ${n} × 10 = ${n * 10}, plus ${n} is ${product}.`,
+      remember: "Two-digit number × 11? Add the digits and put the sum in the middle (carry if it's 10 or more).",
+      hint: `Add the two digits of ${n} together.`,
+    };
+  }
+
+  // Round tens × a single digit: hide the zero.
+  if (big >= 20 && big % 10 === 0 && small <= 10) {
+    const core = big / 10;
+    return {
+      method: "Hide the zero",
+      idea: `${big} is ${core} tens. So ${big} × ${small} is just ${core} × ${small}, in tens.`,
+      steps: [
+        step(`Cover the 0 and multiply.`, `${core} × ${small} = ${core * small}`),
+        step("Put the 0 back on the end.", `${core * small} × 10 = ${product}`),
+      ],
+      check,
+      remember: "Multiplying a round number? Hide the zeros, multiply, then put them back.",
+      hint: `Ignore the 0 in ${big}. What's ${core} × ${small}?`,
+    };
+  }
+
   // Both single digits: build from a fact you know (×5 or ×2).
   if (big <= 10) {
     const base = big > 5 ? 5 : 2;
@@ -407,7 +474,7 @@ function divisionTip(dividend: number, divisor: number): CoachingTip {
     } else {
       for (let k = 1; k <= q; k++) steps.push(step(k === 1 ? `Count up in ${divisor}s.` : `Add another ${divisor}.`, `${divisor} × ${k} = ${divisor * k}`));
     }
-    steps.push(step(`You reached ${dividend} after ${q} lots of ${divisor}.`));
+    steps.push(step(`You reached ${dividend} after ${q} lots of ${divisor}, so that's the answer.`, `${dividend} ÷ ${divisor} = ${q}`));
     return {
       method: "Turn it into a times-table question",
       idea,
@@ -625,6 +692,29 @@ function percentageTip(pct: number, whole: number): CoachingTip {
   };
 }
 
+/** "240 + 5%" (add VAT) or "350 − 20%" (discount): find the part, then add or take it away. */
+function percentChangeTip(pct: number, whole: number, mode: number): CoachingTip {
+  const part = (whole * pct) / 100;
+  const total = mode === 1 ? whole + part : whole - part;
+  const base = percentageTip(pct, whole);
+  const add = mode === 1;
+  return {
+    method: add ? `Add ${pct}% on top` : `Take ${pct}% off`,
+    idea: add
+      ? `Adding ${pct}% means: work out ${pct}% of ${whole}, then add it to ${whole}.`
+      : `${pct}% off means: work out ${pct}% of ${whole}, then take it away from ${whole}.`,
+    steps: [
+      ...base.steps,
+      step(add ? `Add that onto the price.` : "Take that off the price.", `${whole} ${add ? "+" : "−"} ${nf(part)} = ${nf(total)}`),
+    ],
+    check: add ? `Check: the total must be a little more than ${whole}.` : `Check: the sale price must be less than ${whole}.`,
+    remember: add
+      ? "Adding VAT? 5% is half of 10%. Find it, then add it on."
+      : "Discount? Work out the percentage, then take it off the price.",
+    hint: `First find ${pct}% of ${whole}.`,
+  };
+}
+
 /**
  * Build a coaching tip from the operands of a generated question.
  * `ops` follows the order used by the generator:
@@ -645,7 +735,7 @@ export function coachingTip(track: SkillTrack, ops: number[] | undefined): Coach
     case "division":
       return divisionTip(x, y);
     case "percentage":
-      return percentageTip(x, y);
+      return ops[2] === 1 || ops[2] === -1 ? percentChangeTip(x, y, ops[2]) : percentageTip(x, y);
     default:
       return null;
   }
