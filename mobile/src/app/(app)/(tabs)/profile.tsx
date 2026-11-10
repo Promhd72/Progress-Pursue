@@ -192,6 +192,8 @@ export default function Profile() {
 
       <Section title="Help us improve">
         <Card style={{ padding: 0 }}>
+          <LinkRow icon="compass-outline" label="How Rapid Math works" onPress={() => router.push("/tour")} />
+          <Divider />
           <LinkRow icon="sparkles-outline" label="Request a feature" onPress={() => router.push("/feedback")} />
           <Divider />
           <LinkRow icon="chatbubble-ellipses-outline" label="Send feedback or report a problem" onPress={() => router.push("/feedback")} />

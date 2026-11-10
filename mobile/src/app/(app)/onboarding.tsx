@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppTour } from "@/components/AppTour";
 import { Button, Card, ChoiceCard, IconBadge, KeyValue, Muted, Txt } from "@/components/ui";
 import { updateProfile } from "@/lib/account";
 import { getReminderPrefs, updateReminderPrefs } from "@/lib/native";
@@ -22,7 +23,7 @@ export default function Onboarding() {
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
   const { data: overview } = useOverview();
-  const [step, setStep] = useState<"reminder" | "level">("reminder");
+  const [step, setStep] = useState<"tour" | "reminder" | "level">("tour");
   const [time, setTime] = useState(() => {
     const i = TIMES.findIndex((t) => t.hour === getReminderPrefs().hour);
     return i >= 0 ? i : 2;
@@ -47,6 +48,14 @@ export default function Onboarding() {
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
     }
     router.replace(to);
+  }
+
+  if (step === "tour") {
+    return (
+      <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
+        <AppTour onDone={() => setStep("reminder")} doneLabel="Set up my plan" />
+      </SafeAreaView>
+    );
   }
 
   return (
