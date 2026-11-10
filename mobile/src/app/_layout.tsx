@@ -10,10 +10,8 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { AppState, Platform, View } from "react-native";
+import { AppState, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Muted, Txt } from "@/components/ui";
-import { supabaseConfigured } from "@/integrations/supabase/client";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { colors } from "@/theme";
 
@@ -61,7 +59,6 @@ function RootNavigator() {
     if (!session) queryClient.clear();
   }, [session]);
 
-  if (!supabaseConfigured) return <NotConfigured />;
   if (!ready) return null;
 
   const signedIn = Boolean(session);
@@ -76,18 +73,5 @@ function RootNavigator() {
         <Stack.Screen name="(app)" />
       </Stack.Protected>
     </Stack>
-  );
-}
-
-/** Shown if the .env file with the Supabase keys is missing. */
-function NotConfigured() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 28, gap: 12, backgroundColor: colors.background }}>
-      <Txt variant="title">Almost there</Txt>
-      <Muted>
-        Add your Supabase details to a file called .env in the mobile folder (copy .env.example), then
-        restart with npx expo start.
-      </Muted>
-    </View>
   );
 }

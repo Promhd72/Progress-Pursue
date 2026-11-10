@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, IconBadge, Ionicons, Muted, Txt } from "@/components/ui";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
 import { colors, fonts, radius } from "@/theme";
 
 type Mode = "signin" | "signup" | "code" | "verify" | "confirm-email";
@@ -29,6 +29,13 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
 
   async function run(fn: () => Promise<void>) {
+    if (!supabaseConfigured) {
+      Alert.alert(
+        "Connect Supabase first",
+        "The screens work, but accounts need your Supabase project. Add your keys to mobile/.env (see MOBILE.md), then restart npx expo start.",
+      );
+      return;
+    }
     setLoading(true);
     try {
       await fn();
