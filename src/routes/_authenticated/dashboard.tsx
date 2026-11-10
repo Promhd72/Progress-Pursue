@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile } from "@/lib/rapid-math.functions";
 import { UpgradeButton } from "@/components/UpgradeButton";
-import { WebOnly } from "@/lib/native";
+import { AppOnly, WebOnly } from "@/lib/native";
+import { DailyGoalCard } from "@/components/native/DailyGoalCard";
 import { getCurriculumOverview, getRecentLessons, getTrackSpeedStats, type TrackSpeedStat } from "@/lib/curriculum.functions";
 import {
   TRACKS,
@@ -108,8 +109,21 @@ function Dashboard() {
         </div>
       </div>
 
+      <AppOnly>
+        <DailyGoalCard
+          lessonsToday={overview.lessonsUsedToday}
+          streak={profile.current_streak}
+          nextHref={
+            overview.recommended &&
+            (overview.isPro || overview.recommended.level <= FREE_MAX_LEVEL)
+              ? overview.recommended
+              : null
+          }
+        />
+      </AppOnly>
+
       {/* Stat strip */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard icon={Trophy} label={`Level ${lvl.level}`} value={`${profile.xp.toLocaleString()} XP`} sub={`${lvl.toNext} XP to L${lvl.level + 1}`} tone="primary" />
         <StatCard icon={Flame} label="Current streak" value={`${profile.current_streak}`} sub={`day${profile.current_streak === 1 ? "" : "s"} · longest ${profile.longest_streak}`} tone="warm" />
         <StatCard icon={Target} label="Recent accuracy" value={accuracy === null ? "—" : `${accuracy}%`} sub={totalQuestions > 0 ? `${totalCorrect} of ${totalQuestions} correct` : "Run a lesson to see this"} />

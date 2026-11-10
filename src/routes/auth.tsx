@@ -4,7 +4,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { WebOnly } from "@/lib/native";
+import { AppOnly, WebOnly, isNativeApp } from "@/lib/native";
+import { ArrowLeft } from "lucide-react";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
 
@@ -49,7 +50,8 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("Account created. Welcome!");
-        navigate({ to: "/dashboard" });
+        // New app users finish setup (reminders + placement) before the dashboard.
+        navigate({ to: isNativeApp() ? "/onboarding" : "/dashboard" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -83,12 +85,27 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppOnly>
+        <div className="pt-safe">
+          <div className="flex h-14 items-center px-3">
+            <Link
+              to="/welcome"
+              aria-label="Back"
+              className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground active:bg-muted"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </AppOnly>
+      <WebOnly>
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-display font-bold">R</div>
           <span className="font-display text-lg font-semibold">Rapid Math</span>
         </Link>
       </header>
+      </WebOnly>
 
       <main className="mx-auto max-w-md px-6 pb-16">
         <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">

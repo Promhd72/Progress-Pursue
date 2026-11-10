@@ -14,9 +14,10 @@ import {
   type Question,
 } from "@/lib/curriculum";
 import { getLessonAccess, submitLesson } from "@/lib/curriculum.functions";
-import { Check, X, ArrowRight, RotateCcw, Lock, Crown } from "lucide-react";
+import { Check, X, ArrowRight, RotateCcw, Lock, Crown, Share2 } from "lucide-react";
 import { UpgradeButton } from "@/components/UpgradeButton";
-import { answerHaptic, finishHaptic, useIsNativeApp } from "@/lib/native";
+import { AppOnly, answerHaptic, finishHaptic, isNativeApp, shareText, useIsNativeApp } from "@/lib/native";
+import { NumericKeypad } from "@/components/native/NumericKeypad";
 import {
   CoachingReview,
   CoachingToggle,
@@ -142,10 +143,13 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
   const [review, setReview] = useState<ReviewItem[]>([]);
   const startRef = useRef<number>(Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const submittingRef = useRef(false);
+  const native = useIsNativeApp();
 
   useEffect(() => {
-    if (!paused) inputRef.current?.focus();
+    // In the app the on-screen keypad is used instead of the iOS keyboard.
+    if (!paused && !isNativeApp()) inputRef.current?.focus();
   }, [index, paused]);
 
   if (phase === "done" && result) {
@@ -241,7 +245,7 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+      <div className="app-flat rounded-2xl border border-border bg-card p-8 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <span>
             {TRACK_LABELS[track]} · Level {level} · Q{index + 1}/{questions.length}
@@ -259,7 +263,7 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
           <div className="font-display text-6xl font-semibold tabular tracking-tight md:text-7xl">
             {q.prompt}
           </div>
-          <form onSubmit={submit} className="mt-10">
+          <form ref={formRef} onSubmit={submit} className="mt-10">
             <div
               className={`mx-auto inline-flex items-center gap-3 rounded-xl border-2 bg-background px-6 py-3 transition ${
                 flash === "ok"
@@ -273,7 +277,8 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                inputMode="numeric"
+                inputMode={native ? "none" : "numeric"}
+                readOnly={native}
                 autoComplete="off"
                 className="w-48 bg-transparent text-center font-display text-4xl tabular outline-none"
                 placeholder="?"
@@ -287,8 +292,18 @@ function LessonRunner({ track, level }: { track: SkillTrack; level: number }) {
                 Answer: <span className="font-medium text-foreground tabular">{q.answer}</span>
               </div>
             )}
-            {!paused && <div className="mt-6 text-xs text-muted-foreground">Press Enter to submit</div>}
+            {!paused && !native && (
+              <div className="mt-6 text-xs text-muted-foreground">Press Enter to submit</div>
+            )}
           </form>
+          {native && !paused && (
+            <NumericKeypad
+              disabled={!!flash}
+              onDigit={(d) => setInput((v) => (v + d).slice(0, 7))}
+              onBackspace={() => setInput((v) => v.slice(0, -1))}
+              onSubmit={() => formRef.current?.requestSubmit()}
+            />
+          )}
 
           {paused && (
             <div className="mt-6">
@@ -356,7 +371,19 @@ function Results({
 
       <CoachingReview items={review} />
 
-
+      <AppOnly>
+        <button
+          onClick={() =>
+            void shareText(
+              "My Rapid Math score",
+              `I just hit ${accuracy}% on ${TRACK_LABELS[track]} Level ${level} in Rapid Math, averaging ${avg}s per answer. 🧠⚡`,
+            )
+          }
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary/10 px-5 py-2.5 text-sm font-semibold text-primary active:bg-primary/20"
+        >
+          <Share2 className="h-4 w-4" /> Share result
+        </button>
+      </AppOnly>
 
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <button

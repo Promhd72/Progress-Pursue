@@ -13,25 +13,50 @@ the App Store when something native changes (icon, name, plugins, iOS settings).
 | `mobile/www/` | Fallback pages bundled in the app (loading + "You're offline") |
 | `src/lib/native.tsx` | Helpers that only activate inside the app: haptics, status bar, `WebOnly` |
 
-## Changes made to the web app for iOS
+## How the app differs from the website
 
-All of these only kick in inside the app. The website behaves exactly as before,
-except for account deletion and the logo fix, which apply everywhere.
+Everything below only switches on inside the iOS app (`src/lib/native.tsx` detects it).
+The website is unchanged apart from account deletion and the logo fix.
 
-- **No purchase UI in the app.** Upgrade buttons, the Pro teaser, pricing links and
-  "$10/mo" copy are hidden. Apple rejects apps that sell digital upgrades through
-  anything other than In-App Purchase (guideline 3.1.1). Users who already have Pro
-  on the web keep it in the app.
-- **Google sign-in hidden in the app.** Google blocks sign-in inside embedded web
-  views, and offering it would also force you to add Sign in with Apple (guideline
-  4.8). Email + password works.
-- **Account deletion** added to Profile (required by guideline 5.1.1(v)). It cancels
-  any active Paddle subscription, then deletes the user and all their data.
-- **The landing page is skipped**: the app opens straight to the dashboard (or to
-  sign-in).
-- **Haptics** on correct and wrong answers and when a lesson finishes.
-- **Safe areas** handled for the notch and home indicator. Portrait only, iPhone only.
-- Logo fix: the sign-in page and app header said "N" instead of "R".
+**Feels like an app, not a website** (App Store guideline 4.2)
+- Bottom tab bar (Train, Advanced, History, Profile) and an iOS-style title bar with
+  your streak, replacing the web header.
+- Lessons and the placement test are full-screen with a close button and a custom
+  number keypad. The iPhone's number keyboard has no return key, so answers could not
+  be submitted before.
+- Haptics on keypad taps, right/wrong answers, tab switches and finishing a lesson.
+- No pinch zoom, no input zoom, no text selection or link previews, no rubber-band
+  bounce. Splash screen stays up until the first screen has rendered.
+- Offline banner, plus a native offline screen if the app can't load at all.
+- Share sheet for lesson results.
+- Coming back to the app refreshes streak and stats.
+
+**Onboarding** (signed-out users never see the marketing site)
+1. Welcome: value proposition.
+2. Goal: meetings, interviews, everyday money maths (VAT, discounts) or brain training.
+3. Daily goal: 3, 5 or 10 minutes (1 to 3 lessons, all achievable on Free).
+4. "Your plan is ready" summary, then account creation.
+5. Reminder time (morning, lunch, evening) and the iOS notification prompt.
+6. 2-minute placement test, then the dashboard.
+
+Existing users opening the app for the first time get steps 5 and 6 only (placement is
+skipped if they already did it).
+
+**Retention hooks**
+- Daily goal ring on the Train tab with a one-tap "Start today's lesson".
+- Local streak reminders, skipped on days the user already trained. Time and daily goal
+  are editable in Profile.
+
+**App Store compliance**
+- Purchase UI, pricing and "$10/mo" copy hidden (guideline 3.1.1). Existing Pro users
+  keep Pro.
+- Google sign-in hidden (Google blocks it in embedded web views; offering it would also
+  require Sign in with Apple, guideline 4.8).
+- Account deletion in Profile (guideline 5.1.1(v)). Cancels any active Paddle
+  subscription first. Applies on the website too.
+
+Goal and daily target are stored on the device, not in Supabase, so they don't sync
+across devices yet.
 
 ## Step 1: get the web changes live
 
@@ -76,9 +101,9 @@ this project for you.
 ## Review risks to know about
 
 - **Guideline 4.2 (minimum functionality).** Apple sometimes rejects apps that are
-  "just a website". Haptics, native splash, offline handling and the app-first flow
-  help. If it gets rejected, the usual next steps are daily streak reminder
-  notifications and a home screen widget.
+  "just a website". The native navigation, keypad, onboarding, reminders, haptics and
+  share sheet are there to address this. If it still gets rejected, the next step is a
+  home screen widget showing the streak and daily goal.
 - **Selling Pro inside the app** later means adding Apple In-App Purchase (RevenueCat
   makes this easier) and letting the existing `profiles.is_pro` flag be set from it.
   Apple takes 15% under the Small Business Program (under USD 1M/year).

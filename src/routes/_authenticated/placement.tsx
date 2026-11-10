@@ -7,7 +7,8 @@ import { buildPlacement, PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, type PlacementQ
 import { submitPlacement } from "@/lib/curriculum.functions";
 import { Check, X, ArrowRight, Sparkles } from "lucide-react";
 import { CoachingReview, type ReviewItem } from "@/components/CoachingTip";
-import { answerHaptic } from "@/lib/native";
+import { answerHaptic, isNativeApp, useIsNativeApp } from "@/lib/native";
+import { NumericKeypad } from "@/components/native/NumericKeypad";
 
 export const Route = createFileRoute("/_authenticated/placement")({
   head: () => ({ meta: [{ title: "Placement test — Rapid Math" }] }),
@@ -94,9 +95,12 @@ function Runner({
   const submittingRef = useRef(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const native = useIsNativeApp();
+  const paused = false;
 
   useEffect(() => {
-    inputRef.current?.focus();
+    if (!isNativeApp()) inputRef.current?.focus();
   }, [index]);
 
   const q = questions[index];
@@ -154,7 +158,7 @@ function Runner({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+    <div className="app-flat rounded-2xl border border-border bg-card p-8 shadow-sm">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           Question {index + 1} / {questions.length} ·{" "}
@@ -170,7 +174,7 @@ function Runner({
         <div className="font-display text-6xl font-semibold tabular tracking-tight md:text-7xl">
           {q.prompt}
         </div>
-        <form onSubmit={submit} className="mt-10">
+        <form ref={formRef} onSubmit={submit} className="mt-10">
           <div
             className={`mx-auto inline-flex items-center gap-3 rounded-xl border-2 bg-background px-6 py-3 transition ${
               flash === "ok"
@@ -184,7 +188,8 @@ function Runner({
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              inputMode="numeric"
+              inputMode={native ? "none" : "numeric"}
+              readOnly={native}
               autoComplete="off"
               className="w-48 bg-transparent text-center font-display text-4xl tabular outline-none"
               placeholder="?"
@@ -198,8 +203,18 @@ function Runner({
               Answer: <span className="font-medium text-foreground tabular">{q.answer}</span>
             </div>
           )}
-          <div className="mt-6 text-xs text-muted-foreground">Press Enter to submit · blank = skip</div>
+          <div className="mt-6 text-xs text-muted-foreground">
+            {native ? "Not sure? Tap ✓ to skip" : "Press Enter to submit · blank = skip"}
+          </div>
         </form>
+        {native && !paused && (
+            <NumericKeypad
+              disabled={!!flash}
+              onDigit={(d) => setInput((v) => (v + d).slice(0, 7))}
+              onBackspace={() => setInput((v) => v.slice(0, -1))}
+              onSubmit={() => formRef.current?.requestSubmit()}
+            />
+          )}
       </div>
     </div>
   );

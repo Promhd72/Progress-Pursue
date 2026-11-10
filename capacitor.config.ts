@@ -29,8 +29,9 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 3000,
-      launchAutoHide: true,
+      // Hidden by the app once the first screen has rendered (initNativeShell),
+      // so users never see a blank page loading. 6s safety net in __root.tsx.
+      launchAutoHide: false,
       backgroundColor: "#fafbfc",
       showSpinner: false,
     },

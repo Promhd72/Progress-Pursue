@@ -5,7 +5,7 @@ import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { toast } from "sonner";
 import { ArrowRight, Crown } from "lucide-react";
 import { getCheckoutInfo } from "@/lib/billing.functions";
-import { useIsNativeApp } from "@/lib/native";
+import { isNativeApp, useIsNativeApp } from "@/lib/native";
 
 let paddlePromise: Promise<Paddle | undefined> | null = null;
 
@@ -46,7 +46,7 @@ export function UpgradeButton({
   const { data } = useQuery({
     queryKey: ["checkout-info"],
     queryFn: () => infoFn(),
-    enabled: !native,
+    enabled: !native && !isNativeApp(),
   });
   const [busy, setBusy] = useState(false);
 

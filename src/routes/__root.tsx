@@ -13,7 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { initNativeShell } from "@/lib/native";
+import { initNativeShell, useIsNativeApp } from "@/lib/native";
 
 
 function NotFoundComponent() {
@@ -117,6 +117,12 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "setTimeout(function(){try{var p=window.Capacitor&&window.Capacitor.Plugins.SplashScreen&&window.Capacitor.Plugins.SplashScreen.hide();p&&p.catch&&p.catch(function(){})}catch(e){}},6000)",
+          }}
+        />
         {children}
         <Scripts />
       </body>
@@ -128,9 +134,14 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  const native = useIsNativeApp();
+
   useEffect(() => {
-    initNativeShell();
-  }, []);
+    // Coming back to the app (e.g. from a reminder) refreshes streak + stats.
+    initNativeShell(() => {
+      void queryClient.invalidateQueries();
+    });
+  }, [queryClient]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -144,7 +155,10 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <Toaster />
+      <Toaster
+        position={native ? "top-center" : "bottom-right"}
+        offset={native ? "calc(env(safe-area-inset-top) + 52px)" : undefined}
+      />
     </QueryClientProvider>
   );
 }

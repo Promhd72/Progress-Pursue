@@ -10,7 +10,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Crown, Ticket, Sparkles, ArrowRight } from "lucide-react";
 import { UpgradeButton } from "@/components/UpgradeButton";
-import { WebOnly } from "@/lib/native";
+import { AppOnly, WebOnly, trainedTodayFrom } from "@/lib/native";
+import { ReminderSettings } from "@/components/native/ReminderSettings";
 import { resolveIsPro } from "@/lib/plan";
 import {
   AlertDialog,
@@ -125,6 +126,10 @@ function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <AppOnly>
+        <ReminderSettings trainedToday={trainedTodayFrom(data.last_active_date)} />
+      </AppOnly>
 
       {/* Curriculum summary */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
