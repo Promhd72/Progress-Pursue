@@ -161,3 +161,61 @@ export function placementToLevel(score: number, maxScore: number): number {
   if (ratio >= 0.25) return 2;
   return 1;
 }
+
+// ---------- Level descriptions (for the curriculum roadmap) ----------
+
+export interface LevelSummary {
+  /** What the level drills, in plain words. */
+  covers: string;
+  /** A typical question at this level. */
+  example: string;
+}
+
+const pick = (lo: number, hi: number, f: number) => Math.round(lo + (hi - lo) * f);
+
+/** Plain-English description of a level, from the same number ranges the questions use. */
+export function levelSummary(track: SkillTrack, level: number): LevelSummary {
+  switch (track) {
+    case "addition": {
+      const [lo, hi] = addBand(level);
+      return {
+        covers: `Adding two numbers from ${lo} to ${hi}`,
+        example: `${pick(lo, hi, 0.55)} + ${pick(lo, hi, 0.4)}`,
+      };
+    }
+    case "subtraction": {
+      const [lo, hi] = subBand(level);
+      const a = pick(lo, hi, 0.7);
+      return {
+        covers: `Taking away numbers from ${lo} to ${hi}`,
+        example: `${a} − ${pick(lo, a, 0.45)}`,
+      };
+    }
+    case "multiplication": {
+      const { a, b } = mulBand(level);
+      return {
+        covers: `${a[0]}–${a[1]} times ${b[0]}–${b[1]}`,
+        example: `${pick(a[0], a[1], 0.6)} × ${pick(b[0], b[1], 0.5)}`,
+      };
+    }
+    case "division": {
+      const { divisor, quotient } = divBand(level);
+      const d = pick(divisor[0], divisor[1], 0.5);
+      const q = pick(quotient[0], quotient[1], 0.6);
+      return {
+        covers: `Dividing by ${divisor[0]}–${divisor[1]}, answers up to ${quotient[1]}`,
+        example: `${d * q} ÷ ${d}`,
+      };
+    }
+    case "percentage": {
+      const pcts = pctPool(level);
+      const pct = pcts[Math.floor(pcts.length / 2)];
+      const base = Math.max(1, 100 / gcd(pct, 100));
+      const mult = level <= 3 ? 4 : level <= 6 ? 8 : 12;
+      return {
+        covers: `${pcts.join("%, ")}% of a number`,
+        example: `${pct}% of ${base * mult}`,
+      };
+    }
+  }
+}

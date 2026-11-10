@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useProfile } from "@/lib/queries";
 import { scheduleStreakReminders, trainedTodayFrom } from "@/lib/native";
 import { getOnboarding } from "@/lib/onboarding";
-import { colors } from "@/theme";
+import { colors, fonts } from "@/theme";
 
 export default function AppLayout() {
   const segments = useSegments();
@@ -26,6 +26,18 @@ export default function AppLayout() {
       <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
       <Stack.Screen name="lesson/[track]/[level]" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="placement" options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen
+        name="curriculum"
+        options={{
+          headerShown: true,
+          title: "Curriculum",
+          headerBackTitle: "Back",
+          headerTintColor: colors.primary,
+          headerStyle: { backgroundColor: colors.background },
+          headerShadowVisible: false,
+          headerTitleStyle: { fontFamily: fonts.semibold, color: colors.foreground },
+        }}
+      />
     </Stack>
   );
 }

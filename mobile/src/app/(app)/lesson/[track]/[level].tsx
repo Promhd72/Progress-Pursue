@@ -18,6 +18,7 @@ import {
 import { getLessonAccess, submitLesson } from "@/lib/backend";
 import { finishHaptic, shareText } from "@/lib/native";
 import { useOverview } from "@/lib/queries";
+import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts, radius } from "@/theme";
 
 type Result = { correct: number; total: number; durationMs: number; xpEarned: number; passed: boolean };
@@ -29,6 +30,12 @@ export default function LessonScreen() {
   const level = Number(params.level);
   const valid = track && Number.isInteger(level) && level >= 1 && level <= MAX_LEVEL;
   const close = () => (router.canGoBack() ? router.back() : router.replace("/train"));
+  // Leaving mid-lesson asks first; the lesson is discarded and doesn't use a daily lesson.
+  const guard = useQuitGuard(
+    "Quit this lesson?",
+    "Your answers so far won't be saved, and it won't use one of today's free lessons.",
+    "Quit lesson",
+  );
 
   return (
     <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
@@ -37,10 +44,16 @@ export default function LessonScreen() {
           <Ionicons name="close" size={28} color={colors.mutedForeground} />
         </Pressable>
         <Txt variant="label">{valid ? `${TRACK_LABELS[track]} · Level ${level}` : "Lesson"}</Txt>
-        <View style={{ width: 28 }} />
+        {guard.active ? (
+          <Pressable onPress={close} hitSlop={12} accessibilityLabel="Quit lesson">
+            <Txt variant="label" color={colors.destructive}>Quit</Txt>
+          </Pressable>
+        ) : (
+          <View style={{ width: 28 }} />
+        )}
       </View>
       {valid ? (
-        <LessonGate track={track} level={level} onClose={close} />
+        <LessonGate track={track} level={level} onClose={close} onProgress={guard.setActive} />
       ) : (
         <ErrorState message="That lesson doesn't exist." onRetry={close} />
       )}
@@ -48,7 +61,17 @@ export default function LessonScreen() {
   );
 }
 
-function LessonGate({ track, level, onClose }: { track: SkillTrack; level: number; onClose: () => void }) {
+function LessonGate({
+  track,
+  level,
+  onClose,
+  onProgress,
+}: {
+  track: SkillTrack;
+  level: number;
+  onClose: () => void;
+  onProgress: (inProgress: boolean) => void;
+}) {
   const accessQ = useQuery({
     queryKey: ["lesson-access", track, level],
     queryFn: () => getLessonAccess({ data: { track, level } }),
@@ -57,7 +80,7 @@ function LessonGate({ track, level, onClose }: { track: SkillTrack; level: numbe
   if (accessQ.error || !accessQ.data) return <ErrorState message="Check your connection and try again." onRetry={() => accessQ.refetch()} />;
   const a = accessQ.data;
   if (!a.allowed) return <Locked reason={a.reason} track={track} level={level} onClose={onClose} />;
-  return <LessonRunner track={track} level={level} onClose={onClose} />;
+  return <LessonRunner track={track} level={level} onClose={onClose} onProgress={onProgress} />;
 }
 
 function Locked({
@@ -87,7 +110,17 @@ function Locked({
   );
 }
 
-function LessonRunner({ track, level, onClose }: { track: SkillTrack; level: number; onClose: () => void }) {
+function LessonRunner({
+  track,
+  level,
+  onClose,
+  onProgress,
+}: {
+  track: SkillTrack;
+  level: number;
+  onClose: () => void;
+  onProgress: (inProgress: boolean) => void;
+}) {
   const qc = useQueryClient();
   const router = useRouter();
   const coaching = useCoachingPreference();
@@ -101,6 +134,7 @@ function LessonRunner({ track, level, onClose }: { track: SkillTrack; level: num
   const [saving, setSaving] = useState(false);
 
   async function finish(answers: DrillAnswer[]) {
+    onProgress(false);
     const correct = answers.filter((a) => a.correct).length;
     const durationMs = Date.now() - startedAt;
     setReview(answers);
@@ -152,6 +186,8 @@ function LessonRunner({ track, level, onClose }: { track: SkillTrack; level: num
         key={seed}
         questions={questions}
         coaching={coaching.enabled}
+        teach
+        onAnswer={() => onProgress(true)}
         onDone={finish}
         header={({ index, correct }) => (
           <DrillHeader

@@ -116,12 +116,18 @@ export default function Train() {
       <SpeedByTrack stats={speedQ.data ?? []} />
 
       <View style={{ gap: 12 }}>
-        <View>
-          <Txt variant="heading">Fundamentals</Txt>
-          <Muted variant="caption" style={{ marginTop: 2 }}>
-            {MAX_LEVEL} levels per track · score 80% to unlock the next
-          </Muted>
-        </View>
+        <Row style={{ justifyContent: "space-between", alignItems: "flex-end" }}>
+          <View style={{ flex: 1 }}>
+            <Txt variant="heading">Fundamentals</Txt>
+            <Muted variant="caption" style={{ marginTop: 2 }}>
+              {MAX_LEVEL} levels per track · score 80% to unlock the next
+            </Muted>
+          </View>
+          <Pressable onPress={() => router.push("/curriculum")} hitSlop={8} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+            <Txt variant="label" color={colors.primary} style={{ fontSize: 14 }}>Full curriculum</Txt>
+            <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+          </Pressable>
+        </Row>
         {overview.tracks.map((t) => (
           <TrackCard
             key={t.track}

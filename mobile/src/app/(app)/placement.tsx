@@ -9,6 +9,7 @@ import { Button, Card, IconBadge, Ionicons, Loading, Muted, Row, Txt } from "@/c
 import { PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, buildPlacement, type SkillTrack } from "@/lib/curriculum";
 import { submitPlacement } from "@/lib/backend";
 import { finishHaptic } from "@/lib/native";
+import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts } from "@/theme";
 
 type Phase = "intro" | "running" | "saving" | "done";
@@ -21,8 +22,10 @@ export default function PlacementScreen() {
   const [levels, setLevels] = useState<Record<SkillTrack, number> | null>(null);
   const [review, setReview] = useState<DrillAnswer[]>([]);
   const close = () => (router.canGoBack() ? router.back() : router.replace("/train"));
+  const guard = useQuitGuard("Quit the placement test?", "Your placement won't be saved. You can take it again anytime.", "Quit test");
 
   async function finish(answers: DrillAnswer[]) {
+    guard.setActive(false);
     setReview(answers);
     setPhase("saving");
     const perSkill = {} as Record<SkillTrack, { score: number; max: number }>;
@@ -52,7 +55,13 @@ export default function PlacementScreen() {
           <Ionicons name="close" size={28} color={colors.mutedForeground} />
         </Pressable>
         <Txt variant="label">Placement test</Txt>
-        <View style={{ width: 28 }} />
+        {guard.active ? (
+          <Pressable onPress={close} hitSlop={12} accessibilityLabel="Quit placement test">
+            <Txt variant="label" color={colors.destructive}>Quit</Txt>
+          </Pressable>
+        ) : (
+          <View style={{ width: 28 }} />
+        )}
       </View>
 
       {phase === "intro" && (
@@ -78,6 +87,7 @@ export default function PlacementScreen() {
           <DrillRunner
             questions={questions}
             allowSkipHint
+            onAnswer={() => guard.setActive(true)}
             onDone={finish}
             header={({ index, correct }) => (
               <DrillHeader

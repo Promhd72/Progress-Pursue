@@ -184,6 +184,8 @@ export default function Profile() {
             );
           })}
           <Divider />
+          <LinkRow icon="map-outline" label="See the full curriculum" onPress={() => router.push("/curriculum")} />
+          <Divider />
           <LinkRow icon="refresh-outline" label="Retake placement test" onPress={() => router.push("/placement")} />
         </Card>
       </Section>
