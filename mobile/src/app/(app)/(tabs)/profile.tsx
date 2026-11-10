@@ -190,6 +190,14 @@ export default function Profile() {
         </Card>
       </Section>
 
+      <Section title="Help us improve">
+        <Card style={{ padding: 0 }}>
+          <LinkRow icon="sparkles-outline" label="Request a feature" onPress={() => router.push("/feedback")} />
+          <Divider />
+          <LinkRow icon="chatbubble-ellipses-outline" label="Send feedback or report a problem" onPress={() => router.push("/feedback")} />
+        </Card>
+      </Section>
+
       <Section title="">
         <Card style={{ padding: 0 }}>
           <LinkRow icon="log-out-outline" label="Sign out" onPress={() => void signOut()} />

@@ -13,6 +13,7 @@ export const DEMO_MODE = !supabaseConfigured;
 const pick = <T>(realFn: T, demoFn: unknown): T => (DEMO_MODE ? (demoFn as T) : realFn);
 
 export const getProfile = pick(realProfile.getProfile, demo.getProfile);
+export const submitFeedback = pick(realProfile.submitFeedback, demo.submitFeedback);
 export const getCurriculumOverview = pick(real.getCurriculumOverview, demo.getCurriculumOverview);
 export const getRecentLessons = pick(real.getRecentLessons, demo.getRecentLessons);
 export const getTrackSpeedStats = pick(real.getTrackSpeedStats, demo.getTrackSpeedStats);

@@ -324,3 +324,16 @@ export async function submitAdvancedAnswer(opts?: { data?: unknown }): Promise<A
     isPro: p.is_pro,
   };
 }
+
+/** Demo mode: keep feedback on the device (there's no server to send it to yet). */
+export async function submitFeedback(opts?: { data?: unknown }): Promise<{ ok: true }> {
+  const d = opts?.data as { kind: string; message: string };
+  try {
+    const list = JSON.parse(localStorage.getItem(KEY + ".feedback") ?? "[]") as unknown[];
+    list.push({ ...d, created_at: new Date().toISOString() });
+    localStorage.setItem(KEY + ".feedback", JSON.stringify(list));
+  } catch {
+    // Ignore.
+  }
+  return { ok: true };
+}

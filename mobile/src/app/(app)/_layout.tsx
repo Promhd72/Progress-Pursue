@@ -39,6 +39,18 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="feedback"
+        options={{
+          headerShown: true,
+          title: "Feedback",
+          headerBackTitle: "Back",
+          headerTintColor: colors.primary,
+          headerStyle: { backgroundColor: colors.background },
+          headerShadowVisible: false,
+          headerTitleStyle: { fontFamily: fonts.semibold, color: colors.foreground },
+        }}
+      />
+      <Stack.Screen
         name="curriculum"
         options={{
           headerShown: true,
