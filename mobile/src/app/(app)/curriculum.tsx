@@ -205,9 +205,8 @@ export default function Curriculum() {
                       </Row>
                       <Muted variant="caption" style={{ fontSize: 14, lineHeight: 19 }}>{info.outcome}</Muted>
                       <Muted variant="caption" style={{ fontSize: 13, marginTop: 2 }}>
-                        Level {level} · e.g.{" "}
-                        <Txt variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 13 }}>{info.example}</Txt>
-                        {"  ·  "}★★★ under {info.targetSec}s
+                        Level {level}
+                        {"  ·  "}★★★ under {info.targetSec}s per question
                       </Muted>
                     </View>
                     {playable ? (

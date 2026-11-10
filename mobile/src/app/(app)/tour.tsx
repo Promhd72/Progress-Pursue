@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AppTour } from "@/components/AppTour";
 import { colors } from "@/theme";
 
@@ -7,8 +7,8 @@ import { colors } from "@/theme";
 export default function Tour() {
   const router = useRouter();
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: 8 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["top", "bottom"]}>
       <AppTour onDone={() => router.back()} doneLabel="Got it" />
-    </View>
+    </SafeAreaView>
   );
 }

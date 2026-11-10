@@ -110,7 +110,7 @@ function MockLesson() {
         <Txt style={{ fontSize: 11, fontFamily: fonts.semibold }} color={colors.primary}>Hint</Txt>
       </View>
       <View style={styles.keys}>
-        {["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "✓"].map((k) => (
+        {["7", "8", "9", "⌫", "0", "✓"].map((k) => (
           <View key={k} style={[styles.key, k === "✓" && { backgroundColor: colors.primary }]}>
             <Txt style={{ fontFamily: fonts.display, fontSize: 13 }} color={k === "✓" ? colors.white : colors.foreground}>{k}</Txt>
           </View>
@@ -247,34 +247,34 @@ const SLIDES: Slide[] = [
   {
     eyebrow: "TRAIN TAB",
     title: "Your daily home",
-    body: "Open the app, tap one button, and you're training. Your daily goal ring fills as you finish lessons.",
+    body: "Tap one button and you're training. The ring fills as you hit your daily goal.",
     visual: MockTrain,
     points: [
       { icon: "play-circle-outline", text: "\"Next lesson\" picks the right level for you" },
       { icon: "flame-outline", text: "The flame is your streak: train daily to grow it" },
-      { icon: "map-outline", text: "\"Full curriculum\" shows every level, start to finish" },
+      { icon: "map-outline", text: "Full curriculum shows every level, start to finish" },
     ],
   },
   {
     eyebrow: "INSIDE A LESSON",
     title: "10 quick questions",
-    body: "Tap the answer on the number pad and press ✓. Short, focused, and over in about two minutes.",
+    body: "Tap your answer on the number pad, then ✓. About two minutes.",
     visual: MockLesson,
     points: [
       { icon: "bulb-outline", text: "Hint shows the first step, never the answer" },
-      { icon: "school-outline", text: "Before each new level, a Learn card shows the trick" },
-      { icon: "close-outline", text: "Quit anytime. Nothing is saved, and it won't use a daily lesson" },
+      { icon: "school-outline", text: "Each new level starts by showing you the trick" },
+      { icon: "close-outline", text: "Quit anytime without using up a lesson" },
     ],
   },
   {
     eyebrow: "COACHING",
     title: "Get it wrong? We'll show you how",
-    body: "Every mistake opens a step-by-step walkthrough using a method that fits those exact numbers.",
+    body: "Every mistake opens a step-by-step walkthrough for those exact numbers.",
     visual: MockCoaching,
     points: [
       { icon: "list-outline", text: "Small steps, each with its own sum" },
       { icon: "star-outline", text: "A rule to remember for next time" },
-      { icon: "options-outline", text: "Switch tips to every question while you're learning" },
+      { icon: "options-outline", text: "Turn on tips for every question while learning" },
     ],
   },
   {
@@ -300,12 +300,12 @@ const SLIDES: Slide[] = [
   {
     eyebrow: "HOW YOU ADVANCE",
     title: "5 skills, 10 levels each",
-    body: "Each level teaches one new skill. Score 8 out of 10 to pass and unlock the next.",
+    body: "Each level is one new skill. Get 8 of 10 right to unlock the next.",
     visual: MockProgress,
     points: [
       { icon: "star", text: "Beat the time target for up to 3 stars" },
       { icon: "trophy-outline", text: "XP from every lesson raises your Rank" },
-      { icon: "calendar-outline", text: "Stay consistent: your streak and daily goal keep you on track" },
+      { icon: "ribbon-outline", text: "Every level you pass adds a new skill" },
     ],
   },
 ];
@@ -378,8 +378,8 @@ export function AppTour({ onDone, doneLabel = "Let's get started" }: { onDone: (
 }
 
 const styles = StyleSheet.create({
-  slide: { paddingHorizontal: 24, paddingBottom: 12 },
-  visualWrap: { alignItems: "center", marginBottom: 20, marginTop: 4 },
+  slide: { paddingHorizontal: 24, paddingBottom: 24 },
+  visualWrap: { alignItems: "center", marginBottom: 16, marginTop: 0 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, width: 300, justifyContent: "center" },
   pillar: { width: 140, borderRadius: radius.lg, padding: 14, alignItems: "flex-start" },
   phone: {

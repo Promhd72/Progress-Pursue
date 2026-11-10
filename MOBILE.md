@@ -14,8 +14,10 @@ Store, so you don't need Xcode. The backend is your own Supabase project.
 
 1. Sign up at supabase.com and create a project. Pick the region closest to your users
    (for the UAE, Frankfurt or Mumbai).
-2. **Create the database:** open **SQL Editor**, paste the whole of
-   `supabase/migrations/20261110000000_rapidmath_init.sql`, and run it.
+2. **Create the database:** open **SQL Editor** and run these two files, in order
+   (paste the whole file, then Run):
+   1. `supabase/migrations/20261110000000_rapidmath_init.sql`
+   2. `supabase/migrations/20261111000000_feedback.sql`
 3. **Auth settings** (Authentication > Sign In / Providers > Email): turn **off**
    "Confirm email" for launch. The app handles it if you leave it on, but users then have to
    leave the app to click a link before they can sign in.
@@ -83,26 +85,37 @@ build if you want a different one; it's permanent once the app is live.
 
 ## How the app works
 
-**Onboarding:** Welcome > goal > daily goal (1 to 3 lessons, all doable on Free) > plan
-summary > create account > reminder time > 2-minute placement test > Train tab.
+Rapid Math has four parts, introduced by a 7-slide tour after sign-up (replay it from
+Profile > How Rapid Math works):
 
-**Daily loop:** goal ring + "Start today's lesson" on the Train tab, full-screen lessons with
-an on-screen keypad, haptics, optional coaching tips, results with a share button, streak in
-the header, and local reminders that skip days you've trained.
+- **Learn** (Learn tab): 27 mental-math techniques. Each explains when to use it, why it
+  works, the method and worked examples, with a 3-question Try it that doesn't use a daily
+  lesson.
+- **Practise** (Train tab): 5 tracks × 10 levels. Every level is a named skill
+  ("Crossing 10", "Carrying", "Add VAT") with a Learn card first, 10 questions built for
+  that skill, and a time target. 8/10 passes; beating the target earns up to 3 stars.
+  Train > Full curriculum shows the whole journey.
+- **Coaching** (inside every lesson): Hint shows the first step; a wrong answer opens a
+  step-by-step walkthrough for those exact numbers; results show how to solve each miss.
+- **Apply** (Scenarios tab): real work situations with charts and tables.
 
-**Tabs:** Train (goal, stats, speed by track, the five tracks, Advanced topics), Advanced
-(story questions with charts, hints, step-by-step explanations), History, Profile (name,
-reminder, daily goal, curriculum, retake placement, sign out, delete account).
+**Onboarding:** Welcome > goal > daily goal > plan summary > create account > app tour >
+reminder time > placement test > Train.
 
-**Free plan:** Levels 1 to 2 on all five tracks, 3 lessons and 3 Advanced scenarios per day.
-Free users past Level 2 can keep practising Level 2, so there's never a dead end.
+**Progress:** stars per level, XP raises your Rank (Starter → Mastermind), daily goal ring,
+streak, local reminders that skip days you've trained.
 
-**Security:** the app can only read the user's own data. Lessons, placement, Advanced answers,
-XP, streaks, levels and Pro status are written only by the database functions in the
-migration, which enforce the daily limits, Pro-only levels and level progression.
+**Free plan:** Levels 1 to 2 on all five tracks, 3 lessons and 3 scenarios per day.
 
-**Account deletion:** Profile > Delete account removes the user and all their data (App Store
-guideline 5.1.1(v)).
+**Feedback:** Profile > Help us improve > Request a feature / Send feedback. Messages land
+in Supabase: **Table Editor > feedback** (with the sender's email, type and app version).
+
+**Security:** the app can only read the user's own data. Lessons, placement, scenario
+answers, XP, streaks, levels, Pro status and feedback are written only by the database
+functions in the migrations, which enforce the rules.
+
+**Account deletion:** Profile > Delete account removes the user and all their data (App
+Store guideline 5.1.1(v)).
 
 ## Pro
 

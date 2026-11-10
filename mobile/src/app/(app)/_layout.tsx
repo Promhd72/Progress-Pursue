@@ -40,15 +40,7 @@ export default function AppLayout() {
       />
       <Stack.Screen
         name="tour"
-        options={{
-          headerShown: true,
-          title: "How Rapid Math works",
-          headerBackTitle: "Back",
-          headerTintColor: colors.primary,
-          headerStyle: { backgroundColor: colors.background },
-          headerShadowVisible: false,
-          headerTitleStyle: { fontFamily: fonts.semibold, color: colors.foreground },
-        }}
+        options={{ presentation: "fullScreenModal" }}
       />
       <Stack.Screen
         name="feedback"
