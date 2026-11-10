@@ -477,7 +477,19 @@ function easyPercent(p: number, w: number): CoachingStep[] | null {
 
 function percentageTip(pct: number, whole: number): CoachingTip {
   const answer = (whole * pct) / 100;
-  const check = `Check: 10% of ${whole} is ${nf(whole / 10)}, so ${pct}% should be about ${nf(pct / 10)} times that.`;
+  const half = whole / 2;
+  const check =
+    pct === 50
+      ? `Check: ${nf(answer)} + ${nf(answer)} = ${whole}, so it really is half.`
+      : pct === 25
+        ? `Check: 4 lots of ${nf(answer)} make ${whole}.`
+        : pct === 10
+          ? `Check: ${nf(answer)} × 10 = ${whole}.`
+          : pct === 20
+            ? `Check: 5 lots of ${nf(answer)} make ${whole}.`
+            : pct < 50
+              ? `Check: ${pct}% is less than half, so the answer must be less than ${nf(half)}.`
+              : `Check: ${pct}% is more than half, so the answer must be more than ${nf(half)} but less than ${whole}.`;
 
   const direct = easyPercent(pct, whole);
   if (direct) {
@@ -491,10 +503,21 @@ function percentageTip(pct: number, whole: number): CoachingTip {
     return {
       method: names[pct],
       idea: `${PER_CENT} ${pct === 50 ? "50 out of 100 is half." : pct === 25 ? "25 out of 100 is a quarter." : pct === 75 ? "75 out of 100 is three quarters." : "10 out of 100 is one tenth, so you divide by 10."}`,
-      steps: [...direct, step("That's the answer.", `${pct}% of ${whole} = ${nf(answer)}`)],
+      steps: direct,
       check,
       remember: pct === 10 || pct === 20 ? "To find 10%, divide by 10 (take a 0 off). Other percentages build from it." : "50% = half, 25% = quarter, 75% = three quarters.",
-      hint: direct[0].say,
+      hint:
+        pct === 50
+          ? `What is half of ${whole}?`
+          : pct === 25
+            ? `Halve ${whole}, then halve it again.`
+            : pct === 75
+              ? `Find a quarter of ${whole} first.`
+              : pct === 10
+                ? `Take a 0 off the end of ${whole}.`
+                : whole % 10 === 0
+                  ? `Find 10% of ${whole} first, then double it.`
+                  : `20% is a fifth. Divide ${whole} by 5.`,
     };
   }
 
