@@ -46,6 +46,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen name="train" options={{ title: "Train", tabBarIcon: icon("school", "school-outline") }} />
+      <Tabs.Screen name="learn" options={{ title: "Learn", tabBarIcon: icon("library", "library-outline") }} />
       <Tabs.Screen name="advanced" options={{ title: "Scenarios", tabBarIcon: icon("briefcase", "briefcase-outline") }} />
       <Tabs.Screen name="history" options={{ title: "History", tabBarIcon: icon("time", "time-outline") }} />
       <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: icon("person", "person-outline") }} />

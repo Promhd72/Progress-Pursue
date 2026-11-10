@@ -27,6 +27,18 @@ export default function AppLayout() {
       <Stack.Screen name="lesson/[track]/[level]" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="placement" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen
+        name="technique/[id]"
+        options={{
+          headerShown: true,
+          title: "Technique",
+          headerBackTitle: "Back",
+          headerTintColor: colors.primary,
+          headerStyle: { backgroundColor: colors.background },
+          headerShadowVisible: false,
+          headerTitleStyle: { fontFamily: fonts.semibold, color: colors.foreground },
+        }}
+      />
+      <Stack.Screen
         name="curriculum"
         options={{
           headerShown: true,
