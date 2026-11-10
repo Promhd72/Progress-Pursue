@@ -1,1 +1,0 @@
-DROP POLICY IF EXISTS "Admins view all roles" ON public.user_roles;

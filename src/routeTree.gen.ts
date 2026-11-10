@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
-import { Route as QuickTestRouteImport } from './routes/quick-test'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,22 +19,11 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdvancedRouteImport } from './routes/_authenticated/advanced'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
-import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin/coupons'
-import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as AuthenticatedLessonTrackLevelRouteImport } from './routes/_authenticated/lesson.$track.$level'
-import { Route as AuthenticatedAdminUserIdRouteImport } from './routes/_authenticated/admin/user.$id'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QuickTestRoute = QuickTestRouteImport.update({
-  id: '/quick-test',
-  path: '/quick-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -82,69 +70,28 @@ const AuthenticatedAdvancedRoute = AuthenticatedAdvancedRouteImport.update({
   path: '/advanced',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminCouponsRoute =
-  AuthenticatedAdminCouponsRouteImport.update({
-    id: '/coupons',
-    path: '/coupons',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const ApiPublicPaymentsWebhookRoute =
-  ApiPublicPaymentsWebhookRouteImport.update({
-    id: '/api/public/payments/webhook',
-    path: '/api/public/payments/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedLessonTrackLevelRoute =
   AuthenticatedLessonTrackLevelRouteImport.update({
     id: '/lesson/$track/$level',
     path: '/lesson/$track/$level',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminUserIdRoute =
-  AuthenticatedAdminUserIdRouteImport.update({
-    id: '/user/$id',
-    path: '/user/$id',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/quick-test': typeof QuickTestRoute
   '/welcome': typeof WelcomeRoute
-  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/advanced': typeof AuthenticatedAdvancedRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
-  '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/': typeof AuthenticatedAdminIndexRoute
-  '/admin/user/$id': typeof AuthenticatedAdminUserIdRoute
   '/lesson/$track/$level': typeof AuthenticatedLessonTrackLevelRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/quick-test': typeof QuickTestRoute
   '/welcome': typeof WelcomeRoute
   '/advanced': typeof AuthenticatedAdvancedRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -152,59 +99,39 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/placement': typeof AuthenticatedPlacementRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
-  '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin': typeof AuthenticatedAdminIndexRoute
-  '/admin/user/$id': typeof AuthenticatedAdminUserIdRoute
   '/lesson/$track/$level': typeof AuthenticatedLessonTrackLevelRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/quick-test': typeof QuickTestRoute
   '/welcome': typeof WelcomeRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/advanced': typeof AuthenticatedAdvancedRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
-  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
-  '/_authenticated/admin/user/$id': typeof AuthenticatedAdminUserIdRoute
   '/_authenticated/lesson/$track/$level': typeof AuthenticatedLessonTrackLevelRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/quick-test'
     | '/welcome'
-    | '/admin'
     | '/advanced'
     | '/dashboard'
     | '/history'
     | '/onboarding'
     | '/placement'
     | '/profile'
-    | '/admin/coupons'
-    | '/admin/users'
-    | '/admin/'
-    | '/admin/user/$id'
     | '/lesson/$track/$level'
-    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/quick-test'
     | '/welcome'
     | '/advanced'
     | '/dashboard'
@@ -212,41 +139,27 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/placement'
     | '/profile'
-    | '/admin/coupons'
-    | '/admin/users'
-    | '/admin'
-    | '/admin/user/$id'
     | '/lesson/$track/$level'
-    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/quick-test'
     | '/welcome'
-    | '/_authenticated/admin'
     | '/_authenticated/advanced'
     | '/_authenticated/dashboard'
     | '/_authenticated/history'
     | '/_authenticated/onboarding'
     | '/_authenticated/placement'
     | '/_authenticated/profile'
-    | '/_authenticated/admin/coupons'
-    | '/_authenticated/admin/users'
-    | '/_authenticated/admin/'
-    | '/_authenticated/admin/user/$id'
     | '/_authenticated/lesson/$track/$level'
-    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  QuickTestRoute: typeof QuickTestRoute
   WelcomeRoute: typeof WelcomeRoute
-  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -256,13 +169,6 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/quick-test': {
-      id: '/quick-test'
-      path: '/quick-test'
-      fullPath: '/quick-test'
-      preLoaderRoute: typeof QuickTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -328,41 +234,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdvancedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin/': {
-      id: '/_authenticated/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/users': {
-      id: '/_authenticated/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/coupons': {
-      id: '/_authenticated/admin/coupons'
-      path: '/coupons'
-      fullPath: '/admin/coupons'
-      preLoaderRoute: typeof AuthenticatedAdminCouponsRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/api/public/payments/webhook': {
-      id: '/api/public/payments/webhook'
-      path: '/api/public/payments/webhook'
-      fullPath: '/api/public/payments/webhook'
-      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/lesson/$track/$level': {
       id: '/_authenticated/lesson/$track/$level'
       path: '/lesson/$track/$level'
@@ -370,38 +241,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLessonTrackLevelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin/user/$id': {
-      id: '/_authenticated/admin/user/$id'
-      path: '/user/$id'
-      fullPath: '/admin/user/$id'
-      preLoaderRoute: typeof AuthenticatedAdminUserIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
   }
 }
-
-interface AuthenticatedAdminRouteRouteChildren {
-  AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
-  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
-  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
-  AuthenticatedAdminUserIdRoute: typeof AuthenticatedAdminUserIdRoute
-}
-
-const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
-  {
-    AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
-    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
-    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-    AuthenticatedAdminUserIdRoute: AuthenticatedAdminUserIdRoute,
-  }
-
-const AuthenticatedAdminRouteRouteWithChildren =
-  AuthenticatedAdminRouteRoute._addFileChildren(
-    AuthenticatedAdminRouteRouteChildren,
-  )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAdvancedRoute: typeof AuthenticatedAdvancedRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
@@ -412,7 +255,6 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAdvancedRoute: AuthenticatedAdvancedRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
@@ -429,20 +271,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  QuickTestRoute: QuickTestRoute,
   WelcomeRoute: WelcomeRoute,
-  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

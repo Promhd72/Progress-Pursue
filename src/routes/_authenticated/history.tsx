@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api";
 import { getRecentLessons } from "@/lib/curriculum.functions";
 import { TRACK_LABELS, type SkillTrack } from "@/lib/curriculum";
 

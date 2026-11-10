@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { buildPlacement, PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, type PlacementQuestion, type SkillTrack } from "@/lib/curriculum";

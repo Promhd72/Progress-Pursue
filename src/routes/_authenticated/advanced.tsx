@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api";
 import { useState } from "react";
 import {
   getAdvancedAccess,
@@ -17,8 +17,6 @@ import {
   ADVANCED_DOMAIN_LABELS,
   type AdvancedDomain,
 } from "@/lib/advanced-domains";
-import { UpgradeButton } from "@/components/UpgradeButton";
-import { WebOnly } from "@/lib/native";
 
 export const Route = createFileRoute("/_authenticated/advanced")({
   validateSearch: (search: Record<string, unknown>): { domain?: AdvancedDomain } => {
@@ -99,13 +97,6 @@ function AdvancedPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Link
-        to="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back to curriculum
-      </Link>
-
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
@@ -412,13 +403,9 @@ function LockedCard() {
         You've used today's free Advanced scenarios
       </h2>
       <p className="mx-auto max-w-md text-sm text-muted-foreground">
-        Free gives you three boardroom-style scenarios each day.
-        <WebOnly>
-          {" "}Pro unlocks unlimited Advanced drills — charts, tables, and story problems on tap.
-        </WebOnly>
+        Free gives you three boardroom-style scenarios each day. Come back tomorrow for more.
       </p>
       <div className="flex flex-wrap justify-center gap-3 pt-2">
-        <UpgradeButton label="Upgrade to Pro — $10/mo" className="px-5 py-2.5" />
         <Link
           to="/dashboard"
           className="inline-flex items-center rounded-md border border-input bg-card px-5 py-2.5 text-sm font-semibold hover:bg-accent"
@@ -435,10 +422,8 @@ function FreeLimitReached() {
     <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
       <div className="font-semibold text-foreground">That's today's free run.</div>
       <p className="mt-1 text-muted-foreground">
-        Come back tomorrow for three more
-        <WebOnly>, or go Pro for unlimited Advanced scenarios right now</WebOnly>.
+        Come back tomorrow for three more.
       </p>
-      <UpgradeButton label="Go Pro — $10/mo" className="mt-3" />
     </div>
   );
 }

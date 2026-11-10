@@ -222,7 +222,6 @@ export type Database = {
           longest_streak: number
           name: string
           onboarding_completed: boolean
-          preview_plan: string
           pro_source: string | null
           updated_at: string
           xp: number
@@ -237,7 +236,6 @@ export type Database = {
           longest_streak?: number
           name?: string
           onboarding_completed?: boolean
-          preview_plan?: string
           pro_source?: string | null
           updated_at?: string
           xp?: number
@@ -252,64 +250,9 @@ export type Database = {
           longest_streak?: number
           name?: string
           onboarding_completed?: boolean
-          preview_plan?: string
           pro_source?: string | null
           updated_at?: string
           xp?: number
-        }
-        Relationships: []
-      }
-      subscriptions: {
-        Row: {
-          amount_cents: number
-          cancel_at_period_end: boolean
-          created_at: string
-          currency: string
-          current_period_end: string | null
-          current_period_start: string | null
-          environment: string
-          id: string
-          paddle_customer_id: string
-          paddle_subscription_id: string
-          price_id: string
-          product_id: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount_cents?: number
-          cancel_at_period_end?: boolean
-          created_at?: string
-          currency?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          environment?: string
-          id?: string
-          paddle_customer_id: string
-          paddle_subscription_id: string
-          price_id: string
-          product_id: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount_cents?: number
-          cancel_at_period_end?: boolean
-          created_at?: string
-          currency?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          environment?: string
-          id?: string
-          paddle_customer_id?: string
-          paddle_subscription_id?: string
-          price_id?: string
-          product_id?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -340,42 +283,33 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
+      delete_account: { Args: never; Returns: undefined }
+      redeem_coupon: { Args: { p_code: string }; Returns: Json }
+      submit_advanced_attempt: {
+        Args: { p_is_correct: boolean; p_question_id: string; p_selected_index: number }
+        Returns: Json
+      }
+      submit_lesson: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
+          p_correct: number
+          p_duration_ms: number
+          p_level: number
+          p_total: number
+          p_track: string
         }
-        Returns: boolean
+        Returns: Json
+      }
+      submit_placement: {
+        Args: { p_per_skill: Json; p_total: number; p_total_correct: number }
+        Returns: Json
       }
     }
     Enums: {
-      app_role: "admin" | "user"
       skill_track:
         | "addition"
         | "subtraction"
@@ -509,7 +443,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
       skill_track: [
         "addition",
         "subtraction",

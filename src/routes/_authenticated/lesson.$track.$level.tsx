@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -15,8 +15,7 @@ import {
 } from "@/lib/curriculum";
 import { getLessonAccess, submitLesson } from "@/lib/curriculum.functions";
 import { Check, X, ArrowRight, RotateCcw, Lock, Crown, Share2 } from "lucide-react";
-import { UpgradeButton } from "@/components/UpgradeButton";
-import { AppOnly, answerHaptic, finishHaptic, isNativeApp, shareText, useIsNativeApp } from "@/lib/native";
+import { answerHaptic, finishHaptic, isNativeApp, shareText, useIsNativeApp } from "@/lib/native";
 import { NumericKeypad } from "@/components/native/NumericKeypad";
 import {
   CoachingReview,
@@ -83,7 +82,6 @@ function Locked({
   track: SkillTrack;
   level: number;
 }) {
-  const native = useIsNativeApp();
   const title =
     reason === "locked_pro"
       ? `Level ${level} is Pro-only`
@@ -92,14 +90,10 @@ function Locked({
       : `You've hit today's free lesson limit`;
   const body =
     reason === "locked_pro"
-      ? native
-        ? `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Pro accounts unlock the rest.`
-        : `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Upgrade to Pro to unlock the rest.`
+      ? `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Levels ${FREE_MAX_LEVEL + 1}–10 come with Pro, launching soon.`
       : reason === "locked_progression"
       ? `Pass the previous level (≥80%) to unlock Level ${level}.`
-      : native
-      ? `Free is capped at 3 lessons per day. Come back tomorrow for more.`
-      : `Free is capped at 3 lessons per day. Come back tomorrow or go Pro for unlimited training.`;
+      : `Free includes 3 lessons a day. Come back tomorrow to keep your streak going.`;
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
       <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
@@ -111,9 +105,6 @@ function Locked({
         <Link to="/dashboard" className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent">
           Back to curriculum
         </Link>
-        {reason === "locked_pro" || reason === "daily_limit" ? (
-          <UpgradeButton label="Upgrade to Pro" />
-        ) : null}
       </div>
     </div>
   );
@@ -371,8 +362,7 @@ function Results({
 
       <CoachingReview items={review} />
 
-      <AppOnly>
-        <button
+      <button
           onClick={() =>
             void shareText(
               "My Rapid Math score",
@@ -383,7 +373,6 @@ function Results({
         >
           <Share2 className="h-4 w-4" /> Share result
         </button>
-      </AppOnly>
 
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <button

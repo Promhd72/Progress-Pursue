@@ -1,62 +1,45 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { ArrowLeft, MailCheck } from "lucide-react";
 import { toast } from "sonner";
-import { AppOnly, WebOnly, isNativeApp } from "@/lib/native";
-import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { PrimaryButton } from "@/components/native/PrimaryButton";
+import { keyHaptic } from "@/lib/native";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
-  head: () => ({
-    meta: [
-      { title: "Sign in — Rapid Math" },
-      { name: "description", content: "Sign in to Rapid Math to track your mental math progress." },
-    ],
-  }),
   component: AuthPage,
 });
+
+type Mode = "signin" | "signup" | "code" | "verify" | "confirm-email";
+
+const inputClass =
+  "mt-1.5 w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
+  const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+      if (data.session) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function run(fn: () => Promise<void>) {
+    keyHaptic();
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { name: name || email.split("@")[0] },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created. Welcome!");
-        // New app users finish setup (reminders + placement) before the dashboard.
-        navigate({ to: isNativeApp() ? "/onboarding" : "/dashboard" });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate({ to: "/dashboard" });
-      }
+      await fn();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -64,143 +47,190 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+  const signUp = () =>
+    run(async () => {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name: name.trim() || email.split("@")[0] } },
       });
-      if (result.error) {
-        toast.error(result.error.message || "Google sign-in failed");
-        setLoading(false);
+      if (error) throw error;
+      if (!data.session) {
+        // Email confirmation is switched on in Supabase.
+        setMode("confirm-email");
         return;
       }
-      if (result.redirected) return;
-      navigate({ to: "/dashboard" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
-      setLoading(false);
-    }
-  }
+      navigate({ to: "/onboarding", replace: true });
+    });
+
+  const signIn = () =>
+    run(async () => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate({ to: "/dashboard", replace: true });
+    });
+
+  const sendCode = () =>
+    run(async () => {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+      setMode("verify");
+      toast.success("Code sent. Check your email.");
+    });
+
+  const verifyCode = () =>
+    run(async () => {
+      const { error } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: "email" });
+      if (error) throw error;
+      navigate({ to: "/dashboard", replace: true });
+    });
+
+  const titles: Record<Mode, [string, string]> = {
+    signin: ["Welcome back", "Sign in to continue your streak."],
+    signup: ["Create your account", "Free, and it saves your streak and progress."],
+    code: ["Sign in with a code", "We'll email you a 6-digit code. No password needed."],
+    verify: ["Enter your code", `Sent to ${email}.`],
+    "confirm-email": [
+      "Check your email",
+      `We sent a confirmation link to ${email}. Open it, then sign in here.`,
+    ],
+  };
+  const [title, subtitle] = titles[mode];
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppOnly>
-        <div className="pt-safe">
-          <div className="flex h-14 items-center px-3">
-            <Link
-              to="/welcome"
-              aria-label="Back"
-              className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground active:bg-muted"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </div>
-        </div>
-      </AppOnly>
-      <WebOnly>
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground font-display font-bold">R</div>
-          <span className="font-display text-lg font-semibold">Rapid Math</span>
+    <div className="pt-safe flex min-h-[100dvh] flex-col bg-background">
+      <div className="flex h-14 items-center px-3">
+        <Link
+          to="/welcome"
+          aria-label="Back"
+          className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground active:bg-muted"
+        >
+          <ArrowLeft className="h-5 w-5" />
         </Link>
-      </header>
-      </WebOnly>
+      </div>
 
-      <main className="mx-auto max-w-md px-6 pb-16">
-        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <h1 className="font-display text-2xl font-semibold">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
-          </h1>
-          <p className="mb-6 mt-1 text-sm text-muted-foreground">
-            {mode === "signup"
-              ? "Start training mental math in under 60 seconds."
-              : "Sign in to continue your streak."}
-          </p>
+      <main className="flex flex-1 flex-col px-6">
+        {mode === "confirm-email" && (
+          <span className="mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <MailCheck className="h-7 w-7" />
+          </span>
+        )}
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{title}</h1>
+        <p className="mt-2 text-muted-foreground">{subtitle}</p>
 
-          <WebOnly>
-          <button
-            onClick={handleGoogle}
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium hover:bg-accent disabled:opacity-50"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
-
-          <div className="relative my-6 flex items-center">
-            <div className="flex-1 border-t border-border" />
-            <span className="px-3 text-xs text-muted-foreground">or with email</span>
-            <div className="flex-1 border-t border-border" />
-          </div>
-          </WebOnly>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "signup" && (
-              <div>
-                <label className="text-sm font-medium">Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="Your name"
-                />
-              </div>
-            )}
-            <div>
-              <label className="text-sm font-medium">Email</label>
+        <form
+          className="mt-8 space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (mode === "signup") void signUp();
+            else if (mode === "signin") void signIn();
+            else if (mode === "code") void sendCode();
+            else if (mode === "verify") void verifyCode();
+            else setMode("signin");
+          }}
+        >
+          {mode === "signup" && (
+            <label className="block text-sm font-medium">
+              Name
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={inputClass}
+                placeholder="Your name"
+                autoComplete="name"
+              />
+            </label>
+          )}
+          {(mode === "signin" || mode === "signup" || mode === "code") && (
+            <label className="block text-sm font-medium">
+              Email
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className={inputClass}
                 placeholder="you@work.com"
+                autoComplete="email"
+                autoCapitalize="none"
+                inputMode="email"
               />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Password</label>
+            </label>
+          )}
+          {(mode === "signin" || mode === "signup") && (
+            <label className="block text-sm font-medium">
+              Password
               <input
                 type="password"
                 required
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className={inputClass}
                 placeholder="At least 6 characters"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
               />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {loading ? "Working…" : mode === "signup" ? "Create account" : "Sign in"}
-            </button>
-          </form>
+            </label>
+          )}
+          {mode === "verify" && (
+            <label className="block text-sm font-medium">
+              6-digit code
+              <input
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className={`${inputClass} text-center font-display text-2xl tracking-[0.4em]`}
+                placeholder="••••••"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+              />
+            </label>
+          )}
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? "Already have an account?" : "New to Rapid Math?"}{" "}
-            <button
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-              className="font-medium text-primary hover:underline"
-            >
-              {mode === "signup" ? "Sign in" : "Create one"}
+          <div className="pt-2">
+            <PrimaryButton disabled={loading} onClick={() => {}} type="submit">
+              {loading
+                ? "Working…"
+                : mode === "signup"
+                  ? "Create account"
+                  : mode === "signin"
+                    ? "Sign in"
+                    : mode === "code"
+                      ? "Email me a code"
+                      : mode === "verify"
+                        ? "Sign in"
+                        : "Back to sign in"}
+            </PrimaryButton>
+          </div>
+        </form>
+
+        <div className="mt-6 space-y-3 text-center text-sm">
+          {mode === "signin" && (
+            <button onClick={() => setMode("code")} className="font-medium text-primary">
+              Forgot password? Sign in with an email code
             </button>
-          </p>
+          )}
+          {(mode === "code" || mode === "verify") && (
+            <button onClick={() => setMode("signin")} className="font-medium text-primary">
+              Use my password instead
+            </button>
+          )}
+          {(mode === "signin" || mode === "signup") && (
+            <p className="text-muted-foreground">
+              {mode === "signup" ? "Already have an account?" : "New to Rapid Math?"}{" "}
+              <button
+                onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+                className="font-medium text-primary"
+              >
+                {mode === "signup" ? "Sign in" : "Create one"}
+              </button>
+            </p>
+          )}
         </div>
       </main>
     </div>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z" />
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.99.66-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-      <path fill="#FBBC05" d="M5.84 14.12A6.99 6.99 0 0 1 5.47 12c0-.74.13-1.45.36-2.12V7.04H2.18A11 11 0 0 0 1 12c0 1.77.43 3.45 1.18 4.96l3.66-2.84z" />
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.04l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
-    </svg>
   );
 }

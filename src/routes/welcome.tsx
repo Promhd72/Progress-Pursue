@@ -14,7 +14,6 @@ import { keyHaptic } from "@/lib/native";
 import { PrimaryButton } from "@/components/native/PrimaryButton";
 
 export const Route = createFileRoute("/welcome")({
-  ssr: false,
   head: () => ({ meta: [{ title: "Welcome to Rapid Math" }] }),
   component: Welcome,
 });

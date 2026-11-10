@@ -1,6 +1,5 @@
-import { createServerFn } from "@tanstack/react-start";
+import { serverFn, rpc } from "./api";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resolveIsPro } from "./plan";
 import { ADVANCED_QUESTIONS, toPublic, type PublicAdvancedQuestion } from "./advanced-questions";
 import { ADVANCED_DOMAINS, type AdvancedDomain } from "./advanced-domains";
@@ -37,8 +36,7 @@ const AccessSchema = z.object({
   domain: z.enum(ADVANCED_DOMAINS).nullish(),
 });
 
-export const getAdvancedAccess = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+export const getAdvancedAccess = serverFn()
   .inputValidator((d: unknown) => AccessSchema.parse(d ?? {}))
   .handler(async ({ data, context }): Promise<AdvancedAccess> => {
     const domain = (data?.domain ?? null) as AdvancedDomain | null;
@@ -46,7 +44,7 @@ export const getAdvancedAccess = createServerFn({ method: "GET" })
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_pro, preview_plan")
+      .select("is_pro")
       .eq("id", userId)
       .maybeSingle();
     const isPro = resolveIsPro(profile);
@@ -99,59 +97,27 @@ export type AdvancedAnswerResult = {
   isPro: boolean;
 };
 
-export const submitAdvancedAnswer = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+export const submitAdvancedAnswer = serverFn()
   .inputValidator((d: unknown) => SubmitSchema.parse(d))
-  .handler(async ({ data, context }): Promise<AdvancedAnswerResult> => {
-    const { supabase, userId } = context;
+  .handler(async ({ data }): Promise<AdvancedAnswerResult> => {
     const q = ADVANCED_QUESTIONS.find((x) => x.id === data.questionId);
     if (!q) throw new Error("Unknown question");
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_pro, preview_plan, xp")
-      .eq("id", userId)
-      .maybeSingle();
-    const isPro = resolveIsPro(profile);
-
-    // Re-check daily limit BEFORE recording, so the cap can't be bypassed.
-    const { data: todays } = await supabase
-      .from("advanced_attempts")
-      .select("id")
-      .eq("user_id", userId)
-      .gte("created_at", startOfUtcDayIso());
-    const usedToday = todays?.length ?? 0;
-    if (!isPro && usedToday >= FREE_DAILY_LIMIT) {
-      throw new Error("Daily Advanced limit reached. Upgrade to Pro for unlimited.");
-    }
-
     const isCorrect = data.selectedIndex === q.correctIndex;
 
-    const { error: insErr } = await supabase.from("advanced_attempts").insert({
-      user_id: userId,
-      question_id: q.id,
-      selected_index: data.selectedIndex,
-      is_correct: isCorrect,
-    });
-    if (insErr) throw new Error(insErr.message);
+    // The database enforces the daily cap and awards XP.
+    const res = await rpc<{ isPro: boolean; remainingToday: number | null }>(
+      "submit_advanced_attempt",
+      { p_question_id: q.id, p_selected_index: data.selectedIndex, p_is_correct: isCorrect },
+    );
 
-    // Reward XP for correct answers (advanced = harder, multiplier 4)
-    if (isCorrect) {
-      await supabase
-        .from("profiles")
-        .update({ xp: (profile?.xp ?? 0) + 8 })
-        .eq("id", userId);
-    }
-
-    const newUsed = usedToday + 1;
     return {
       correct: isCorrect,
       correctIndex: q.correctIndex,
       explanation: q.explanation,
       steps: q.steps,
       technique: q.technique,
-      remainingToday: isPro ? null : Math.max(0, FREE_DAILY_LIMIT - newUsed),
-      isPro,
+      remainingToday: res.remainingToday,
+      isPro: res.isPro,
     };
   });
 
@@ -170,8 +136,7 @@ export type AdvancedProgress = {
   overall: Omit<AdvancedDomainProgress, "domain">;
 };
 
-export const getAdvancedProgress = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+export const getAdvancedProgress = serverFn()
   .handler(async ({ context }): Promise<AdvancedProgress> => {
     const { supabase, userId } = context;
 

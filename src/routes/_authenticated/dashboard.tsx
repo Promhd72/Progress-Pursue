@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api";
 import { getProfile } from "@/lib/rapid-math.functions";
-import { UpgradeButton } from "@/components/UpgradeButton";
-import { AppOnly, WebOnly } from "@/lib/native";
 import { DailyGoalCard } from "@/components/native/DailyGoalCard";
 import { getCurriculumOverview, getRecentLessons, getTrackSpeedStats, type TrackSpeedStat } from "@/lib/curriculum.functions";
 import {
@@ -109,8 +107,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <AppOnly>
-        <DailyGoalCard
+      <DailyGoalCard
           lessonsToday={overview.lessonsUsedToday}
           streak={profile.current_streak}
           nextHref={
@@ -120,7 +117,6 @@ function Dashboard() {
               : null
           }
         />
-      </AppOnly>
 
       {/* Stat strip */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -241,11 +237,6 @@ function Dashboard() {
         </div>
       </section>
 
-      {!overview.isPro && (
-        <WebOnly>
-          <ProTeaser />
-        </WebOnly>
-      )}
     </div>
   );
 }
@@ -550,28 +541,6 @@ function TrackCard({
             <Lock className="h-4 w-4" /> Pro unlocks L{FREE_MAX_LEVEL + 1}–L{MAX_LEVEL}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function ProTeaser() {
-  return (
-    <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-6 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-            <Crown className="h-3 w-3" /> You're on Free
-          </div>
-          <h3 className="mt-3 font-display text-xl font-semibold">
-            Unlock Levels {FREE_MAX_LEVEL + 1}–{MAX_LEVEL} on every track
-          </h3>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Free covers Levels 1–{FREE_MAX_LEVEL} on all five tracks, capped at 3 lessons a day.
-            Pro removes both caps and unlocks the full ladder.
-          </p>
-        </div>
-        <UpgradeButton label="Upgrade to Pro — $10/mo" className="px-5 py-3" />
       </div>
     </div>
   );

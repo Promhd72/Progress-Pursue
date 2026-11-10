@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { deleteAccount, getProfile, redeemCoupon } from "@/lib/rapid-math.functions";
+import { useServerFn } from "@/lib/api";
+import { deleteAccount, getProfile } from "@/lib/rapid-math.functions";
 import { getCurriculumOverview } from "@/lib/curriculum.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { levelForXp } from "@/lib/drill-engine";
@@ -9,8 +9,7 @@ import { TRACKS, TRACK_LABELS, MAX_LEVEL } from "@/lib/curriculum";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Crown, Ticket, Sparkles, ArrowRight } from "lucide-react";
-import { UpgradeButton } from "@/components/UpgradeButton";
-import { AppOnly, WebOnly, trainedTodayFrom } from "@/lib/native";
+import { trainedTodayFrom } from "@/lib/native";
 import { ReminderSettings } from "@/components/native/ReminderSettings";
 import { resolveIsPro } from "@/lib/plan";
 import {
@@ -47,7 +46,7 @@ function ProfilePage() {
 
   if (isLoading || !data) return <div className="text-muted-foreground">Loading…</div>;
   const lvl = levelForXp(data.xp);
-  const isPro = resolveIsPro(data as { is_pro?: boolean; preview_plan?: string });
+  const isPro = resolveIsPro(data);
   const tracks = overviewQ.data?.tracks ?? [];
 
   async function save() {
@@ -127,9 +126,7 @@ function ProfilePage() {
         </div>
       </div>
 
-      <AppOnly>
-        <ReminderSettings trainedToday={trainedTodayFrom(data.last_active_date)} />
-      </AppOnly>
+      <ReminderSettings trainedToday={trainedTodayFrom(data.last_active_date)} />
 
       {/* Curriculum summary */}
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
@@ -158,23 +155,6 @@ function ProfilePage() {
           })}
         </div>
       </div>
-
-      {/* Upgrade — only for free users */}
-      {!isPro && (
-        <WebOnly>
-        <div className="rounded-2xl border-2 border-primary/40 bg-card p-6 shadow-sm">
-          <h2 className="font-display text-lg font-semibold">Go Pro</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            $10/month. All 10 levels on every track, unlimited lessons and unlimited
-            Advanced scenarios. Cancel anytime.
-          </p>
-          <UpgradeButton label="Upgrade to Pro — $10/mo" className="mt-4 px-5 py-2.5" />
-        </div>
-        </WebOnly>
-      )}
-
-      {/* Coupon redemption — only for free users */}
-      {!isPro && <CouponCard />}
 
       <DeleteAccountCard />
     </div>
@@ -241,72 +221,6 @@ function DeleteAccountCard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
-}
-
-function CouponCard() {
-  const redeemFn = useServerFn(redeemCoupon);
-  const qc = useQueryClient();
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function onRedeem(e: React.FormEvent) {
-    e.preventDefault();
-    if (!code.trim()) return;
-    setLoading(true);
-    try {
-      const res = await redeemFn({ data: { code } });
-      if (res.ok) {
-        toast.success(res.message);
-        setCode("");
-        qc.invalidateQueries({ queryKey: ["profile"] });
-        qc.invalidateQueries({ queryKey: ["curriculum"] });
-      } else {
-        toast.error(res.message);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't redeem code");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-      <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        <Ticket className="h-3.5 w-3.5 text-primary" /> Have a coupon?
-      </label>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Got a Pro coupon? Enter it here to unlock unlimited lessons and the full curriculum.
-      </p>
-      <form onSubmit={onRedeem} className="mt-3 flex gap-2">
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm tracking-wide outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Enter code"
-        />
-        <button
-          type="submit"
-          disabled={loading || !code.trim()}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
-          {loading ? "…" : "Redeem"}
-        </button>
-      </form>
-      <WebOnly>
-      <Link
-        to="/"
-        hash="pricing"
-        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-      >
-        Or see Pro pricing <ArrowRight className="h-3 w-3" />
-      </Link>
-      </WebOnly>
     </div>
   );
 }

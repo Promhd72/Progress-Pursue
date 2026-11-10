@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api";
 import { Bell, Gauge } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getProfile } from "@/lib/rapid-math.functions";
 import { getCurriculumOverview } from "@/lib/curriculum.functions";
 import { getOnboarding, saveOnboarding, focusTrackFor, dailyTargetFor } from "@/lib/onboarding";
-import { getReminderPrefs, isNativeApp, keyHaptic, updateReminderPrefs } from "@/lib/native";
+import { getReminderPrefs, keyHaptic, updateReminderPrefs } from "@/lib/native";
 import { PrimaryButton } from "@/components/native/PrimaryButton";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -29,10 +29,7 @@ function Onboarding() {
   const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: () => profileFn() });
   const { data: overview } = useQuery({ queryKey: ["curriculum"], queryFn: () => overviewFn() });
 
-  // Reminders only make sense in the app; on the web, start at the placement step.
-  const [step, setStep] = useState<"reminder" | "level">(() =>
-    isNativeApp() ? "reminder" : "level",
-  );
+  const [step, setStep] = useState<"reminder" | "level">("reminder");
   const [time, setTime] = useState(() => {
     const p = getReminderPrefs();
     return TIMES.findIndex((t) => t.hour === p.hour) >= 0

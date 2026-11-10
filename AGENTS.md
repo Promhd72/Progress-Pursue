@@ -1,10 +1,11 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Rapid Math
+
+iPhone app for daily mental math training. React + TanStack Router, built with Vite
+into `dist/` and packaged with Capacitor (`ios/`). Backend is Supabase.
+
+- `npm run dev`: run the app in a browser at http://127.0.0.1:5173
+- `npm run build`: build `dist/`
+- `npm run ios:sync`: build and copy into the Xcode project
+- Database schema and rules: `supabase/migrations/`. Scores, XP, streaks and Pro are only
+  written through the SQL functions there; the app has read-only table access.
+- Setup and release steps: `MOBILE.md`

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 
 /**
@@ -17,31 +17,11 @@ export function isNativeApp(): boolean {
 }
 
 /**
- * React-safe version: always false on the server and on the first client
- * render (so SSR markup hydrates cleanly), then flips to true inside the app.
+ * The UI is always the app UI now (the web version is gone). Kept as a hook so
+ * screens can still branch if a future web build needs to.
  */
 export function useIsNativeApp(): boolean {
-  const [native, setNative] = useState(false);
-  useEffect(() => {
-    setNative(isNativeApp());
-  }, []);
-  return native;
-}
-
-/**
- * Renders children only on the website. Used for purchase / pricing UI, which
- * App Store rules (guideline 3.1.1) don't allow in the iOS app unless it goes
- * through Apple In-App Purchase.
- */
-export function WebOnly({ children }: { children: ReactNode }) {
-  const native = useIsNativeApp();
-  return native ? null : <>{children}</>;
-}
-
-/** Renders children only inside the iOS app. */
-export function AppOnly({ children }: { children: ReactNode }) {
-  const native = useIsNativeApp();
-  return native ? <>{children}</> : null;
+  return true;
 }
 
 /* ------------------------------------------------------------------ */

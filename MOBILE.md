@@ -1,133 +1,108 @@
 # Rapid Math iPhone app
 
-The iPhone app is a native shell (Capacitor) around the live Lovable site.
-When you publish in Lovable, the app updates on its own. You only resubmit to
-the App Store when something native changes (icon, name, plugins, iOS settings).
-
-## What's in this repo
+A standalone iPhone app. The screens are built into the app itself (React + Capacitor),
+and the backend is your own Supabase project. Nothing depends on Lovable or a website.
 
 | Path | What it is |
 | --- | --- |
-| `capacitor.config.ts` | App name, Bundle ID, the URL the app loads, splash and status bar settings |
-| `ios/` | The Xcode project. Open this on a Mac to build |
-| `mobile/www/` | Fallback pages bundled in the app (loading + "You're offline") |
-| `src/lib/native.tsx` | Helpers that only activate inside the app: haptics, status bar, `WebOnly` |
+| `src/` | The app: screens, onboarding, keypad, reminders |
+| `supabase/migrations/` | Full database schema and rules. Run once on a new project |
+| `ios/` | The Xcode project |
+| `site/` | Landing page + privacy policy (Apple requires a privacy policy URL) |
+| `capacitor.config.ts` | App name, Bundle ID, splash and status bar settings |
 
-## How the app differs from the website
+## 1. Create your Supabase project (10 minutes, free)
 
-Everything below only switches on inside the iOS app (`src/lib/native.tsx` detects it).
-The website is unchanged apart from account deletion and the logo fix.
-
-**Feels like an app, not a website** (App Store guideline 4.2)
-- Bottom tab bar (Train, Advanced, History, Profile) and an iOS-style title bar with
-  your streak, replacing the web header.
-- Lessons and the placement test are full-screen with a close button and a custom
-  number keypad. The iPhone's number keyboard has no return key, so answers could not
-  be submitted before.
-- Haptics on keypad taps, right/wrong answers, tab switches and finishing a lesson.
-- No pinch zoom, no input zoom, no text selection or link previews, no rubber-band
-  bounce. Splash screen stays up until the first screen has rendered.
-- Offline banner, plus a native offline screen if the app can't load at all.
-- Share sheet for lesson results.
-- Coming back to the app refreshes streak and stats.
-
-**Onboarding** (signed-out users never see the marketing site)
-1. Welcome: value proposition.
-2. Goal: meetings, interviews, everyday money maths (VAT, discounts) or brain training.
-3. Daily goal: 3, 5 or 10 minutes (1 to 3 lessons, all achievable on Free).
-4. "Your plan is ready" summary, then account creation.
-5. Reminder time (morning, lunch, evening) and the iOS notification prompt.
-6. 2-minute placement test, then the dashboard.
-
-Existing users opening the app for the first time get steps 5 and 6 only (placement is
-skipped if they already did it).
-
-**Retention hooks**
-- Daily goal ring on the Train tab with a one-tap "Start today's lesson".
-- Local streak reminders, skipped on days the user already trained. Time and daily goal
-  are editable in Profile.
-
-**App Store compliance**
-- Purchase UI, pricing and "$10/mo" copy hidden (guideline 3.1.1). Existing Pro users
-  keep Pro.
-- Google sign-in hidden (Google blocks it in embedded web views; offering it would also
-  require Sign in with Apple, guideline 4.8).
-- Account deletion in Profile (guideline 5.1.1(v)). Cancels any active Paddle
-  subscription first. Applies on the website too.
-
-Goal and daily target are stored on the device, not in Supabase, so they don't sync
-across devices yet.
-
-## Step 0: test on your Mac before publishing
-
-This runs a local copy of the site on your Mac and points the app at it, so you can try
-everything in the iPhone Simulator without touching the live site.
-
-1. Install Xcode (Mac App Store) and Node.js 20+ (nodejs.org).
-2. Create a file called `.env.local` in the project folder with your Supabase details
-   (Lovable > Cloud > Settings shows them; the publishable key is the public one):
+1. Sign up at supabase.com and create a project. Pick the region closest to your
+   users (for the UAE, Frankfurt or Mumbai).
+2. **Create the database:** open **SQL Editor**, paste the whole of
+   `supabase/migrations/20261110000000_rapidmath_init.sql`, and run it.
+3. **Auth settings** (Authentication > Sign In / Providers > Email):
+   - Turn **off** "Confirm email" for launch. The app handles it if you leave it on,
+     but users then have to leave the app to click a link before they can sign in.
+4. **Email code for "Forgot password"** (Authentication > Emails > Magic Link): make
+   sure the template contains `{{ .Token }}` so users receive a 6-digit code, e.g.
+   `Your Rapid Math sign-in code is {{ .Token }}`.
+5. **Keys:** Settings > API. Copy the Project URL and the publishable (anon) key into a
+   file called `.env` in the project folder (see `.env.example`):
    ```
-   VITE_SUPABASE_URL=https://yhvucchhvqrudfcujqoy.supabase.co
-   VITE_SUPABASE_PUBLISHABLE_KEY=<publishable / anon key>
-   SUPABASE_URL=https://yhvucchhvqrudfcujqoy.supabase.co
-   SUPABASE_PUBLISHABLE_KEY=<same key>
+   VITE_SUPABASE_URL=https://xxxx.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=...
    ```
-3. In one Terminal window: `npm install` then `npm run dev:mac` (leave it running).
-4. In a second window: `npm run ios:dev`. Xcode opens; pick an iPhone simulator and press Run.
+   The publishable key is safe to ship in the app. Never put the `service_role` key in
+   the app.
 
-It uses your real database, so sign up with a test email. Two things won't work locally
-because they need secret server keys that only Lovable has: coupon redemption and
-account deletion. Test those after publishing.
+## 2. Run it on your Mac
 
-Before building for TestFlight or the App Store, run `npm run ios:sync` to point the app
-back at the live site.
-
-## Step 1: get the web changes live
-
-The app loads `https://rapidmath.lovable.app`, so the `src/` changes above have to be
-published from Lovable before they show up in the app:
-
-1. In Lovable, connect the project to this GitHub repo (or copy the changed files in).
-2. Publish.
-
-## Step 2: build on a Mac
-
-You need a Mac with Xcode (free from the Mac App Store), plus Node 20+.
+You need Xcode (Mac App Store) and Node.js 20+ (nodejs.org).
 
 ```bash
 npm install
-npm run ios:sync     # copies config + plugins into the Xcode project
+npm run dev          # optional: try it in a browser at http://127.0.0.1:5173
+npm run ios:sync     # builds the app and copies it into Xcode
 npm run ios:open     # opens Xcode
 ```
 
-In Xcode:
+In Xcode: select the **App** target > **Signing & Capabilities** > pick your Team, choose
+an iPhone simulator (or plug in your iPhone) and press Run.
 
-1. Select the **App** target > **Signing & Capabilities** > pick your Team.
-2. If `app.rapidmath.ios` is taken, change the Bundle ID here **and** in
-   `capacitor.config.ts`, then run `npm run ios:sync` again.
-3. Plug in your iPhone (or pick a simulator) and press Run.
+Live reload while you work: run `npm run dev` in one Terminal and `npm run ios:dev` in
+another; the simulator then loads from your Mac and updates as you edit. Run
+`npm run ios:sync` again before building for TestFlight.
 
-No Mac? Cloud build services like Codemagic or Ionic Appflow can build and upload
-this project for you.
+Bundle ID is `app.rapidmath.ios`. If you want a different one, change it in
+`capacitor.config.ts` and in Xcode before your first upload. It's permanent once live.
 
-## Step 3: ship to the App Store
+## 3. Ship to the App Store
 
-1. Join the Apple Developer Program: USD 99/year (about AED 365). Enroll as an
-   organisation if you want the company name on the listing (needs a D-U-N-S number).
-2. In App Store Connect, create the app with the same Bundle ID.
-3. In Xcode: **Product > Archive > Distribute App > App Store Connect**.
-4. Test it through TestFlight first.
-5. Fill in the listing: screenshots (6.9" iPhone), description, privacy policy URL,
-   support URL, and the App Privacy questionnaire (you collect email, name and usage
-   data).
-6. Give the reviewer a **demo account** (email + password) in the review notes.
+1. Apple Developer Program: USD 99/year (about AED 365). Enroll as an organisation if
+   you want the company name on the listing (needs a D-U-N-S number).
+2. Host the `site/` folder anywhere free (GitHub Pages, Netlify drop, Cloudflare Pages)
+   and replace `support@example.com` with your support email. You'll use
+   `.../privacy.html` as the privacy policy URL and `.../index.html` as the support URL.
+3. App Store Connect: create the app with the same Bundle ID. Fill in screenshots
+   (6.9" iPhone), description, privacy policy URL, support URL, and App Privacy
+   (email, name, and app usage data; linked to the user; not used for tracking).
+4. Xcode: **Product > Archive > Distribute App > App Store Connect**, then test via
+   TestFlight.
+5. In the review notes, give Apple a **demo account** (email + password).
 
-## Review risks to know about
+## How it works
 
-- **Guideline 4.2 (minimum functionality).** Apple sometimes rejects apps that are
-  "just a website". The native navigation, keypad, onboarding, reminders, haptics and
-  share sheet are there to address this. If it still gets rejected, the next step is a
-  home screen widget showing the streak and daily goal.
-- **Selling Pro inside the app** later means adding Apple In-App Purchase (RevenueCat
-  makes this easier) and letting the existing `profiles.is_pro` flag be set from it.
-  Apple takes 15% under the Small Business Program (under USD 1M/year).
+**Onboarding:** Welcome > goal > daily goal (1 to 3 lessons, all doable on Free) > plan
+summary > create account > reminder time > 2-minute placement test > Train tab.
+
+**Daily loop:** goal ring + "Start today's lesson" on the Train tab, full-screen lessons
+with an on-screen keypad, haptics, results with a share button, streak in the title bar,
+local reminders that skip days you've trained.
+
+**Free plan:** Levels 1 to 2 on all five tracks, 3 lessons and 3 Advanced scenarios per day.
+
+**Security:** the app can only read the user's own data. Lessons, placement, Advanced
+answers, XP, streaks, levels and Pro status are written only by the database functions
+in the migration, which enforce the daily limits, Pro-only levels and level progression.
+
+**Account deletion:** Profile > Delete account removes the user and all their data
+(App Store guideline 5.1.1(v)).
+
+## Pro
+
+Pro unlocks Levels 3 to 10 and removes the daily caps. There's no way to buy it yet; the
+app says Pro is "launching soon". To give Pro to a tester, run in the SQL Editor:
+
+```sql
+update public.profiles set is_pro = true, pro_source = 'manual'
+where email = 'tester@example.com';
+```
+
+When you're ready to sell it, add Apple In-App Purchase (RevenueCat makes this simpler)
+and have its webhook set `is_pro`. Apple takes 15% under the Small Business Program.
+In-app coupon codes aren't offered because Apple's guideline 3.1.1 doesn't allow
+unlocking features with your own codes; the `redeem_coupon` database function is kept
+in case you add a web sign-up later.
+
+## Known gaps
+
+- Goal and daily target are saved on the device, not synced across devices.
+- Reminders are local; server push (for campaigns) would need APNs setup.
+- No "change password" screen yet; users can sign in with an email code instead.

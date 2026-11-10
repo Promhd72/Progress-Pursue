@@ -1,15 +1,11 @@
-import { createServerFn } from "@tanstack/react-start";
+import { serverFn, rpc } from "./api";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resolveIsPro } from "./plan";
 import {
   TRACKS,
   MAX_LEVEL,
   FREE_MAX_LEVEL,
   FREE_DAILY_LESSONS,
-  PASS_THRESHOLD,
-  placementToLevel,
-  xpForLesson,
   type SkillTrack,
 } from "./curriculum";
 
@@ -17,12 +13,6 @@ function startOfUtcDayIso(): string {
   const d = new Date();
   d.setUTCHours(0, 0, 0, 0);
   return d.toISOString();
-}
-
-function daysBetween(a: string, b: string): number {
-  const da = new Date(a + "T00:00:00Z").getTime();
-  const db = new Date(b + "T00:00:00Z").getTime();
-  return Math.round((db - da) / 86_400_000);
 }
 
 export type TrackProgressRow = {
@@ -40,13 +30,12 @@ export type CurriculumOverview = {
   recommended: { track: SkillTrack; level: number } | null;
 };
 
-export const getCurriculumOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+export const getCurriculumOverview = serverFn()
   .handler(async ({ context }): Promise<CurriculumOverview> => {
     const { supabase, userId } = context;
 
     const [profileRes, placementRes, progressRes, todayRes] = await Promise.all([
-      supabase.from("profiles").select("is_pro, preview_plan").eq("id", userId).maybeSingle(),
+      supabase.from("profiles").select("is_pro").eq("id", userId).maybeSingle(),
       supabase
         .from("placement_results")
         .select("id")
@@ -108,8 +97,7 @@ export type LessonAttemptRow = {
   created_at: string;
 };
 
-export const getRecentLessons = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+export const getRecentLessons = serverFn()
   .inputValidator((d: { limit?: number } | undefined) => ({ limit: Math.min(d?.limit ?? 10, 200) }))
   .handler(async ({ data, context }): Promise<LessonAttemptRow[]> => {
     const { supabase, userId } = context;
@@ -136,51 +124,15 @@ export type SubmitPlacementResult = {
   startingLevels: Record<SkillTrack, number>;
 };
 
-export const submitPlacement = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+export const submitPlacement = serverFn()
   .inputValidator((d: unknown) => PlacementSchema.parse(d))
-  .handler(async ({ data, context }): Promise<SubmitPlacementResult> => {
-    const { supabase, userId } = context;
-
-    const startingLevels = {} as Record<SkillTrack, number>;
-    for (const track of TRACKS) {
-      const entry = data.perSkill[track];
-      const lvl = entry ? placementToLevel(entry.score, entry.max) : 1;
-      startingLevels[track] = lvl;
-    }
-
-    const { error: insErr } = await supabase.from("placement_results").insert({
-      user_id: userId,
-      score: data.totalCorrect,
-      total: data.total,
-      per_skill: data.perSkill,
-    });
-    if (insErr) throw new Error(insErr.message);
-
-    // Upsert track_progress for each track. current_level = max(existing, placement).
-    const { data: existing } = await supabase
-      .from("track_progress")
-      .select("track, current_level")
-      .eq("user_id", userId);
-    const existingMap = new Map<string, number>(
-      (existing ?? []).map((r) => [r.track, r.current_level]),
-    );
-
-    for (const track of TRACKS) {
-      const placed = startingLevels[track];
-      const current = existingMap.get(track) ?? 1;
-      const next = Math.max(current, placed);
-      const { error } = await supabase
-        .from("track_progress")
-        .upsert(
-          { user_id: userId, track, current_level: next },
-          { onConflict: "user_id,track" },
-        );
-      if (error) throw new Error(error.message);
-    }
-
-    return { startingLevels };
-  });
+  .handler(async ({ data }): Promise<SubmitPlacementResult> =>
+    rpc<SubmitPlacementResult>("submit_placement", {
+      p_per_skill: data.perSkill,
+      p_total_correct: data.totalCorrect,
+      p_total: data.total,
+    }),
+  );
 
 const LessonAccessSchema = z.object({
   track: z.enum(["addition", "subtraction", "multiplication", "division", "percentage"]),
@@ -196,14 +148,13 @@ export type LessonAccess = {
   currentLevel: number;
 };
 
-export const getLessonAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+export const getLessonAccess = serverFn()
   .inputValidator((d: unknown) => LessonAccessSchema.parse(d))
   .handler(async ({ data, context }): Promise<LessonAccess> => {
     const { supabase, userId } = context;
 
     const [profileRes, progressRes, todayRes] = await Promise.all([
-      supabase.from("profiles").select("is_pro, preview_plan").eq("id", userId).maybeSingle(),
+      supabase.from("profiles").select("is_pro").eq("id", userId).maybeSingle(),
       supabase
         .from("track_progress")
         .select("current_level")
@@ -249,104 +200,17 @@ export type SubmitLessonResult = {
   newHighestPassed: number;
 };
 
-export const submitLesson = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+export const submitLesson = serverFn()
   .inputValidator((d: unknown) => SubmitLessonSchema.parse(d))
-  .handler(async ({ data, context }): Promise<SubmitLessonResult> => {
-    const { supabase, userId } = context;
-
-    // Re-check daily limit & pro gate before recording (defense in depth)
-    const [profileRes, todayRes, progressRes] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("is_pro, preview_plan, xp, current_streak, longest_streak, last_active_date")
-        .eq("id", userId)
-        .single(),
-      supabase
-        .from("lesson_attempts")
-        .select("id")
-        .eq("user_id", userId)
-        .gte("created_at", startOfUtcDayIso()),
-      supabase
-        .from("track_progress")
-        .select("current_level, highest_level_passed")
-        .eq("user_id", userId)
-        .eq("track", data.track)
-        .maybeSingle(),
-    ]);
-    const profile = profileRes.data!;
-    const isPro = resolveIsPro(profile);
-    const usedToday = todayRes.data?.length ?? 0;
-    if (!isPro && usedToday >= FREE_DAILY_LESSONS) {
-      throw new Error("Daily lesson limit reached. Upgrade to Pro for unlimited.");
-    }
-    if (!isPro && data.level > FREE_MAX_LEVEL) {
-      throw new Error("This level is Pro-only.");
-    }
-
-    const passed = data.correct / data.total >= PASS_THRESHOLD;
-    const xp = xpForLesson(data.correct, data.level);
-
-    const { error: insErr } = await supabase.from("lesson_attempts").insert({
-      user_id: userId,
-      track: data.track,
-      level: data.level,
-      correct: data.correct,
-      total: data.total,
-      passed,
-      duration_ms: data.durationMs,
-      xp_earned: xp,
-    });
-    if (insErr) throw new Error(insErr.message);
-
-    // Advance track progress
-    const currentLevel = progressRes.data?.current_level ?? 1;
-    const highest = progressRes.data?.highest_level_passed ?? 0;
-    const newHighest = passed && data.level > highest ? data.level : highest;
-    const newCurrent = passed && data.level === currentLevel && currentLevel < MAX_LEVEL
-      ? currentLevel + 1
-      : currentLevel;
-
-    const { error: upErr } = await supabase
-      .from("track_progress")
-      .upsert(
-        {
-          user_id: userId,
-          track: data.track,
-          current_level: newCurrent,
-          highest_level_passed: newHighest,
-        },
-        { onConflict: "user_id,track" },
-      );
-    if (upErr) throw new Error(upErr.message);
-
-    // Update profile XP + streak
-    const todayUtc = new Date().toISOString().slice(0, 10);
-    let current = profile.current_streak ?? 0;
-    let longest = profile.longest_streak ?? 0;
-    const last = profile.last_active_date as string | null;
-    if (!last) current = 1;
-    else {
-      const gap = daysBetween(last, todayUtc);
-      if (gap === 0) current = Math.max(current, 1);
-      else if (gap === 1) current = current + 1;
-      else current = 1;
-    }
-    if (current > longest) longest = current;
-
-    const { error: pErr } = await supabase
-      .from("profiles")
-      .update({
-        xp: (profile.xp ?? 0) + xp,
-        current_streak: current,
-        longest_streak: longest,
-        last_active_date: todayUtc,
-      })
-      .eq("id", userId);
-    if (pErr) throw new Error(pErr.message);
-
-    return { passed, xpEarned: xp, newCurrentLevel: newCurrent, newHighestPassed: newHighest };
-  });
+  .handler(async ({ data }): Promise<SubmitLessonResult> =>
+    rpc<SubmitLessonResult>("submit_lesson", {
+      p_track: data.track,
+      p_level: data.level,
+      p_correct: data.correct,
+      p_total: data.total,
+      p_duration_ms: data.durationMs,
+    }),
+  );
 
 export type TrackSpeedStat = {
   track: SkillTrack;
@@ -361,8 +225,7 @@ export type TrackSpeedStat = {
 };
 
 
-export const getTrackSpeedStats = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+export const getTrackSpeedStats = serverFn()
   .handler(async ({ context }): Promise<TrackSpeedStat[]> => {
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
