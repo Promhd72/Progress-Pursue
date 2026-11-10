@@ -5,13 +5,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { AdvancedVisual } from "@/components/AdvancedVisual";
 import { Button, Card, ErrorState, IconBadge, Ionicons, Loading, Muted, ProgressBar, Row, Txt } from "@/components/ui";
 import { ADVANCED_DOMAINS, ADVANCED_DOMAIN_LABELS, type AdvancedDomain } from "@/lib/advanced-domains";
-import {
-  getAdvancedAccess,
-  getAdvancedProgress,
-  submitAdvancedAnswer,
-  type AdvancedAccess,
-  type AdvancedAnswerResult,
-} from "@/lib/advanced.functions";
+import { type AdvancedAccess, type AdvancedAnswerResult } from "@/lib/advanced.functions";
+import { getAdvancedAccess, getAdvancedProgress, submitAdvancedAnswer } from "@/lib/backend";
 import { answerHaptic, keyHaptic } from "@/lib/native";
 import { colors, fonts, radius } from "@/theme";
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Card, ChoiceCard, IconBadge, KeyValue, Muted, Txt } from "@/components/ui";
-import { supabase } from "@/integrations/supabase/client";
+import { updateProfile } from "@/lib/account";
 import { getReminderPrefs, updateReminderPrefs } from "@/lib/native";
 import { dailyTargetFor, focusTrackFor, getOnboarding, saveOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
@@ -43,7 +43,7 @@ export default function Onboarding() {
     setBusy(true);
     saveOnboarding({ completed: true });
     if (profile?.id) {
-      await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", profile.id);
+      await updateProfile(profile.id, { onboarding_completed: true }).catch(() => {});
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
     }
     router.replace(to);

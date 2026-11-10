@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCurriculumOverview } from "./curriculum.functions";
-import { getProfile } from "./rapid-math.functions";
+import { getCurriculumOverview } from "@/lib/backend";
+import { getProfile } from "@/lib/backend";
 
 export function useProfile() {
   return useQuery({ queryKey: ["profile"], queryFn: () => getProfile() });

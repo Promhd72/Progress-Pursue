@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { Button, ErrorState, IconBadge, Loading, Muted, Pill, Txt } from "@/components/ui";
 import { TRACK_LABELS, TRACK_SYMBOL, type SkillTrack } from "@/lib/curriculum";
-import { getRecentLessons } from "@/lib/curriculum.functions";
+import { getRecentLessons } from "@/lib/backend";
 import { colors, fonts, radius } from "@/theme";
 
 function dayLabel(iso: string) {

@@ -15,7 +15,7 @@ import {
   generateLesson,
   type SkillTrack,
 } from "@/lib/curriculum";
-import { getLessonAccess, submitLesson } from "@/lib/curriculum.functions";
+import { getLessonAccess, submitLesson } from "@/lib/backend";
 import { finishHaptic, shareText } from "@/lib/native";
 import { useOverview } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";

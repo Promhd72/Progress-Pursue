@@ -49,19 +49,18 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { session, ready } = useAuth();
+  const { signedIn, ready } = useAuth();
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
 
   useEffect(() => {
-    if (!session) queryClient.clear();
-  }, [session]);
+    if (!signedIn) queryClient.clear();
+  }, [signedIn]);
 
   if (!ready) return null;
 
-  const signedIn = Boolean(session);
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="index" />

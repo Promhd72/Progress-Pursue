@@ -4,14 +4,13 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from "react-native";
 import { Card, ErrorState, Ionicons, Loading, Muted, Pill, Row, Txt, type IconName } from "@/components/ui";
-import { supabase } from "@/integrations/supabase/client";
+import { deleteAccount, signOut, updateProfile } from "@/lib/account";
 import { MAX_LEVEL, TRACK_LABELS, TRACKS } from "@/lib/curriculum";
 import { levelForXp } from "@/lib/drill-engine";
 import { getReminderPrefs, keyHaptic, trainedTodayFrom, updateReminderPrefs, type ReminderPrefs } from "@/lib/native";
 import { DAILY_TARGETS, getOnboarding, saveOnboarding, type DailyTargetId } from "@/lib/onboarding";
 import { resolveIsPro } from "@/lib/plan";
 import { useOverview, useProfile } from "@/lib/queries";
-import { deleteAccount } from "@/lib/rapid-math.functions";
 import { colors, fonts, radius } from "@/theme";
 
 const TIMES = [8, 13, 18, 20, 22];
@@ -40,9 +39,12 @@ export default function Profile() {
   async function saveName() {
     const clean = name.trim();
     if (!clean || clean === p.name) return;
-    const { error } = await supabase.from("profiles").update({ name: clean }).eq("id", p.id);
-    if (error) Alert.alert("Couldn't save your name", error.message);
-    else void qc.invalidateQueries({ queryKey: ["profile"] });
+    try {
+      await updateProfile(p.id, { name: clean });
+      void qc.invalidateQueries({ queryKey: ["profile"] });
+    } catch (err) {
+      Alert.alert("Couldn't save your name", err instanceof Error ? err.message : "Try again.");
+    }
   }
 
   async function applyReminder(next: ReminderPrefs) {
@@ -67,7 +69,6 @@ export default function Profile() {
           onPress: async () => {
             try {
               await deleteAccount();
-              await supabase.auth.signOut();
             } catch (err) {
               Alert.alert("Couldn't delete your account", err instanceof Error ? err.message : "Try again.");
             }
@@ -189,7 +190,7 @@ export default function Profile() {
 
       <Section title="">
         <Card style={{ padding: 0 }}>
-          <LinkRow icon="log-out-outline" label="Sign out" onPress={() => supabase.auth.signOut()} />
+          <LinkRow icon="log-out-outline" label="Sign out" onPress={() => void signOut()} />
           <Divider />
           <LinkRow icon="trash-outline" label="Delete account" destructive onPress={confirmDelete} />
         </Card>

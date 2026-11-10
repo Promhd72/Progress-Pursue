@@ -4,7 +4,7 @@ import { resolveIsPro } from "./plan";
 import { ADVANCED_QUESTIONS, toPublic, type PublicAdvancedQuestion } from "./advanced-questions";
 import { ADVANCED_DOMAINS, type AdvancedDomain } from "./advanced-domains";
 
-const FREE_DAILY_LIMIT = 3;
+export const FREE_DAILY_LIMIT = 3;
 
 function startOfUtcDayIso(): string {
   const d = new Date();
@@ -12,7 +12,7 @@ function startOfUtcDayIso(): string {
   return d.toISOString();
 }
 
-function pickNextQuestion(seenIds: Set<string>, domain?: AdvancedDomain) {
+export function pickNextQuestion(seenIds: Set<string>, domain?: AdvancedDomain) {
   const scoped = domain
     ? ADVANCED_QUESTIONS.filter((q) => q.domain === domain)
     : ADVANCED_QUESTIONS;
@@ -145,51 +145,59 @@ export const getAdvancedProgress = serverFn()
       .select("question_id, is_correct")
       .eq("user_id", userId);
 
-    const byId = new Map(ADVANCED_QUESTIONS.map((q) => [q.id, q]));
-    const byDomain = {} as Record<AdvancedDomain, AdvancedDomainProgress>;
-    for (const d of ADVANCED_DOMAINS) {
-      byDomain[d] = {
-        domain: d,
-        total: ADVANCED_QUESTIONS.filter((q) => q.domain === d).length,
-        mastered: 0,
-        attempts: 0,
-        correct: 0,
-        accuracy: null,
-      };
-    }
+    return computeAdvancedProgress(rows ?? []);
+  });
 
-    const masteredIds = new Set<string>();
-    for (const r of rows ?? []) {
-      const q = byId.get(r.question_id);
-      if (!q) continue;
-      const slot = byDomain[q.domain];
-      slot.attempts += 1;
-      if (r.is_correct) {
-        slot.correct += 1;
-        if (!masteredIds.has(q.id)) {
-          masteredIds.add(q.id);
-          slot.mastered += 1;
-        }
+/** Mastery per domain from attempt rows. Shared with demo mode. */
+export function computeAdvancedProgress(
+  rows: { question_id: string; is_correct: boolean }[],
+): AdvancedProgress {
+  const byId = new Map(ADVANCED_QUESTIONS.map((q) => [q.id, q]));
+  const byDomain = {} as Record<AdvancedDomain, AdvancedDomainProgress>;
+  for (const d of ADVANCED_DOMAINS) {
+    byDomain[d] = {
+      domain: d,
+      total: ADVANCED_QUESTIONS.filter((q) => q.domain === d).length,
+      mastered: 0,
+      attempts: 0,
+      correct: 0,
+      accuracy: null,
+    };
+  }
+
+  const masteredIds = new Set<string>();
+  for (const r of rows) {
+    const q = byId.get(r.question_id);
+    if (!q) continue;
+    const slot = byDomain[q.domain];
+    slot.attempts += 1;
+    if (r.is_correct) {
+      slot.correct += 1;
+      if (!masteredIds.has(q.id)) {
+        masteredIds.add(q.id);
+        slot.mastered += 1;
       }
     }
+  }
 
-    let attempts = 0;
-    let correct = 0;
-    for (const d of ADVANCED_DOMAINS) {
-      const s = byDomain[d];
-      s.accuracy = s.attempts > 0 ? Math.round((s.correct / s.attempts) * 100) : null;
-      attempts += s.attempts;
-      correct += s.correct;
-    }
+  let attempts = 0;
+  let correct = 0;
+  for (const d of ADVANCED_DOMAINS) {
+    const s = byDomain[d];
+    s.accuracy = s.attempts > 0 ? Math.round((s.correct / s.attempts) * 100) : null;
+    attempts += s.attempts;
+    correct += s.correct;
+  }
 
-    return {
-      byDomain,
-      overall: {
-        total: ADVANCED_QUESTIONS.length,
-        mastered: masteredIds.size,
-        attempts,
-        correct,
-        accuracy: attempts > 0 ? Math.round((correct / attempts) * 100) : null,
-      },
-    };
-  });
+  return {
+    byDomain,
+    overall: {
+      total: ADVANCED_QUESTIONS.length,
+      mastered: masteredIds.size,
+      attempts,
+      correct,
+      accuracy: attempts > 0 ? Math.round((correct / attempts) * 100) : null,
+    },
+  };
+}
+

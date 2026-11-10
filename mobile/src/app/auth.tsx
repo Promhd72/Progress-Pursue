@@ -13,7 +13,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, IconBadge, Ionicons, Muted, Txt } from "@/components/ui";
-import { supabase, supabaseConfigured } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+import { DEMO_MODE } from "@/lib/backend";
+import { demoSignIn, demoSignUp } from "@/lib/demo";
 import { colors, fonts, radius } from "@/theme";
 
 type Mode = "signin" | "signup" | "code" | "verify" | "confirm-email";
@@ -29,13 +31,6 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
 
   async function run(fn: () => Promise<void>) {
-    if (!supabaseConfigured) {
-      Alert.alert(
-        "Connect Supabase first",
-        "The screens work, but accounts need your Supabase project. Add your keys to mobile/.env (see MOBILE.md), then restart npx expo start.",
-      );
-      return;
-    }
     setLoading(true);
     try {
       await fn();
@@ -50,6 +45,12 @@ export default function AuthScreen() {
   const submit = () =>
     run(async () => {
       const cleanEmail = email.trim();
+      if (DEMO_MODE) {
+        // No Supabase yet: accounts live on this phone only.
+        if (mode === "signup") demoSignUp(name.trim(), cleanEmail);
+        else demoSignIn(cleanEmail);
+        return;
+      }
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail,
@@ -110,6 +111,15 @@ export default function AuthScreen() {
           )}
           <Txt variant="title">{title}</Txt>
           <Muted style={{ marginTop: 8 }}>{subtitle}</Muted>
+          {DEMO_MODE && (
+            <View style={styles.demo}>
+              <Ionicons name="phone-portrait-outline" size={18} color={colors.amberText} />
+              <Txt variant="caption" color={colors.amberText} style={{ flex: 1, fontSize: 14, lineHeight: 20 }}>
+                Demo mode: no server connected yet, so your account and progress are saved on this
+                phone only. Any email and password work.
+              </Txt>
+            </View>
+          )}
 
           <View style={{ marginTop: 28, gap: 16 }}>
             {mode === "signup" && (
@@ -201,6 +211,14 @@ function TextLink({ label, onPress }: { label: string; onPress: () => void }) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   top: { height: 52, justifyContent: "center", paddingHorizontal: 16 },
+  demo: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+    padding: 12,
+    borderRadius: radius.md,
+    backgroundColor: colors.amberSoft,
+  },
   content: { paddingHorizontal: 24, paddingBottom: 32 },
   input: {
     backgroundColor: colors.card,

@@ -235,44 +235,52 @@ export const getTrackSpeedStats = serverFn()
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
 
-    const byTrack = new Map<SkillTrack, number[]>();
-    for (const r of rows ?? []) {
-      if (!r.total || r.total <= 0) continue;
-      const avg = r.duration_ms / r.total;
-      const arr = byTrack.get(r.track as SkillTrack) ?? [];
-      arr.push(avg);
-      byTrack.set(r.track as SkillTrack, arr);
-    }
-
-    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-    const out: TrackSpeedStat[] = [];
-    for (const [track, avgs] of byTrack.entries()) {
-      const n = avgs.length;
-      if (n === 0) continue;
-      const window = Math.min(3, Math.floor(n / 2)) || 1;
-      const latestAvgMs = mean(avgs.slice(-window));
-      let baselineAvgMs: number | null = null;
-      let deltaMs: number | null = null;
-      let deltaPct: number | null = null;
-      if (n >= 2) {
-        const baseWindow = Math.min(3, Math.floor(n / 2)) || 1;
-        baselineAvgMs = mean(avgs.slice(0, baseWindow));
-        deltaMs = baselineAvgMs - latestAvgMs;
-        deltaPct = baselineAvgMs > 0 ? deltaMs / baselineAvgMs : null;
-      }
-      out.push({
-        track,
-        attempts: n,
-        latestAvgMs,
-        overallAvgMs: mean(avgs),
-        bestAvgMs: Math.min(...avgs),
-        baselineAvgMs,
-
-        deltaMs,
-        deltaPct,
-        trend: avgs.slice(-12),
-      });
-    }
-    out.sort((a, b) => b.attempts - a.attempts);
-    return out;
+    return computeSpeedStats(rows ?? []);
   });
+
+/** Speed per track from lesson rows (oldest first). Shared with demo mode. */
+export function computeSpeedStats(
+  rows: { track: string; total: number; duration_ms: number }[],
+): TrackSpeedStat[] {
+  const byTrack = new Map<SkillTrack, number[]>();
+  for (const r of rows ?? []) {
+    if (!r.total || r.total <= 0) continue;
+    const avg = r.duration_ms / r.total;
+    const arr = byTrack.get(r.track as SkillTrack) ?? [];
+    arr.push(avg);
+    byTrack.set(r.track as SkillTrack, arr);
+  }
+
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const out: TrackSpeedStat[] = [];
+  for (const [track, avgs] of byTrack.entries()) {
+    const n = avgs.length;
+    if (n === 0) continue;
+    const window = Math.min(3, Math.floor(n / 2)) || 1;
+    const latestAvgMs = mean(avgs.slice(-window));
+    let baselineAvgMs: number | null = null;
+    let deltaMs: number | null = null;
+    let deltaPct: number | null = null;
+    if (n >= 2) {
+      const baseWindow = Math.min(3, Math.floor(n / 2)) || 1;
+      baselineAvgMs = mean(avgs.slice(0, baseWindow));
+      deltaMs = baselineAvgMs - latestAvgMs;
+      deltaPct = baselineAvgMs > 0 ? deltaMs / baselineAvgMs : null;
+    }
+    out.push({
+      track,
+      attempts: n,
+      latestAvgMs,
+      overallAvgMs: mean(avgs),
+      bestAvgMs: Math.min(...avgs),
+      baselineAvgMs,
+
+      deltaMs,
+      deltaPct,
+      trend: avgs.slice(-12),
+    });
+  }
+  out.sort((a, b) => b.attempts - a.attempts);
+  return out;
+}
+

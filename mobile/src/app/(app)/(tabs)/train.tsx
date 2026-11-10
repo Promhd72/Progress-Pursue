@@ -23,9 +23,10 @@ import {
   ADVANCED_DOMAIN_LABELS,
   ADVANCED_DOMAIN_SYMBOL,
 } from "@/lib/advanced-domains";
-import { getAdvancedProgress } from "@/lib/advanced.functions";
+import { getAdvancedProgress } from "@/lib/backend";
 import { FREE_MAX_LEVEL, MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, type SkillTrack } from "@/lib/curriculum";
-import { getRecentLessons, getTrackSpeedStats, type TrackSpeedStat } from "@/lib/curriculum.functions";
+import { type TrackSpeedStat } from "@/lib/curriculum.functions";
+import { getRecentLessons, getTrackSpeedStats } from "@/lib/backend";
 import { levelForXp } from "@/lib/drill-engine";
 import { dailyTargetFor, getOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";

@@ -7,7 +7,7 @@ import { CoachingReview } from "@/components/Coaching";
 import { DrillHeader, DrillRunner, type DrillAnswer } from "@/components/DrillRunner";
 import { Button, Card, IconBadge, Ionicons, Loading, Muted, Row, Txt } from "@/components/ui";
 import { PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, buildPlacement, type SkillTrack } from "@/lib/curriculum";
-import { submitPlacement } from "@/lib/curriculum.functions";
+import { submitPlacement } from "@/lib/backend";
 import { finishHaptic } from "@/lib/native";
 import { colors, fonts } from "@/theme";
 
