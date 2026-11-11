@@ -23,6 +23,21 @@ export default function Learn() {
         </Muted>
       </View>
 
+      <Pressable
+        onPress={() => {
+          keyHaptic();
+          router.push("/science");
+        }}
+        style={({ pressed }) => [styles.science, pressed && { opacity: 0.85 }]}
+      >
+        <Ionicons name="flask-outline" size={22} color={colors.primary} />
+        <View style={{ flex: 1 }}>
+          <Txt variant="label">Why these five skills?</Txt>
+          <Muted variant="caption">The research behind Rapid Math</Muted>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+      </Pressable>
+
       <Card style={{ gap: 10 }}>
         <Row style={{ justifyContent: "space-between" }}>
           <Txt variant="label">
@@ -81,6 +96,7 @@ export default function Learn() {
 }
 
 const styles = StyleSheet.create({
+  science: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 14, backgroundColor: colors.primarySoft },
   content: { padding: 16, paddingBottom: 40, gap: 18 },
   symbol: {
     width: 34,

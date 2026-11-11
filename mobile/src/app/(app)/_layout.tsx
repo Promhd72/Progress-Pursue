@@ -1,5 +1,6 @@
 import { Redirect, Stack, useSegments } from "expo-router";
 import { useEffect } from "react";
+import { BadgeWatcher } from "@/components/Badges";
 import { useProfile } from "@/lib/queries";
 import { scheduleStreakReminders, trainedTodayFrom } from "@/lib/native";
 import { getOnboarding } from "@/lib/onboarding";
@@ -20,7 +21,18 @@ export default function AppLayout() {
   const needsOnboarding = profile && !profile.onboarding_completed && !getOnboarding().completed;
   if (needsOnboarding && !inSetup) return <Redirect href="/onboarding" />;
 
+  const header = (title: string) => ({
+    headerShown: true,
+    title,
+    headerBackTitle: "Back",
+    headerTintColor: colors.primary,
+    headerStyle: { backgroundColor: colors.background },
+    headerShadowVisible: false,
+    headerTitleStyle: { fontFamily: fonts.semibold, color: colors.foreground },
+  });
+
   return (
+    <>
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
@@ -66,6 +78,10 @@ export default function AppLayout() {
           headerTitleStyle: { fontFamily: fonts.semibold, color: colors.foreground },
         }}
       />
+      <Stack.Screen name="badges" options={header("Badges")} />
+      <Stack.Screen name="science" options={header("Why it works")} />
     </Stack>
+    {!inSetup || segments.includes("placement") ? <BadgeWatcher /> : null}
+    </>
   );
 }

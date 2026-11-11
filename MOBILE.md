@@ -138,3 +138,11 @@ with your own codes.
 - Goal and daily target are saved on the device, not synced across devices.
 - Reminders are local; server push (for campaigns) would need push notification setup.
 - No "change password" screen yet; users can sign in with an email code instead.
+
+## Badges and research
+
+- **Badges** (Profile > Badges): 38 badges for passing skill milestones (Levels 2, 5, 8, 10 on each
+  skill), stars, ranks, streaks, scenarios and techniques. A celebration pops up the moment one is
+  earned. They're computed on the device from data the app already has, so no database change.
+- **Why Rapid Math works** (Learn tab, or Profile > The research behind it): why these five skills,
+  how the method works, and nine peer-reviewed sources.

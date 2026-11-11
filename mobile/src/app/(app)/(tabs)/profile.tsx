@@ -3,7 +3,9 @@ import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from "react-native";
+import { BadgeIcon, useBadges } from "@/components/Badges";
 import { Card, ErrorState, Ionicons, Loading, Muted, Pill, Row, Txt, type IconName } from "@/components/ui";
+import { BADGES } from "@/lib/badges";
 import { deleteAccount, signOut, updateProfile } from "@/lib/account";
 import { MAX_LEVEL, TRACK_LABELS, TRACKS } from "@/lib/curriculum";
 import { rankForXp } from "@/lib/drill-engine";
@@ -20,6 +22,7 @@ export default function Profile() {
   const qc = useQueryClient();
   const profileQ = useProfile();
   const overviewQ = useOverview();
+  const badges = useBadges();
   const [name, setName] = useState("");
   const [reminder, setReminder] = useState<ReminderPrefs>(() => getReminderPrefs());
   const [target, setTarget] = useState<DailyTargetId>(() => getOnboarding().dailyTarget);
@@ -98,6 +101,24 @@ export default function Profile() {
         <Mini label="Total XP" value={p.xp.toLocaleString()} />
         <Mini label="Best streak" value={`${p.longest_streak}d`} />
       </Row>
+
+      <Section title="Badges">
+        <Pressable onPress={() => router.push("/badges")} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
+          <Card style={{ gap: 12 }}>
+            <Row style={{ justifyContent: "space-between" }}>
+              <Txt variant="label">
+                {badges.earned.size} of {BADGES.length} earned
+              </Txt>
+              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+            </Row>
+            <Row gap={8}>
+              {(badges.earned.size > 0 ? BADGES.filter((b) => badges.earned.has(b.id)).slice(-5) : BADGES.slice(0, 5)).map((b) => (
+                <BadgeIcon key={b.id} badge={b} earned={badges.earned.has(b.id)} size={48} />
+              ))}
+            </Row>
+          </Card>
+        </Pressable>
+      </Section>
 
       <Section title="Account">
         <Card style={{ padding: 0 }}>
@@ -193,6 +214,8 @@ export default function Profile() {
       <Section title="Help us improve">
         <Card style={{ padding: 0 }}>
           <LinkRow icon="compass-outline" label="How Rapid Math works" onPress={() => router.push("/tour")} />
+          <Divider />
+          <LinkRow icon="flask-outline" label="The research behind it" onPress={() => router.push("/science")} />
           <Divider />
           <LinkRow icon="sparkles-outline" label="Request a feature" onPress={() => router.push("/feedback")} />
           <Divider />

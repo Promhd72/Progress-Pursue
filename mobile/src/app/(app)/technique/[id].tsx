@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -18,6 +19,7 @@ export default function TechniqueScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = techniqueById(id ?? "");
   const { data: overview } = useOverview();
+  const qc = useQueryClient();
   const [phase, setPhase] = useState<"read" | "try" | "done">("read");
   const [seed, setSeed] = useState(0);
   const [score, setScore] = useState(0);
@@ -39,6 +41,7 @@ export default function TechniqueScreen() {
           onDone={(answers: DrillAnswer[]) => {
             setScore(answers.filter((a) => a.correct).length);
             markTechniqueLearned(t.id);
+            void qc.invalidateQueries({ queryKey: ["learned-techniques"] });
             finishHaptic();
             setPhase("done");
           }}
