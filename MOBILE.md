@@ -139,10 +139,19 @@ with your own codes.
 - Reminders are local; server push (for campaigns) would need push notification setup.
 - No "change password" screen yet; users can sign in with an email code instead.
 
+## Meeting warm-up and confidence check-in
+
+- **Meeting warm-up** (Train tab): 60 seconds of questions phrased the way numbers come up at work and
+  in conversation ("We're at 20% of our $300K target..."). Wrong answers show the sum behind the
+  question, and the results screen has the step-by-step method for each one. Practice only: the best
+  score is kept on the device and doesn't add XP.
+- **Confidence check-in**: onboarding asks how confident you feel with numbers (1 to 5). After 14 days
+  a card on the Train tab asks again, and Profile shows the before and after. Kept on the device.
+
 ## Badges and research
 
-- **Badges** (Profile > Badges): 38 badges for passing skill milestones (Levels 2, 5, 8, 10 on each
-  skill), stars, ranks, streaks, scenarios and techniques. A celebration pops up the moment one is
+- **Badges** (Profile > Badges): 40 badges for passing skill milestones (Levels 2, 5, 8, 10 on each
+  skill), stars, ranks, streaks, Meeting warm-ups, scenarios and techniques. A celebration pops up the moment one is
   earned. They're computed on the device from data the app already has, so no database change.
 - **Why Rapid Math works** (Learn tab, or Profile > The research behind it): why these five skills,
   how the method works, and nine peer-reviewed sources.

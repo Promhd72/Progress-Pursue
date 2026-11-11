@@ -6,6 +6,7 @@ import { getAdvancedProgress } from "@/lib/backend";
 import { badgeById, earnedBadges, markBadgesSeen, seenBadges, type Badge, type BadgeData } from "@/lib/badges";
 import { finishHaptic } from "@/lib/native";
 import { useLevelStats, useOverview, useProfile } from "@/lib/queries";
+import { getMeetingStats } from "@/lib/meeting";
 import { learnedTechniques } from "@/lib/techniques";
 import { colors, fonts, radius } from "@/theme";
 import { Button, Ionicons, Muted, Txt } from "./ui";
@@ -17,19 +18,21 @@ export function useBadges() {
   const statsQ = useLevelStats();
   const advancedQ = useQuery({ queryKey: ["advanced-progress"], queryFn: () => getAdvancedProgress() });
   const learnedQ = useQuery({ queryKey: ["learned-techniques"], queryFn: () => learnedTechniques().size });
+  const meetingQ = useQuery({ queryKey: ["meeting-stats"], queryFn: () => getMeetingStats() });
 
-  const ready = profileQ.isSuccess && overviewQ.isSuccess && statsQ.isSuccess && advancedQ.isSuccess && learnedQ.isSuccess;
+  const ready = profileQ.isSuccess && overviewQ.isSuccess && statsQ.isSuccess && advancedQ.isSuccess && learnedQ.isSuccess && meetingQ.isSuccess;
   const data: BadgeData = {
     profile: profileQ.data ?? undefined,
     overview: overviewQ.data,
     stats: statsQ.data,
     advanced: advancedQ.data,
     learned: learnedQ.data,
+    meeting: meetingQ.data,
   };
   const earned = useMemo(
     () => (ready ? earnedBadges(data) : new Set<string>()),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ready, profileQ.data, overviewQ.data, statsQ.data, advancedQ.data, learnedQ.data],
+    [ready, profileQ.data, overviewQ.data, statsQ.data, advancedQ.data, learnedQ.data, meetingQ.data],
   );
   return { ready, earned };
 }

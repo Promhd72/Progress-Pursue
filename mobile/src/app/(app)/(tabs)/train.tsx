@@ -23,7 +23,9 @@ import {
   ADVANCED_DOMAIN_LABELS,
   ADVANCED_DOMAIN_SYMBOL,
 } from "@/lib/advanced-domains";
+import { ConfidenceCard } from "@/components/Confidence";
 import { getAdvancedProgress } from "@/lib/backend";
+import { MEETING_SECONDS, getMeetingStats } from "@/lib/meeting";
 import { FREE_MAX_LEVEL, MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, levelSummary, type SkillTrack } from "@/lib/curriculum";
 import { type TrackSpeedStat } from "@/lib/curriculum.functions";
 import { getRecentLessons, getTrackSpeedStats } from "@/lib/backend";
@@ -85,6 +87,10 @@ export default function Train() {
         streak={profile.current_streak}
         onStart={next ? () => openLesson(next.track, next.level) : undefined}
       />
+
+      <MeetingCard onStart={() => router.push("/meeting")} />
+
+      <ConfidenceCard />
 
       <View style={styles.grid}>
         <Stat icon="trophy-outline" label={`Rank · ${rank.name}`} value={`${profile.xp.toLocaleString()} XP`} sub={rank.next ? `${rank.toNext} XP to ${rank.next}` : "Top rank"} tint={colors.primary} bg={colors.primarySoft} />
@@ -180,6 +186,27 @@ export default function Train() {
         </ScrollView>
       </View>
     </ScrollView>
+  );
+}
+
+function MeetingCard({ onStart }: { onStart: () => void }) {
+  const { data: stats } = useQuery({ queryKey: ["meeting-stats"], queryFn: () => getMeetingStats() });
+  return (
+    <Card style={{ gap: 12 }}>
+      <Row gap={12} style={{ alignItems: "flex-start" }}>
+        <IconBadge name="chatbubbles-outline" size={40} />
+        <View style={{ flex: 1 }}>
+          <Txt variant="heading">Meeting warm-up</Txt>
+          <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
+            {MEETING_SECONDS} seconds of numbers the way they come up at work and on the go. Great right before a call.
+          </Muted>
+        </View>
+      </Row>
+      {stats && stats.rounds > 0 ? (
+        <Muted variant="caption">Your best: {stats.best} correct</Muted>
+      ) : null}
+      <Button title="Start warm-up" icon="play" variant="secondary" onPress={onStart} />
+    </Card>
   );
 }
 

@@ -4,8 +4,10 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppTour } from "@/components/AppTour";
+import { ConfidencePicker } from "@/components/Confidence";
 import { Button, Card, ChoiceCard, IconBadge, KeyValue, Muted, Txt } from "@/components/ui";
 import { updateProfile } from "@/lib/account";
+import { CHECKIN_DAYS, getConfidence, saveConfidence } from "@/lib/confidence";
 import { getReminderPrefs, updateReminderPrefs } from "@/lib/native";
 import { dailyTargetFor, focusTrackFor, getOnboarding, saveOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
@@ -23,7 +25,8 @@ export default function Onboarding() {
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
   const { data: overview } = useOverview();
-  const [step, setStep] = useState<"tour" | "reminder" | "level">("tour");
+  const [step, setStep] = useState<"tour" | "confidence" | "reminder" | "level">("tour");
+  const [confidence, setConfidence] = useState<number | null>(() => getConfidence().before?.value ?? null);
   const [time, setTime] = useState(() => {
     const i = TIMES.findIndex((t) => t.hour === getReminderPrefs().hour);
     return i >= 0 ? i : 2;
@@ -53,7 +56,7 @@ export default function Onboarding() {
   if (step === "tour") {
     return (
       <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
-        <AppTour onDone={() => setStep("reminder")} doneLabel="Set up my plan" />
+        <AppTour onDone={() => setStep(getConfidence().before ? "reminder" : "confidence")} doneLabel="Set up my plan" />
       </SafeAreaView>
     );
   }
@@ -61,7 +64,21 @@ export default function Onboarding() {
   return (
     <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        {step === "reminder" ? (
+        {step === "confidence" ? (
+          <>
+            <IconBadge name="pulse-outline" size={56} />
+            <Txt variant="title" style={{ marginTop: 20 }}>
+              How confident do you feel with numbers?
+            </Txt>
+            <Muted style={{ marginTop: 8 }}>
+              Think of a meeting or a quick conversation where someone throws a number at you. Be honest: we'll
+              ask again in {CHECKIN_DAYS} days so you can see how far you've come.
+            </Muted>
+            <View style={{ marginTop: 24 }}>
+              <ConfidencePicker value={confidence} onChange={setConfidence} />
+            </View>
+          </>
+        ) : step === "reminder" ? (
           <>
             <IconBadge name="notifications-outline" color={colors.warm} bg={colors.warmSoft} size={56} />
             <Txt variant="title" style={{ marginTop: 20 }}>
@@ -107,7 +124,16 @@ export default function Onboarding() {
       </ScrollView>
 
       <View style={styles.actions}>
-        {step === "reminder" ? (
+        {step === "confidence" ? (
+          <Button
+            title="Continue"
+            disabled={confidence === null}
+            onPress={() => {
+              if (confidence !== null) saveConfidence(confidence);
+              setStep("reminder");
+            }}
+          />
+        ) : step === "reminder" ? (
           <>
             <Button title="Turn on reminders" loading={busy} onPress={() => chooseReminder(true)} />
             <Button title="Not now" variant="ghost" disabled={busy} onPress={() => chooseReminder(false)} />

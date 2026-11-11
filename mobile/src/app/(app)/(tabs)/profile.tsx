@@ -4,6 +4,8 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from "react-native";
 import { BadgeIcon, useBadges } from "@/components/Badges";
+import { ConfidenceResult } from "@/components/Confidence";
+import { getConfidence } from "@/lib/confidence";
 import { Card, ErrorState, Ionicons, Loading, Muted, Pill, Row, Txt, type IconName } from "@/components/ui";
 import { BADGES } from "@/lib/badges";
 import { deleteAccount, signOut, updateProfile } from "@/lib/account";
@@ -119,6 +121,12 @@ export default function Profile() {
           </Card>
         </Pressable>
       </Section>
+
+      {getConfidence().before ? (
+        <Section title="Your progress">
+          <ConfidenceResult />
+        </Section>
+      ) : null}
 
       <Section title="Account">
         <Card style={{ padding: 0 }}>

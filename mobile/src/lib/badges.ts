@@ -28,6 +28,7 @@ export interface BadgeData {
   profile?: { xp: number; longest_streak: number };
   advanced?: AdvancedProgress;
   learned?: number;
+  meeting?: { rounds: number; best: number };
 }
 
 const GOLD = "#f5a524";
@@ -151,6 +152,26 @@ const RULES: Rule[] = [
     icon: "ribbon",
     color: GOLD,
     earned: (d) => rankLevel(d) >= 10,
+  },
+  {
+    id: "warmup-1",
+    group: "Speed",
+    name: "Warmed up",
+    how: "Finish a Meeting warm-up (Train tab).",
+    cheer: "Ready for the next number someone throws at you.",
+    icon: "chatbubbles",
+    color: BLUE,
+    earned: (d) => (d.meeting?.rounds ?? 0) >= 1,
+  },
+  {
+    id: "warmup-8",
+    group: "Speed",
+    name: "Boardroom ready",
+    how: "Get 8 right in one Meeting warm-up.",
+    cheer: "8 in 60 seconds. You'd answer before the calculator comes out.",
+    icon: "mic",
+    color: PURPLE,
+    earned: (d) => (d.meeting?.best ?? 0) >= 8,
   },
   {
     id: "streak-3",

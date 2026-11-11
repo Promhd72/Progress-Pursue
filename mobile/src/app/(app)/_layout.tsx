@@ -38,6 +38,7 @@ export default function AppLayout() {
       <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
       <Stack.Screen name="lesson/[track]/[level]" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="placement" options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen name="meeting" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen
         name="technique/[id]"
         options={{
