@@ -396,7 +396,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     },
     {
       name: "Three digits ÷ a digit",
-      outcome: "Divide three-digit numbers like 252 ÷ 7 in chunks.",
+      outcome: "Divide three-digit numbers like 252 ÷ 7, one digit at a time.",
       context: "Sharing a cost between a few people.",
       targetSec: 7,
       example: [252, 7],
@@ -404,7 +404,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     },
     {
       name: "÷5 at speed",
-      outcome: "Divide big numbers by 5 with the double-and-shift trick.",
+      outcome: "Divide big numbers by 5 by doubling, then taking a 0 off.",
       targetSec: 5,
       example: [345, 5],
       gen: () => [5 * rand(21, 99), 5],

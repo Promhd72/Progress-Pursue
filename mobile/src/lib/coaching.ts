@@ -79,10 +79,11 @@ function additionTip(a: number, b: number): CoachingTip {
   }
 
   // One number is just below a round ten (…8 or …9): round it up, then fix.
-  const near = b % 10 >= 8 ? b : a % 10 >= 8 ? a : null;
+  const roundable = (n: number) => (n < 100 ? n % 10 >= 8 : n % 100 >= 98);
+  const near = roundable(b) ? b : roundable(a) ? a : null;
   if (near !== null) {
     const other = near === b ? a : b;
-    const up = nextTen(near);
+    const up = near < 100 ? nextTen(near) : Math.ceil(near / 100) * 100;
     const extra = up - near;
     const mid = other + up;
     return {
@@ -94,7 +95,7 @@ function additionTip(a: number, b: number): CoachingTip {
         step(`Take back the extra ${extra}.`, `${mid} − ${extra} = ${sum}`),
       ],
       check: `${other} + ${up} is ${mid}, and the real answer is just a little less.`,
-      remember: "Numbers ending in 8 or 9: round up to the ten, add, then take back the extra.",
+      remember: "Numbers just under a round number (like 29 or 498): round up, add, then take back the extra.",
       hint: `${near} is almost ${up}. Add ${up} instead, then fix it.`,
     };
   }
@@ -111,13 +112,17 @@ function additionTip(a: number, b: number): CoachingTip {
     .filter((p) => p.x + p.y > 0);
   const names: Record<number, string> = { 100: "hundreds", 10: "tens", 1: "ones" };
   const subtotals = places.map((p) => p.x + p.y);
-  const steps = places.map((p) => step(`Add the ${names[p.unit]}.`, `${p.x} + ${p.y} = ${p.x + p.y}`));
+  const steps = places.map((p) =>
+    p.x > 0 && p.y > 0
+      ? step(`Add the ${names[p.unit]}.`, `${p.x} + ${p.y} = ${p.x + p.y}`)
+      : step(`Only one number has ${names[p.unit]}, so just keep ${p.x + p.y}.`),
+  );
   if (subtotals.length > 1) {
     steps.push(step("Put the pieces together.", `${subtotals.join(" + ")} = ${sum}`));
   }
-  const first = places[0];
+  const first = places.find((p) => p.x > 0 && p.y > 0) ?? places[0];
   return {
-    method: places.length > 2 ? "Hundreds, then tens, then ones" : "Tens first, then ones",
+    method: places[0].unit === 100 ? "Hundreds, tens and ones separately" : "Tens first, then ones",
     idea: "Big numbers are just smaller pieces stuck together. Add the matching pieces, then join them up.",
     steps,
     check: `Round both numbers: about ${Math.round(a / 10) * 10} + ${Math.round(b / 10) * 10} = ${Math.round(a / 10) * 10 + Math.round(b / 10) * 10}, so the answer should be close to that.`,
@@ -140,6 +145,21 @@ function subtractionTip(a: number, b: number): CoachingTip {
       check,
       remember: "Any number minus itself is 0.",
       hint: "Look closely: are the two numbers the same?",
+    };
+  }
+
+  // Both under 10: count back a little, or count up when the numbers are close.
+  if (a < 10) {
+    const up = diff <= b;
+    return {
+      method: up ? "Count up from the smaller number" : "Count back",
+      idea: up ? `${b} and ${a} are close, so just count the steps from ${b} up to ${a}.` : `Start at ${a} and count back ${b} step${b === 1 ? "" : "s"}.`,
+      steps: up
+        ? [step(`Start at ${b} and count up to ${a}.`, `${b} + ${diff} = ${a}`), step(`That's ${diff} steps.`, `${a} − ${b} = ${diff}`)]
+        : [step(`Start at ${a} and count back ${b}.`, `${a} − ${b} = ${diff}`)],
+      check,
+      remember: "Small numbers? Count back, or count up if they're close together.",
+      hint: up ? `Count up from ${b} to ${a}.` : `Start at ${a} and count back ${b}.`,
     };
   }
 
@@ -208,8 +228,8 @@ function subtractionTip(a: number, b: number): CoachingTip {
   }
 
   // Taking away a number just below a ten (…8 or …9): take the ten, give back.
-  if (b >= 10 && b % 10 >= 8) {
-    const up = nextTen(b);
+  if ((b >= 10 && b < 100 && b % 10 >= 8) || (b >= 100 && b % 100 >= 98)) {
+    const up = b < 100 ? nextTen(b) : Math.ceil(b / 100) * 100;
     const extra = up - b;
     const mid = a - up;
     return {
@@ -220,7 +240,7 @@ function subtractionTip(a: number, b: number): CoachingTip {
         step(`You took ${extra} too many, so add ${extra} back.`, `${mid} + ${extra} = ${diff}`),
       ],
       check,
-      remember: "Taking away a number ending in 8 or 9? Take the round ten, then give back the extra.",
+      remember: "Taking away a number just under a round one (like 29 or 198)? Take the round number, then give back the extra.",
       hint: `Take away ${up} first, then fix it.`,
     };
   }
@@ -243,19 +263,25 @@ function subtractionTip(a: number, b: number): CoachingTip {
     };
   }
 
-  // General: take away the big part of b, then the ones.
-  const roundPart = b - (b % 10);
-  const ones = b % 10;
-  const mid = a - roundPart;
-  const steps = [step(`Take away the round part of ${b}, which is ${roundPart}.`, `${a} − ${roundPart} = ${mid}`)];
-  if (ones > 0) steps.push(step(`Then take away the ${ones} ones.`, `${mid} − ${ones} = ${diff}`));
+  // General: take away b one place at a time (hundreds, tens, ones).
+  const pieces = parts(b);
+  const steps: CoachingStep[] = [];
+  let cur = a;
+  const label = (p: number) => (p >= 100 ? "hundreds" : p >= 10 ? "tens" : "ones");
+  for (const p of pieces) {
+    steps.push(step(steps.length === 0 ? `Take away the ${label(p)} first.` : `Then take away the ${label(p)}.`, `${cur} − ${p} = ${cur - p}`));
+    cur -= p;
+  }
   return {
-    method: "Take away the tens, then the ones",
-    idea: `Taking away ${b} all at once is hard. Taking ${roundPart} and then ${ones || "nothing"} is two easy jumps.`,
+    method: pieces.length > 2 ? "Hundreds, then tens, then ones" : "Take away the tens, then the ones",
+    idea:
+      pieces.length === 1
+        ? `${b} is a round number, so only the ${label(b)} change.`
+        : `Taking away ${b} all at once is hard. Taking it in pieces (${pieces.join(", then ")}) is a few small jumps.`,
     steps,
     check,
-    remember: "Split the number you take away into tens and ones, and take them one at a time.",
-    hint: `Take away ${roundPart} first.`,
+    remember: "Split the number you take away into pieces (hundreds, tens, ones) and take them one at a time.",
+    hint: `Take away ${pieces[0]} first.`,
   };
 }
 
@@ -282,7 +308,7 @@ function multiplicationTip(a: number, b: number): CoachingTip {
       case 10:
         return {
           method: "×10: add a zero",
-          idea: "Ten lots of a number just shifts it up one place, so a 0 appears on the end.",
+          idea: "Times 10 always just adds a 0 to the end of a whole number.",
           steps: [step(`Write ${other} with a 0 on the end.`, `${other} × 10 = ${product}`)],
           check,
           remember: "Times 10? Put a 0 on the end.",
@@ -380,19 +406,24 @@ function multiplicationTip(a: number, b: number): CoachingTip {
 
   // Both single digits: build from a fact you know (×5 or ×2).
   if (big <= 10) {
-    const base = big > 5 ? 5 : 2;
-    const restCount = big - base;
+    // Split the smaller of the two numbers above 5 (fewer extra steps), e.g. 7 × 8 → 5 × 8 + 2 × 8.
+    const splitN = small > 5 ? small : big;
+    const other = splitN === a ? b : a;
+    const base = splitN > 5 ? 5 : 2;
+    const restCount = splitN - base;
+    const first = splitN === a ? `${base} × ${other}` : `${other} × ${base}`;
+    const second = splitN === a ? `${restCount} × ${other}` : `${other} × ${restCount}`;
     return {
       method: "Build it from an easier fact",
-      idea: `${big} × ${small} means ${big} lots of ${small}. Split it into ${base} lots and ${restCount} lots, which are easier.`,
+      idea: `${a} × ${b} is the same as ${first} plus ${second}. Both of those are easy.`,
       steps: [
-        step(`${base} lots of ${small}.`, `${base} × ${small} = ${base * small}`),
-        step(`${restCount} more lots of ${small}.`, `${restCount} × ${small} = ${restCount * small}`),
-        step("Add them together.", `${base * small} + ${restCount * small} = ${product}`),
+        step(`Start with the easy one.`, `${first} = ${base * other}`),
+        step(`Then the ${restCount} that's left.`, `${second} = ${restCount * other}`),
+        step("Add them together.", `${base * other} + ${restCount * other} = ${product}`),
       ],
       check,
-      remember: `This is a times-table fact worth learning by heart: ${big} × ${small} = ${product}.`,
-      hint: `Start with ${base} × ${small}.`,
+      remember: `Worth learning by heart: ${a} × ${b} = ${product}.`,
+      hint: `Start with ${first}.`,
     };
   }
 
@@ -404,9 +435,15 @@ function multiplicationTip(a: number, b: number): CoachingTip {
   const tensPart = tens * keep;
   const onesPart = ones * keep;
   const helper = timesHelper(keep, ones);
-  const steps = [step(`Split ${splitNum} into ${tens} and ${ones}. Times the ${tens} first.`, `${tens} × ${keep} = ${tensPart}`)];
+  const fmt = (x: number) => (splitNum === a ? `${x} × ${keep}` : `${keep} × ${x}`);
+  // When the other number has two digits too, show how to do each piece.
+  const keepT = tensOf(keep);
+  const keepO = keep - keepT;
+  const tensHow = keep >= 10 ? ` (${keep} × ${tens / 10} = ${keep * (tens / 10)}, then add a 0)` : "";
+  const onesHow = keep >= 10 && keepO > 0 && !helper ? ` (${ones} × ${keepT} = ${ones * keepT}, plus ${ones} × ${keepO} = ${ones * keepO})` : "";
+  const steps = [step(`Split ${splitNum} into ${tens} and ${ones}. Do the ${tens} first${tens === 10 ? "" : tensHow}.`, `${fmt(tens)} = ${tensPart}`)];
   if (ones > 0) {
-    steps.push(step(helper ? `Now the ${ones}. ${helper}` : `Now times the ${ones}.`, `${ones} × ${keep} = ${onesPart}`));
+    steps.push(step(helper ? `Now the ${ones}. ${helper}` : `Now the ${ones}${onesHow}.`, `${fmt(ones)} = ${onesPart}`));
     steps.push(step("Add the two parts.", `${tensPart} + ${onesPart} = ${product}`));
   }
   return {
@@ -436,27 +473,20 @@ function divisionTip(dividend: number, divisor: number): CoachingTip {
       hint: `What's ${dividend} without its last 0?`,
     };
   }
-  if (divisor === 2 || divisor === 4 || divisor === 8) {
-    const halvings = divisor === 2 ? 1 : divisor === 4 ? 2 : 3;
-    const steps: CoachingStep[] = [];
-    let cur = dividend;
-    for (let i = 0; i < halvings; i++) {
-      steps.push(step(i === 0 ? `Cut ${cur} in half.` : "Cut that in half again.", `${cur} ÷ 2 = ${cur / 2}`));
-      cur /= 2;
-    }
+  if (divisor === 2) {
     return {
-      method: divisor === 2 ? "÷2 is halving" : `÷${divisor} is halving ${halvings} times`,
-      idea: divisor === 2 ? "Dividing by 2 means splitting into two equal halves." : `${divisor} is ${Array(halvings).fill(2).join(" × ")}, so halving ${halvings} times is the same as ÷${divisor}.`,
-      steps,
+      method: "÷2 is halving",
+      idea: "Dividing by 2 means splitting into two equal halves.",
+      steps: [step(`Cut ${dividend} in half.`, `${dividend} ÷ 2 = ${q}`)],
       check,
-      remember: divisor === 2 ? "Divide by 2? Halve it." : `Divide by ${divisor}? Halve it ${halvings === 2 ? "twice" : "three times"}.`,
-      hint: `Cut ${dividend} in half first.`,
+      remember: "Divide by 2? Halve it.",
+      hint: `What is half of ${dividend}?`,
     };
   }
   if (divisor === 5) {
     return {
-      method: "÷5 is double, then remove a zero",
-      idea: "Dividing by 5 is the same as doubling and then dividing by 10.",
+      method: "÷5: double, then take a 0 off",
+      idea: "Dividing by 5 gives the same answer as doubling and then dividing by 10.",
       steps: [step(`Double ${dividend}.`, `${dividend} × 2 = ${dividend * 2}`), step("Take the 0 off the end.", `${dividend * 2} ÷ 10 = ${q}`)],
       check,
       remember: "Divide by 5? Double it, then take a 0 off.",
@@ -466,22 +496,33 @@ function divisionTip(dividend: number, divisor: number): CoachingTip {
 
   // Small answers: walk up the times table.
   if (q <= 10) {
-    const start = q > 5 ? 5 : 1;
+    // Start from an easy fact (×1, ×5 or ×10) and move one step at a time.
+    const start = q <= 3 ? 1 : q <= 7 ? 5 : 10;
     const steps = [step(`Think: ${divisor} × what = ${dividend}?`)];
-    if (start === 5) {
-      steps.push(step(`Start from a fact you know.`, `${divisor} × 5 = ${divisor * 5}`));
-      for (let k = 6; k <= q; k++) steps.push(step(`Add another ${divisor}.`, `${divisor} × ${k} = ${divisor * k}`));
-    } else {
-      for (let k = 1; k <= q; k++) steps.push(step(k === 1 ? `Count up in ${divisor}s.` : `Add another ${divisor}.`, `${divisor} × ${k} = ${divisor * k}`));
+    steps.push(step(start === 1 ? `Count up in ${divisor}s.` : `Start from an easy fact.`, `${divisor} × ${start} = ${divisor * start}`));
+    for (let k = start + (q > start ? 1 : -1); q > start ? k <= q : k >= q; k += q > start ? 1 : -1) {
+      steps.push(step(k > start ? `Add one more ${divisor}.` : `Take one ${divisor} away.`, `${divisor} × ${k} = ${divisor * k}`));
     }
-    steps.push(step(`You reached ${dividend} after ${q} lots of ${divisor}, so that's the answer.`, `${dividend} ÷ ${divisor} = ${q}`));
+    steps.push(step(`That's ${dividend}, so the answer is ${q}.`, `${dividend} ÷ ${divisor} = ${q}`));
     return {
       method: "Turn it into a times-table question",
       idea,
       steps,
       check,
       remember: "Division is times tables backwards. Ask: what times the small number gives the big one?",
-      hint: `Count up in ${divisor}s until you reach ${dividend}.`,
+      hint: `What times ${divisor} makes ${dividend}? Try ${divisor} × 5 or ${divisor} × 10 first.`,
+    };
+  }
+
+  if (divisor === 4 && dividend < 200) {
+    const half = dividend / 2;
+    return {
+      method: "÷4 is half, then half again",
+      idea: "4 is 2 × 2, so halving twice gives the same answer as dividing by 4.",
+      steps: [step(`Cut ${dividend} in half.`, `${dividend} ÷ 2 = ${half}`), step("Cut that in half again.", `${half} ÷ 2 = ${q}`)],
+      check,
+      remember: "Divide by 4? Halve it, then halve again.",
+      hint: `Cut ${dividend} in half first.`,
     };
   }
 
@@ -490,7 +531,7 @@ function divisionTip(dividend: number, divisor: number): CoachingTip {
     const small = dividend / 10;
     return {
       method: "Hide the zero, then put it back",
-      idea: `${idea} The 0 on the end just means everything is 10 times bigger, so you can ignore it, divide, and add it back.`,
+      idea: `${dividend} is just ${small} tens. So divide ${small}, and the answer is that many tens.`,
       steps: [
         step(`Cover the 0 on ${dividend} and divide what's left.`, `${small} ÷ ${divisor} = ${small / divisor}`),
         step("Put the 0 back on.", `${small / divisor} × 10 = ${q}`),
@@ -501,25 +542,78 @@ function divisionTip(dividend: number, divisor: number): CoachingTip {
     };
   }
 
-  // Bigger answers: take out a big easy chunk (×10s) first.
+  // Single-digit divisor: divide digit by digit from the left, carrying what's left over.
+  if (divisor < 10) return digitByDigit(dividend, divisor, idea, check);
+
+  // Bigger divisors: take out a big easy chunk (×10s) first.
   const tensCount = Math.floor(q / 10) * 10;
   const chunk = tensCount * divisor;
   const rest = dividend - chunk;
   const steps = [
-    step(`Take out a big easy chunk: ${tensCount} lots of ${divisor}.`, `${divisor} × ${tensCount} = ${chunk}`),
-    step(`See what's left over.`, `${dividend} − ${chunk} = ${rest}`),
+    step(`Take out an easy chunk: ${tensCount} lots of ${divisor}.`, `${divisor} × ${tensCount} = ${chunk}`),
+    step(`See what's left.`, `${dividend} − ${chunk} = ${rest}`),
   ];
   if (rest > 0) {
-    steps.push(step(`How many ${divisor}s fit into ${rest}?`, `${rest} ÷ ${divisor} = ${rest / divisor}`));
+    steps.push(step(`How many ${divisor}s are in ${rest}?`, `${rest} ÷ ${divisor} = ${rest / divisor}`));
     steps.push(step("Add the two counts.", `${tensCount} + ${rest / divisor} = ${q}`));
   }
   return {
-    method: "Take out big chunks",
-    idea: `${idea} Grab a big round chunk first (10s are easy), then deal with what's left.`,
+    method: "Take out an easy chunk",
+    idea: `${divisor} × 10 is easy, so take out a big round chunk of ${divisor}s first. Then only a small piece is left to divide.`,
     steps,
     check,
-    remember: "Divide big numbers in chunks: take out lots of 10 first, then the rest.",
+    remember: "Dividing by a big number? Take out lots of 10 first, then the rest.",
     hint: `How much is ${divisor} × ${tensCount}?`,
+  };
+}
+
+/** Short division in your head: 184 ÷ 8 → 18 ÷ 8 = 2, 2 left; 24 ÷ 8 = 3; answer 23. */
+function digitByDigit(dividend: number, divisor: number, idea: string, check: string): CoachingTip {
+  const digits = String(dividend).split("").map(Number);
+  const steps: CoachingStep[] = [];
+  const answer: number[] = [];
+  let carry = 0;
+  let i = 0;
+  // First chunk: enough leading digits to fit the divisor at least once.
+  let cur = digits[0];
+  while (cur < divisor && i < digits.length - 1) {
+    i += 1;
+    cur = cur * 10 + digits[i];
+  }
+  const firstPart = cur;
+  for (;;) {
+    const qd = Math.floor(cur / divisor);
+    carry = cur - qd * divisor;
+    answer.push(qd);
+    const isFirst = steps.length === 0;
+    const say = isFirst
+      ? i === 0
+        ? `Start with the first digit, ${cur}. How many ${divisor}s are in ${cur}?`
+        : `${digits[0]} is too small for ${divisor}, so start with ${firstPart}. How many ${divisor}s are in ${firstPart}?`
+      : qd === 0
+        ? `How many ${divisor}s are in ${cur}? None, so write 0.`
+        : `How many ${divisor}s are in ${cur}?`;
+    steps.push(step(say, carry > 0 ? `${cur} ÷ ${divisor} = ${qd}, ${carry} left over` : `${cur} ÷ ${divisor} = ${qd}`));
+    if (i >= digits.length - 1) break;
+    i += 1;
+    const next = digits[i];
+    const joined = carry * 10 + next;
+    steps.push(
+      step(
+        carry > 0 ? `Put the ${carry} left over in front of the next digit, ${next}. That makes ${joined}.` : `Move on to the next digit, ${next}.`,
+      ),
+    );
+    cur = joined;
+  }
+  const result = Number(answer.join(""));
+  steps.push(step(`Put the answer digits side by side: ${answer.join(", ")}.`, `${dividend} ÷ ${divisor} = ${result}`));
+  return {
+    method: "Divide digit by digit",
+    idea: `You don't have to divide ${dividend} all at once. Go from the left, one digit at a time, and carry anything left over to the next digit.`,
+    steps,
+    check,
+    remember: "Big number ÷ a single digit? Go left to right, divide, and carry what's left over to the next digit.",
+    hint: firstPart === digits[0] ? `How many ${divisor}s are in ${firstPart}?` : `Start with ${firstPart}. How many ${divisor}s are in it?`,
   };
 }
 
@@ -569,7 +663,7 @@ function percentageTip(pct: number, whole: number): CoachingTip {
     };
     return {
       method: names[pct],
-      idea: `${PER_CENT} ${pct === 50 ? "50 out of 100 is half." : pct === 25 ? "25 out of 100 is a quarter." : pct === 75 ? "75 out of 100 is three quarters." : "10 out of 100 is one tenth, so you divide by 10."}`,
+      idea: `${PER_CENT} ${pct === 50 ? "50 out of 100 is half." : pct === 25 ? "25 out of 100 is a quarter." : pct === 75 ? "75 out of 100 is three quarters." : pct === 20 ? "20 out of 100 is one fifth, or two lots of 10%." : "10 out of 100 is one tenth, so you divide by 10."}`,
       steps: direct,
       check,
       remember: pct === 10 || pct === 20 ? "To find 10%, divide by 10 (take a 0 off). Other percentages build from it." : "50% = half, 25% = quarter, 75% = three quarters.",
@@ -588,19 +682,6 @@ function percentageTip(pct: number, whole: number): CoachingTip {
     };
   }
 
-  // Swap trick: x% of y = y% of x (e.g. 12% of 25 = 25% of 12).
-  const swapped = easyPercent(whole, pct);
-  if (swapped) {
-    return {
-      method: "Swap the numbers",
-      idea: `${PER_CENT} A neat trick: ${pct}% of ${whole} is exactly the same as ${whole}% of ${pct}, and that one is easy.`,
-      steps: [step(`Swap them round.`, `${pct}% of ${whole} = ${whole}% of ${pct}`), ...swapped, step("Same answer either way.", `${pct}% of ${whole} = ${nf(answer)}`)],
-      check,
-      remember: "x% of y is the same as y% of x. Swap them when one way is easier.",
-      hint: `Try ${whole}% of ${pct} instead. It's the same answer.`,
-    };
-  }
-
   // Build from 10% and 5% (when 10% is a whole number).
   if (whole % 10 === 0 && pct % 5 === 0) {
     const ten = whole / 10;
@@ -613,11 +694,27 @@ function percentageTip(pct: number, whole: number): CoachingTip {
     if (hasFive && tens > 0) steps.push(step(`Add the 5%.`, `${nf(ten * tens)} + ${nf(five)} = ${nf(answer)}`));
     return {
       method: "Build it from 10% and 5%",
-      idea: `${PER_CENT} 10% is easy (divide by 10) and 5% is half of that. ${pct}% = ${[tens > 0 ? `${tens} × 10%` : null, hasFive ? "5%" : null].filter(Boolean).join(" + ")}.`,
+      idea:
+        tens === 0
+          ? `${PER_CENT} 10% is easy (divide by 10), and 5% is half of that.`
+          : `${PER_CENT} 10% is easy (divide by 10) and 5% is half of that. ${pct}% = ${[tens === 1 ? "10%" : `${tens} × 10%`, hasFive ? "5%" : null].filter(Boolean).join(" + ")}.`,
       steps,
       check,
       remember: "10% = divide by 10. 5% = half of 10%. Build other percentages from those.",
       hint: `Find 10% of ${whole} first.`,
+    };
+  }
+
+  // Swap trick: x% of y = y% of x (e.g. 12% of 25 = 25% of 12).
+  const swapped = easyPercent(whole, pct);
+  if (swapped) {
+    return {
+      method: "Swap the numbers",
+      idea: `${PER_CENT} A neat trick: ${pct}% of ${whole} is exactly the same as ${whole}% of ${pct}, and that one is easy.`,
+      steps: [step(`Swap them round.`, `${pct}% of ${whole} = ${whole}% of ${pct}`), ...swapped, step("Same answer either way.", `${pct}% of ${whole} = ${nf(answer)}`)],
+      check,
+      remember: "x% of y is the same as y% of x. Swap them when one way is easier.",
+      hint: `Try ${whole}% of ${pct} instead. It's the same answer.`,
     };
   }
 
@@ -642,23 +739,6 @@ function percentageTip(pct: number, whole: number): CoachingTip {
     };
   }
 
-  // Multiples of 4% when the whole is a multiple of 25: 4% is ÷25.
-  if (pct % 4 === 0 && whole % 25 === 0) {
-    const four = whole / 25;
-    const times = pct / 4;
-    return {
-      method: "Use 4%: divide by 25",
-      idea: `${PER_CENT} 4 out of 100 is the same as 1 out of 25, so 4% means divide by 25. ${pct}% is ${times} lots of 4%.`,
-      steps: [
-        step(`How many 25s fit in ${whole}? That's 4%.`, `${whole} ÷ 25 = ${four}`),
-        step(`${pct}% is ${times} lots of 4%.`, `${four} × ${times} = ${nf(answer)}`),
-      ],
-      check,
-      remember: "4% is the same as dividing by 25. Handy when the number is a multiple of 25.",
-      hint: `How many 25s fit into ${whole}?`,
-    };
-  }
-
   // Build from 1% (when 1% is a whole number).
   if (whole % 100 === 0) {
     const one = whole / 100;
@@ -669,6 +749,19 @@ function percentageTip(pct: number, whole: number): CoachingTip {
       check,
       remember: "1% = divide by 100. Then multiply by the percentage.",
       hint: `Find 1% of ${whole} first by taking two 0s off.`,
+    };
+  }
+
+  // The product lands on a round hundred (e.g. 8% of 125 → 8 × 125 = 1,000): multiply, then ÷100.
+  if ((pct * whole) % 100 === 0 && pct * whole <= 5000) {
+    const prod = pct * whole;
+    return {
+      method: "Multiply, then take two 0s off",
+      idea: `${PER_CENT} So ${pct}% of ${whole} is ${pct} × ${whole}, then divided by 100.`,
+      steps: [step(`Multiply the two numbers.`, `${pct} × ${whole} = ${prod}`), step("Divide by 100: take two 0s off.", `${prod} ÷ 100 = ${nf(answer)}`)],
+      check,
+      remember: "Any percentage: multiply the two numbers, then divide by 100.",
+      hint: `Work out ${pct} × ${whole} first.`,
     };
   }
 
@@ -709,7 +802,7 @@ function percentChangeTip(pct: number, whole: number, mode: number): CoachingTip
     ],
     check: add ? `Check: the total must be a little more than ${whole}.` : `Check: the sale price must be less than ${whole}.`,
     remember: add
-      ? "Adding VAT? 5% is half of 10%. Find it, then add it on."
+      ? `Adding ${pct}%? Work out ${pct}% first, then add it on.`
       : "Discount? Work out the percentage, then take it off the price.",
     hint: `First find ${pct}% of ${whole}.`,
   };
