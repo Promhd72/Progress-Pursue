@@ -145,7 +145,7 @@ export default function Train() {
           <Txt variant="heading">Real-life scenarios</Txt>
           <Muted variant="caption" style={{ marginTop: 2 }}>
             {advancedQ.data
-              ? `${advancedQ.data.overall.mastered} of ${advancedQ.data.overall.total} solved · work situations with charts`
+              ? `${advancedQ.data.overall.mastered} of ${advancedQ.data.overall.total} solved · everyday and work maths`
               : "Story questions with charts"}
           </Muted>
         </View>

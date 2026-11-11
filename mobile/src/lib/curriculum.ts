@@ -151,7 +151,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Round up, then fix",
       outcome: "Add numbers like 56 + 29 by rounding 29 to 30 and fixing it.",
-      context: "Prices like AED 29 or 49: round them up, then take back the change.",
+      context: "Prices like $29 or $49: round them up, then take back the change.",
       targetSec: 5,
       example: [56, 29],
       gen: () => [randAvoiding(21, 79, NO89), tensDigit(rand(19, 79)) * 10 + pickOne([8, 9])],
@@ -181,7 +181,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Near-round big sums",
       outcome: "Add big numbers like 499 + 376 by rounding to 500.",
-      context: "Totals with prices like AED 499 or 1,999.",
+      context: "Totals with prices like $499 or $1,999.",
       targetSec: 7,
       example: [499, 376],
       gen: () => [rand(2, 7) * 100 - pickOne([1, 2]), randAvoiding(112, 497, NO89)],
@@ -242,7 +242,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Take a round number, give back",
       outcome: "Subtract numbers like 29 or 98 by taking 30 or 100 and adding back.",
-      context: "Taking away prices like AED 99.",
+      context: "Taking away prices like $99.",
       targetSec: 5,
       example: [84, 29],
       gen: () => {
@@ -267,7 +267,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Change from a round amount",
       outcome: "Work out change from 100, 500 or 1,000 instantly.",
-      context: "Change from a AED 500 or 1,000 note.",
+      context: "What's left from a $500 or $1,000 budget.",
       targetSec: 7,
       example: [1000, 365],
       gen: () => {
@@ -308,7 +308,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Tens × a digit",
       outcome: "Multiply round numbers like 40 × 6 by hiding the zero.",
-      context: "Like 6 items at AED 40 each.",
+      context: "Like 6 items at $40 each.",
       targetSec: 3.5,
       example: [40, 6],
       gen: () => [rand(2, 9) * 10, pickOne([3, 6, 7, 8])],
@@ -330,7 +330,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Bigger two digits × a digit",
       outcome: "Multiply numbers like 68 × 7 in your head.",
-      context: "Like 7 nights at AED 68.",
+      context: "Like 7 nights at $68.",
       targetSec: 6,
       example: [68, 7],
       gen: () => [randAvoiding(51, 99, [0]), pickOne([3, 6, 7, 8])],
@@ -444,7 +444,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "20% and 5%",
       outcome: "Find 20% and 5% using 10% as your anchor.",
-      context: "5% is UAE VAT.",
+      context: "5% is a common sales tax or VAT rate.",
       targetSec: 5,
       example: [5, 360],
       gen: () => (Math.random() < 0.5 ? pct(20, 5, 2, 40) : pct(5, 20, 1, 25)),
@@ -475,7 +475,7 @@ export const LADDER: Record<SkillTrack, LevelDef[]> = {
     {
       name: "Add VAT",
       outcome: "Add 5% VAT to a price in your head.",
-      context: "Shelf price to what you actually pay in the UAE.",
+      context: "Shelf price to what you actually pay at the till.",
       targetSec: 7,
       example: [5, 240, 1],
       gen: () => [5, 20 * rand(2, 40), 1],

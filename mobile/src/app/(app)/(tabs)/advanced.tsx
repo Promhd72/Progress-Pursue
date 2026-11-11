@@ -58,7 +58,7 @@ export default function Advanced() {
       <View>
         <Txt variant="title">Real-life scenarios</Txt>
         <Muted style={{ marginTop: 4 }}>
-          Work situations with real numbers. Read the story, scan the chart or table, and pick the answer.
+          Everyday and work situations with real numbers. Read the story, scan the chart or table, and pick the answer.
         </Muted>
       </View>
 

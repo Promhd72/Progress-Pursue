@@ -147,7 +147,7 @@ export const TECHNIQUES: Technique[] = [
     track: "subtraction",
     name: "Count up to the note",
     tagline: "Work out change like a cashier.",
-    when: "Taking away from 100, 500 or 1,000, like change from a AED 500 note.",
+    when: "Taking away from 100, 500 or 1,000, like what's left of a $500 budget.",
     why: "Counting up from the price to the note in friendly hops avoids messy borrowing.",
     steps: ["From the price, hop to the next ten.", "Hop to the next hundred.", "Hop to the note.", "Add the hops."],
     examples: [[1000, 365], [500, 135]],

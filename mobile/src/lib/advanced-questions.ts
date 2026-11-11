@@ -11,6 +11,7 @@ export type Visual =
 
 export type { AdvancedDomain } from "./advanced-domains";
 import type { AdvancedDomain } from "./advanced-domains";
+import { MORE_QUESTIONS } from "./advanced-questions-more";
 
 export type AdvancedQuestion = {
   id: string;
@@ -31,7 +32,7 @@ export type AdvancedQuestion = {
   technique?: string;
 };
 
-export const ADVANCED_QUESTIONS: AdvancedQuestion[] = [
+const CORE_QUESTIONS: AdvancedQuestion[] = [
   {
     id: "q-revenue-mix",
     domain: "finance",
@@ -332,6 +333,8 @@ export const ADVANCED_QUESTIONS: AdvancedQuestion[] = [
     ],
   },
 ];
+
+export const ADVANCED_QUESTIONS: AdvancedQuestion[] = [...CORE_QUESTIONS, ...MORE_QUESTIONS];
 
 export type PublicAdvancedQuestion = Omit<
   AdvancedQuestion,

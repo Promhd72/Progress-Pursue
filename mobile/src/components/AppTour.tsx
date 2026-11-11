@@ -176,9 +176,9 @@ function MockScenario() {
   return (
     <View style={styles.phone}>
       <Txt style={{ fontSize: 10, fontFamily: fonts.semibold, letterSpacing: 0.8 }} color={colors.mutedForeground}>PRICING</Txt>
-      <Txt style={{ fontSize: 12, lineHeight: 17 }}>A supplier raises prices 8%. Your AED 2,500 monthly order now costs…</Txt>
+      <Txt style={{ fontSize: 12, lineHeight: 17 }}>A supplier raises prices 8%. Your $2,500 monthly order now costs…</Txt>
       <View style={{ gap: 6 }}>
-        {["AED 2,600", "AED 2,700", "AED 2,800"].map((o, i) => (
+        {["$2,600", "$2,700", "$2,800"].map((o, i) => (
           <View key={o} style={[styles.option, i === 1 && { borderColor: colors.success, backgroundColor: colors.successSoft }]}>
             <Txt style={{ fontSize: 12, fontFamily: fonts.medium }}>{o}</Txt>
             {i === 1 && <Ionicons name="checkmark-circle" size={14} color={colors.success} />}
