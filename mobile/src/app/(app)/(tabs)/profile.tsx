@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from "react-native";
 import { BadgeIcon, useBadges } from "@/components/Badges";
 import { ConfidenceResult } from "@/components/Confidence";
 import { getConfidence } from "@/lib/confidence";
@@ -14,6 +14,7 @@ import { rankForXp } from "@/lib/drill-engine";
 import { getReminderPrefs, keyHaptic, trainedTodayFrom, updateReminderPrefs, type ReminderPrefs } from "@/lib/native";
 import { DAILY_TARGETS, getOnboarding, saveOnboarding, type DailyTargetId } from "@/lib/onboarding";
 import { resolveIsPro } from "@/lib/plan";
+import { MANAGE_URL } from "@/lib/purchases";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
 
@@ -127,6 +128,32 @@ export default function Profile() {
           <ConfidenceResult />
         </Section>
       ) : null}
+
+      <Section title="Rapid Math Pro">
+        <Card style={{ padding: 0 }}>
+          {isPro ? (
+            <>
+              <View style={styles.rowItem}>
+                <Ionicons name="diamond" size={18} color={colors.primary} style={{ marginRight: 10 }} />
+                <Txt variant="label" style={{ flex: 1 }}>You're Pro</Txt>
+                <Muted variant="caption">Everything unlocked</Muted>
+              </View>
+              {p.pro_source === "store" ? (
+                <>
+                  <Divider />
+                  <LinkRow icon="card-outline" label="Manage subscription" onPress={() => void Linking.openURL(MANAGE_URL)} />
+                </>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <LinkRow icon="diamond-outline" label="Try Pro free for 3 days" onPress={() => router.push("/pro")} />
+              <Divider />
+              <LinkRow icon="refresh-outline" label="Restore purchases" onPress={() => router.push("/pro")} />
+            </>
+          )}
+        </Card>
+      </Section>
 
       <Section title="Account">
         <Card style={{ padding: 0 }}>

@@ -1,11 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_MODE } from "./backend";
 import * as demo from "./demo";
+import { signOutPurchases } from "./purchases";
 import { deleteAccount as realDelete } from "./rapid-math.functions";
 
 /** Account actions that work in both real (Supabase) and demo mode. */
 
 export async function signOut() {
+  await signOutPurchases();
   if (DEMO_MODE) demo.demoSignOut();
   else await supabase.auth.signOut();
 }
@@ -25,5 +27,6 @@ export async function deleteAccount() {
     return;
   }
   await realDelete();
+  await signOutPurchases();
   await supabase.auth.signOut();
 }

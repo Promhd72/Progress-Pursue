@@ -121,6 +121,21 @@ export default function Train() {
         </Card>
       )}
 
+      {!overview.isPro && overview.tracks.some((t) => t.current_level > FREE_MAX_LEVEL) && (
+        <Card style={{ gap: 12, borderColor: colors.primary }}>
+          <Row gap={12} style={{ alignItems: "flex-start" }}>
+            <IconBadge name="diamond-outline" size={40} />
+            <View style={{ flex: 1 }}>
+              <Txt variant="heading">You're ready for Level {FREE_MAX_LEVEL + 1}</Txt>
+              <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
+                Levels {FREE_MAX_LEVEL + 1}–{MAX_LEVEL} and unlimited practice come with Pro.
+              </Muted>
+            </View>
+          </Row>
+          <Button title="Try Pro free for 3 days" onPress={() => router.push("/pro")} />
+        </Card>
+      )}
+
       <SpeedByTrack stats={speedQ.data ?? []} />
 
       <View style={{ gap: 12 }}>
@@ -297,7 +312,7 @@ function TrackCard({
   isPro: boolean;
   onPlay: () => void;
 }) {
-  // Free users past Level 2 keep practising Level 2, so there's never a dead end.
+  // Free users past the free levels keep practising the top free level, so there's never a dead end.
   const playLevel = Math.min(currentLevel, isPro ? MAX_LEVEL : FREE_MAX_LEVEL);
   const capped = !isPro && currentLevel > FREE_MAX_LEVEL;
   return (
@@ -312,7 +327,7 @@ function TrackCard({
           <Txt variant="label" style={{ fontSize: 17 }}>{TRACK_LABELS[track]}</Txt>
           <Muted variant="caption" numberOfLines={1}>
             {capped
-              ? `Practising L${playLevel}: ${levelSummary(track, playLevel).name} · Pro unlocks more`
+              ? `Practising L${playLevel}: ${levelSummary(track, playLevel).name} · L${currentLevel} needs Pro`
               : `Next: L${currentLevel}, ${levelSummary(track, currentLevel).name}`}
           </Muted>
           <Muted variant="caption" style={{ fontSize: 12 }}>

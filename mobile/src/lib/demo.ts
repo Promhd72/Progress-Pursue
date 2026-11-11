@@ -145,6 +145,14 @@ export function demoUpdateProfile(patch: Partial<Pick<Profile, "name" | "onboard
   save(db);
 }
 
+/** Simulated purchase in demo mode (no App Store). */
+export function demoSetPro(active: boolean) {
+  const db = load();
+  if (!db.profile) return;
+  db.profile = { ...db.profile, is_pro: active, pro_source: active ? "store" : null };
+  save(db);
+}
+
 export function demoDeleteAccount() {
   try {
     localStorage.removeItem(KEY + ".saved");

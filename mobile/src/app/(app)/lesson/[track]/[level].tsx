@@ -97,18 +97,27 @@ function Locked({
   level: number;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [title, body, icon] =
     reason === "locked_pro"
-      ? [`Level ${level} is Pro-only`, `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Levels ${FREE_MAX_LEVEL + 1}–10 come with Pro, launching soon.`, "diamond-outline" as const]
+      ? [`Level ${level} is Pro-only`, `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Levels ${FREE_MAX_LEVEL + 1}–10 come with Pro. Try it free for 3 days.`, "diamond-outline" as const]
       : reason === "locked_progression"
         ? ["Finish earlier levels first", `Pass the previous level (80% or more) to unlock Level ${level}.`, "lock-closed-outline" as const]
-        : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow to keep your streak going.", "moon-outline" as const];
+        : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow, or go unlimited with Pro.", "moon-outline" as const];
   return (
     <View style={styles.centerBox}>
       <IconBadge name={icon} size={64} />
       <Txt variant="title" center style={{ marginTop: 20 }}>{title}</Txt>
       <Muted center style={{ marginTop: 8 }}>{body}</Muted>
-      <Button title="Back to training" variant="secondary" onPress={onClose} style={{ marginTop: 28, alignSelf: "stretch" }} />
+      {reason === "locked_pro" || reason === "daily_limit" ? (
+        <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ marginTop: 28, alignSelf: "stretch" }} />
+      ) : null}
+      <Button
+        title="Back to training"
+        variant={reason === "locked_pro" || reason === "daily_limit" ? "ghost" : "secondary"}
+        onPress={onClose}
+        style={{ marginTop: reason === "locked_pro" || reason === "daily_limit" ? 8 : 28, alignSelf: "stretch" }}
+      />
     </View>
   );
 }
@@ -249,6 +258,7 @@ function Results({
   onNext?: () => void;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const accuracy = Math.round((result.correct / result.total) * 100);
   const avgSec = result.durationMs / result.total / 1000;
   const avg = avgSec.toFixed(1);
@@ -277,7 +287,7 @@ function Results({
             ? level >= MAX_LEVEL
               ? "You've finished this track."
               : proLocked
-                ? `Levels ${level + 1}–10 come with Pro, launching soon. Keep practising to grow your streak.`
+                ? `Levels ${level + 1}–10 come with Pro. Try it free for 3 days.`
                 : `Unlocked: Level ${level + 1}, ${nextInfo?.name ?? ""}.`
             : `You need ${Math.round(PASS_THRESHOLD * 100)}% to advance.`}
         </Muted>
@@ -322,6 +332,9 @@ function Results({
 
       <View style={{ gap: 10 }}>
         {onNext && <Button title={`Next: ${nextInfo?.name ?? `Level ${level + 1}`}`} icon="arrow-forward" onPress={onNext} />}
+        {result.passed && proLocked && level < MAX_LEVEL && (
+          <Button title={`Unlock Level ${level + 1} with Pro`} icon="diamond-outline" onPress={() => router.push("/pro")} />
+        )}
         <Button title="Try again" variant={onNext ? "secondary" : "primary"} onPress={onReplay} />
         <Button title="Done" variant="ghost" onPress={onClose} />
       </View>

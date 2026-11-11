@@ -110,7 +110,8 @@ export default function Advanced() {
         <Card style={{ alignItems: "center", gap: 10, padding: 24 }}>
           <IconBadge name="moon-outline" size={56} />
           <Txt variant="heading" center>That's today's free scenarios</Txt>
-          <Muted center>Free gives you three each day. Come back tomorrow for more.</Muted>
+          <Muted center>Free gives you three each day. Come back tomorrow, or go unlimited with Pro.</Muted>
+          <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch", marginTop: 6 }} />
           <Button title="Run a regular lesson" variant="secondary" onPress={() => router.navigate("/train")} style={{ alignSelf: "stretch", marginTop: 6 }} />
         </Card>
       ) : (

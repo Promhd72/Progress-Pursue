@@ -18,6 +18,7 @@ Store, so you don't need Xcode. The backend is your own Supabase project.
    (paste the whole file, then Run):
    1. `supabase/migrations/20261110000000_rapidmath_init.sql`
    2. `supabase/migrations/20261111000000_feedback.sql`
+   3. `supabase/migrations/20261112000000_pro_subscriptions.sql`
 3. **Auth settings** (Authentication > Sign In / Providers > Email): turn **off**
    "Confirm email" for launch. The app handles it if you leave it on, but users then have to
    leave the app to click a link before they can sign in.
@@ -106,7 +107,8 @@ reminder time > placement test > Train.
 **Progress:** stars per level, XP raises your Rank (Starter → Mastermind), daily goal ring,
 streak, local reminders that skip days you've trained.
 
-**Free plan:** Levels 1 to 2 on all five tracks, 3 lessons and 3 scenarios per day.
+**Free plan:** Levels 1 to 4 on all five tracks, 3 lessons and 3 scenarios per day. The Meeting
+warm-up is free and unlimited.
 
 **Feedback:** Profile > Help us improve > Request a feature / Send feedback. Messages land
 in Supabase: **Table Editor > feedback** (with the sender's email, type and app version).
@@ -118,20 +120,76 @@ functions in the migrations, which enforce the rules.
 **Account deletion:** Profile > Delete account removes the user and all their data (App
 Store guideline 5.1.1(v)).
 
-## Pro
+## Pro (App Store subscriptions)
 
-Pro unlocks Levels 3 to 10 and removes the daily caps. There's no way to buy it yet; the app
-says Pro is "launching soon". To give Pro to a tester, run in the SQL Editor:
+Pro unlocks Levels 5 to 10 and removes the daily caps on lessons and scenarios.
+
+| Plan | Price (USD) | Free trial |
+| --- | --- | --- |
+| Monthly | $4.99 | 3 days |
+| Yearly | $29.99 (about $2.50/month) | 3 days |
+
+Apple converts these to local prices (AED in the UAE). The app always shows the store's real
+price. Free users see "Try Pro free for 3 days" when they reach Level 5, run out of daily lessons
+or scenarios, place above Level 4, and in Profile > Rapid Math Pro.
+
+**How it works:** the app buys through Apple using RevenueCat. Right after a purchase it asks the
+`revenuecat` Edge Function to check the subscription with RevenueCat, and only that function can
+set `is_pro` (through the server-only `set_store_pro` database function). RevenueCat's webhook
+calls the same function for renewals, cancellations and expiry. The app can't unlock Pro by itself.
+
+Purchases only work in a real build (TestFlight or the App Store). In Expo Go and the web preview
+the Pro screen works but no payment is taken, and in demo mode a "purchase" just unlocks Pro on
+that device.
+
+### Set it up (about an hour, once)
+
+1. **Paid apps agreement:** App Store Connect > Business. Accept the Paid Apps agreement and add
+   your bank and tax details. Subscriptions don't work until this is active.
+2. **Create the subscriptions:** App Store Connect > your app > Subscriptions.
+   - Create a subscription group called `Rapid Math Pro`.
+   - Add two subscriptions: `rapidmath_pro_monthly` (1 month, USD 4.99) and
+     `rapidmath_pro_yearly` (1 year, USD 29.99). Give each a display name and description.
+   - On each one, add an **Introductory Offer**: Free, 3 days, all countries.
+3. **RevenueCat** (free until USD 2,500/month revenue): sign up at revenuecat.com, create a
+   project, add an **App Store** app with Bundle ID `app.rapidmath.ios`, and follow its steps to
+   connect App Store Connect (In-App Purchase key).
+   - **Products:** import both subscriptions.
+   - **Entitlements:** create one called exactly `pro` and attach both products.
+   - **Offerings:** in the `default` offering, add a **Monthly** package
+     (`rapidmath_pro_monthly`) and an **Annual** package (`rapidmath_pro_yearly`).
+4. **Edge Function** (Supabase dashboard > Edge Functions > Deploy a new function > Via editor):
+   name it `revenuecat`, paste `supabase/functions/revenuecat/index.ts`, deploy. Then open the
+   function's settings and turn **off** "Enforce JWT verification" (it checks its own keys).
+5. **Secrets** (Supabase > Edge Functions > Secrets):
+   - `REVENUECAT_SECRET_KEY`: RevenueCat > Project settings > API keys > create a **secret** key.
+   - `REVENUECAT_WEBHOOK_AUTH`: make up a long random password.
+6. **Webhook:** RevenueCat > Integrations > Webhooks > add one.
+   - URL: `https://YOUR-PROJECT-REF.supabase.co/functions/v1/revenuecat`
+   - Authorization header value: `Bearer ` followed by your `REVENUECAT_WEBHOOK_AUTH` password.
+7. **App keys:** add these to `mobile/.env` and to EAS (same way as the Supabase keys):
+   ```
+   EXPO_PUBLIC_REVENUECAT_IOS_KEY=appl_...   (RevenueCat > API keys > Apple public key)
+   EXPO_PUBLIC_PRIVACY_URL=https://your-site/privacy.html
+   ```
+8. **Test in TestFlight** with a Sandbox tester (App Store Connect > Users and Access > Sandbox).
+   Sandbox time runs fast: the 3-day trial lasts about 3 minutes, so you can watch it renew.
+
+**For App Review:** submit the subscriptions together with the build (they're reviewed with it),
+and mention in the review notes that Pro is on the Profile tab. The Pro screen already shows the
+price, trial length, auto-renew terms, Restore, Terms of Use and Privacy Policy, which Apple
+requires.
+
+To give Pro to a tester without paying, run in the SQL Editor:
 
 ```sql
 update public.profiles set is_pro = true, pro_source = 'manual'
 where email = 'tester@example.com';
 ```
 
-When you're ready to sell it, add Apple In-App Purchase (RevenueCat has an Expo guide) and
-have its webhook set `is_pro`. Apple takes 15% under the Small Business Program. In-app
-coupon codes aren't offered because Apple's guideline 3.1.1 doesn't allow unlocking features
-with your own codes.
+Apple takes 15% under the Small Business Program (apply in App Store Connect). In-app coupon
+codes aren't offered because Apple's guideline 3.1.1 doesn't allow unlocking features with your
+own codes; use Apple's Offer Codes instead.
 
 ## Known gaps
 

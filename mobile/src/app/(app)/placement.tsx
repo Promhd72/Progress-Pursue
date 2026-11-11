@@ -6,9 +6,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CoachingReview } from "@/components/Coaching";
 import { DrillHeader, DrillRunner, type DrillAnswer } from "@/components/DrillRunner";
 import { Button, Card, IconBadge, Ionicons, Loading, Muted, Row, Txt } from "@/components/ui";
-import { PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, buildPlacement, type SkillTrack } from "@/lib/curriculum";
+import { FREE_MAX_LEVEL, PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, buildPlacement, type SkillTrack } from "@/lib/curriculum";
 import { submitPlacement } from "@/lib/backend";
 import { finishHaptic } from "@/lib/native";
+import { useProfile } from "@/lib/queries";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts } from "@/theme";
 
@@ -21,6 +22,7 @@ export default function PlacementScreen() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [levels, setLevels] = useState<Record<SkillTrack, number> | null>(null);
   const [review, setReview] = useState<DrillAnswer[]>([]);
+  const { data: profile } = useProfile();
   const close = () => (router.canGoBack() ? router.back() : router.replace("/train"));
   const guard = useQuitGuard("Quit the placement test?", "Your placement won't be saved. You can take it again anytime.", "Quit test");
 
@@ -115,8 +117,31 @@ export default function PlacementScreen() {
               </Card>
             ))}
           </View>
+          {!profile?.is_pro && TRACKS.some((t) => levels[t] > FREE_MAX_LEVEL) && (
+            <Card style={{ gap: 12, borderColor: colors.primary, backgroundColor: colors.primarySoft }}>
+              <Row gap={10}>
+                <Ionicons name="diamond-outline" size={22} color={colors.primary} />
+                <Txt variant="heading" style={{ flex: 1 }}>
+                  You're ahead of the free levels
+                </Txt>
+              </Row>
+              <Muted style={{ fontSize: 15 }}>
+                You placed at Level {FREE_MAX_LEVEL + 1}+ on{" "}
+                {TRACKS.filter((t) => levels[t] > FREE_MAX_LEVEL)
+                  .map((t) => TRACK_LABELS[t])
+                  .join(", ")}
+                . Free covers Levels 1–{FREE_MAX_LEVEL}, so unlock Pro to train at your real level.
+              </Muted>
+              <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} />
+            </Card>
+          )}
           <CoachingReview items={review} />
-          <Button title="Open my curriculum" icon="arrow-forward" onPress={() => router.replace("/train")} />
+          <Button
+            title="Open my curriculum"
+            icon="arrow-forward"
+            variant={!profile?.is_pro && TRACKS.some((t) => levels[t] > FREE_MAX_LEVEL) ? "secondary" : "primary"}
+            onPress={() => router.replace("/train")}
+          />
         </ScrollView>
       )}
     </SafeAreaView>

@@ -1,3 +1,9 @@
 # Supabase CLI config. Link your own project with:
 #   npx supabase link --project-ref <your-project-ref>
 project_id = "rapidmath"
+
+# The RevenueCat webhook doesn't send a Supabase token, so this function checks
+# its own Authorization header. In the dashboard, turn off "Enforce JWT
+# verification" for the revenuecat function instead.
+[functions.revenuecat]
+verify_jwt = false

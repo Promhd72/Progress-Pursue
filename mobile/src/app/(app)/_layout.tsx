@@ -1,9 +1,11 @@
 import { Redirect, Stack, useSegments } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { BadgeWatcher } from "@/components/Badges";
 import { useProfile } from "@/lib/queries";
 import { scheduleStreakReminders, trainedTodayFrom } from "@/lib/native";
 import { getOnboarding } from "@/lib/onboarding";
+import { initPurchases, storeEnabled, syncPro } from "@/lib/purchases";
 import { colors, fonts } from "@/theme";
 
 export default function AppLayout() {
@@ -15,6 +17,19 @@ export default function AppLayout() {
   useEffect(() => {
     if (profile) void scheduleStreakReminders(trainedTodayFrom(lastActive));
   }, [profile, lastActive]);
+
+  // Tie App Store purchases to this account. For Pro users, re-check the
+  // subscription once per launch so a lapsed one doesn't stay unlocked.
+  const qc = useQueryClient();
+  const userId = profile?.id ?? null;
+  const isPro = !!profile?.is_pro;
+  useEffect(() => {
+    if (!storeEnabled || !userId) return;
+    void initPurchases(userId)
+      .then(() => (isPro ? syncPro().then(() => qc.invalidateQueries()) : undefined))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   // New users (or anyone opening the app for the first time) go through onboarding.
   const inSetup = segments.includes("onboarding") || segments.includes("placement");
@@ -39,6 +54,7 @@ export default function AppLayout() {
       <Stack.Screen name="lesson/[track]/[level]" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="placement" options={{ presentation: "fullScreenModal" }} />
       <Stack.Screen name="meeting" options={{ presentation: "fullScreenModal" }} />
+      <Stack.Screen name="pro" options={{ presentation: "modal" }} />
       <Stack.Screen
         name="technique/[id]"
         options={{

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Card, ErrorState, Ionicons, Loading, Muted, ProgressBar, Row, Stars, Txt, type IconName } from "@/components/ui";
+import { Button, Card, ErrorState, Ionicons, Loading, Muted, ProgressBar, Row, Stars, Txt, type IconName } from "@/components/ui";
 import { ADVANCED_DOMAINS, ADVANCED_DOMAIN_LABELS, ADVANCED_DOMAIN_SYMBOL } from "@/lib/advanced-domains";
 import { getAdvancedProgress } from "@/lib/backend";
 import {
@@ -21,7 +21,7 @@ import { colors, fonts, radius } from "@/theme";
 type Status = "passed" | "next" | "open" | "locked" | "pro";
 
 const STAGES = [
-  { from: 1, to: 2, name: "Foundations", blurb: "Get comfortable with the basics. Free." },
+  { from: 1, to: 2, name: "Foundations", blurb: "Get comfortable with the basics." },
   { from: 3, to: 5, name: "Building speed", blurb: "Bigger numbers, same tricks, faster." },
   { from: 6, to: 8, name: "Work-ready", blurb: "The kind of numbers you meet in meetings." },
   { from: 9, to: 10, name: "Expert", blurb: "Fast, confident answers to tough sums." },
@@ -223,9 +223,12 @@ export default function Curriculum() {
       ))}
 
       {!isPro && (
-        <Muted variant="caption" center style={{ fontSize: 13 }}>
-          Levels 1–{FREE_MAX_LEVEL} are free on every track. Levels {FREE_MAX_LEVEL + 1}–10 come with Pro, launching soon.
-        </Muted>
+        <Card style={{ gap: 10, alignItems: "center" }}>
+          <Muted variant="caption" center style={{ fontSize: 14 }}>
+            Levels 1–{FREE_MAX_LEVEL} are free on every track. Levels {FREE_MAX_LEVEL + 1}–10 come with Pro.
+          </Muted>
+          <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch" }} />
+        </Card>
       )}
 
       <View style={{ gap: 8 }}>

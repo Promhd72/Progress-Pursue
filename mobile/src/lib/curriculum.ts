@@ -24,7 +24,7 @@ export const TRACK_SYMBOL: Record<SkillTrack, string> = {
 export const MAX_LEVEL = 10;
 export const QUESTIONS_PER_LESSON = 10;
 export const PASS_THRESHOLD = 0.8; // 80% correct to pass
-export const FREE_MAX_LEVEL = 2;   // Free users can play L1–L2
+export const FREE_MAX_LEVEL = 4;   // Free users can play L1–L4
 export const FREE_DAILY_LESSONS = 3;
 
 export interface Question {
