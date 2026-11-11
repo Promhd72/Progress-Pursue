@@ -158,12 +158,12 @@ function Intro() {
         Think faster.{"\n"}Talk numbers.
       </Txt>
       <Muted center style={{ marginTop: 12, paddingHorizontal: 20 }}>
-        Mental math training for professionals. Five minutes a day.
+        Get quicker and more confident with numbers, in meetings and on the go. Five minutes a day.
       </Muted>
       <View style={{ marginTop: 36, gap: 18 }}>
-        <Benefit icon="timer-outline" title="Answer in seconds" text="18% of 250? You'll know before the slide changes." />
-        <Benefit icon="trending-up" title="Measured progress" text="Speed and accuracy tracked every session." />
-        <Benefit icon="flame-outline" title="A habit that sticks" text="Streaks, XP and gentle daily reminders." />
+        <Benefit icon="chatbubbles-outline" title="Speak up in meetings" text="18% of 250? Say it before the slide changes." />
+        <Benefit icon="walk-outline" title="Numbers on the go" text="Split a bill, check a discount, size a deal. No calculator." />
+        <Benefit icon="trending-up" title="Confidence that builds" text="Short daily lessons, streaks and progress you can see." />
       </View>
     </View>
   );

@@ -23,7 +23,7 @@ export const GOALS: { id: GoalId; emoji: string; title: string; blurb: string }[
     id: "money",
     emoji: "🧾",
     title: "Everyday money maths",
-    blurb: "Discounts, 5% VAT, tips and splitting the bill",
+    blurb: "Discounts, tax, tips and splitting the bill",
   },
   {
     id: "sharp",
