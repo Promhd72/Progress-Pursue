@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TipCard } from "@/components/Coaching";
 import { NumericKeypad } from "@/components/NumericKeypad";
@@ -135,6 +135,7 @@ function Runner({ questions, onDone }: { questions: MeetingQuestion[]; onDone: (
   }, []);
 
   const q = questions[index];
+  const compact = useWindowDimensions().height < 720;
 
   function next() {
     setFlash(null);
@@ -172,40 +173,43 @@ function Runner({ questions, onDone }: { questions: MeetingQuestion[]; onDone: (
             {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")}
           </Txt>
         </Row>
-        <Txt variant="label" color={colors.success}>
-          ✓ {score}
-        </Txt>
+        <Row gap={16}>
+          <Txt variant="label" color={colors.success}>
+            ✓ {score}
+          </Txt>
+          <Pressable
+            onPress={() => {
+              keyHaptic();
+              submit(true);
+            }}
+            disabled={!!flash}
+            hitSlop={10}
+            accessibilityLabel="Skip this question"
+          >
+            <Txt variant="label" color={flash ? colors.mutedForeground : colors.primary}>
+              Skip
+            </Txt>
+          </Pressable>
+        </Row>
       </Row>
       <View style={{ marginTop: 10 }}>
         <ProgressBar value={left / MEETING_SECONDS} height={6} color={left <= 10 ? colors.destructive : colors.primary} />
       </View>
 
-      <View style={styles.center}>
-        <View style={styles.bubble}>
-          <Txt style={styles.say}>{q.say}</Txt>
+      <View style={[styles.center, compact && { gap: 8, paddingVertical: 6 }]}>
+        <View style={[styles.bubble, compact && { padding: 12 }]}>
+          <Txt style={[styles.say, compact && { fontSize: 17, lineHeight: 23 }]}>{q.say}</Txt>
         </View>
-        <Animated.View style={[styles.answer, { borderColor: border, transform: [{ translateX: shake }] }]}>
+        <Animated.View style={[styles.answer, compact && { height: 54 }, { borderColor: border, transform: [{ translateX: shake }] }]}>
           <Txt style={[styles.answerText, !input && { color: "#b4bfca" }]}>{input || "?"}</Txt>
           {flash === "ok" && <Ionicons name="checkmark-circle" size={28} color={colors.success} style={styles.mark} />}
           {flash === "bad" && <Ionicons name="close-circle" size={28} color={colors.destructive} style={styles.mark} />}
         </Animated.View>
-        <View style={{ minHeight: 26, justifyContent: "center" }}>
+        <View style={{ minHeight: 22, justifyContent: "center" }}>
           {flash === "bad" ? (
             <Muted>
               {q.math} = <Txt variant="label">{String(q.answer)}</Txt>
             </Muted>
-          ) : !flash ? (
-            <Pressable
-              onPress={() => {
-                keyHaptic();
-                submit(true);
-              }}
-              hitSlop={8}
-            >
-              <Muted variant="caption" style={{ fontFamily: fonts.semibold }}>
-                Skip
-              </Muted>
-            </Pressable>
           ) : null}
         </View>
       </View>

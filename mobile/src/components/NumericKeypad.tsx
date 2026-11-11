@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { Ionicons, Txt } from "@/components/ui";
 import { keyHaptic } from "@/lib/native";
 import { colors, fonts, radius } from "@/theme";
@@ -23,16 +23,19 @@ export function NumericKeypad({
     fn();
   };
 
+  // Shorter keys on small phones so the question above always has room.
+  const h = useWindowDimensions().height < 720 ? { height: 50 } : null;
+
   return (
-    <View style={styles.grid} accessibilityLabel="Number pad">
+    <View style={[styles.grid, h && { rowGap: 8 }]} accessibilityLabel="Number pad">
       {KEYS.map((d) => (
-        <Key key={d} onPress={press(() => onDigit(d))} disabled={disabled} label={d} />
+        <Key key={d} onPress={press(() => onDigit(d))} disabled={disabled} label={d} compact={!!h} />
       ))}
       <Pressable
         accessibilityLabel="Delete"
         onPress={press(onBackspace)}
         disabled={disabled}
-        style={({ pressed }) => [styles.key, styles.ghost, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.key, h, styles.ghost, pressed && styles.pressed]}
       >
         <Ionicons name="backspace-outline" size={28} color={colors.mutedForeground} />
       </Pressable>
@@ -41,7 +44,7 @@ export function NumericKeypad({
         accessibilityLabel="Submit answer"
         onPress={press(onSubmit)}
         disabled={disabled}
-        style={({ pressed }) => [styles.key, styles.submit, pressed && styles.pressed, disabled && styles.off]}
+        style={({ pressed }) => [styles.key, h, styles.submit, pressed && styles.pressed, disabled && styles.off]}
       >
         <Ionicons name="checkmark" size={32} color={colors.white} />
       </Pressable>
@@ -49,13 +52,13 @@ export function NumericKeypad({
   );
 }
 
-function Key({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
+function Key({ label, onPress, disabled, compact }: { label: string; onPress: () => void; disabled?: boolean; compact?: boolean }) {
   return (
     <Pressable
       accessibilityLabel={label}
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [styles.key, pressed && styles.pressed, disabled && styles.off]}
+      style={({ pressed }) => [styles.key, compact && { height: 50 }, pressed && styles.pressed, disabled && styles.off]}
     >
       <Txt style={{ fontFamily: fonts.display, fontSize: 28 }}>{label}</Txt>
     </Pressable>

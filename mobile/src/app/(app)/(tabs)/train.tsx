@@ -61,10 +61,12 @@ export default function Train() {
   const totalCorrect = lessons.reduce((s, l) => s + l.correct, 0);
   const totalQs = lessons.reduce((s, l) => s + l.total, 0);
   const accuracy = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : null;
-  const next =
-    overview.recommended && (overview.isPro || overview.recommended.level <= FREE_MAX_LEVEL)
+  // Free users placed or progressed past the free levels practise the top free level instead.
+  const next = overview.recommended
+    ? overview.isPro || overview.recommended.level <= FREE_MAX_LEVEL
       ? overview.recommended
-      : null;
+      : { ...overview.recommended, level: FREE_MAX_LEVEL }
+    : null;
   const openLesson = (track: SkillTrack, level: number) =>
     router.push({ pathname: "/lesson/[track]/[level]", params: { track, level: String(level) } });
 
@@ -234,7 +236,7 @@ function DailyGoal({ lessonsToday, streak, onStart }: { lessonsToday: number; st
                 : `${target.lessons - lessonsToday} more to hit your goal`}
           </Txt>
           <Txt variant="caption" color="rgba(255,255,255,0.85)" style={{ marginTop: 4 }}>
-            🔥 {streak}-day streak
+            {streak > 0 ? `🔥 ${streak}-day streak` : "🔥 Start your streak today"}
           </Txt>
         </View>
       </Row>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { NumericKeypad } from "@/components/NumericKeypad";
 import { HintText, TipCard, type ReviewItem } from "@/components/Coaching";
 import { Button, Ionicons, Muted, ProgressBar, Row, Txt } from "@/components/ui";
@@ -51,6 +51,7 @@ export function DrillRunner({
   );
 
   const q = questions[index];
+  const compact = useWindowDimensions().height < 720;
   const correctSoFar = answers.current.filter((a) => a.correct).length;
   const isLast = index + 1 >= questions.length;
 
@@ -135,11 +136,11 @@ export function DrillRunner({
         <ProgressBar value={index / questions.length} height={6} />
       </View>
 
-      <View style={styles.center}>
-        <Txt style={styles.prompt} adjustsFontSizeToFit numberOfLines={1}>
+      <View style={[styles.center, compact && { gap: 10, paddingVertical: 6 }]}>
+        <Txt style={[styles.prompt, compact && { fontSize: 46 }]} adjustsFontSizeToFit numberOfLines={1}>
           {q.prompt}
         </Txt>
-        <Animated.View style={[styles.answer, { borderColor: border, transform: [{ translateX: shake }] }]}>
+        <Animated.View style={[styles.answer, compact && { height: 60 }, { borderColor: border, transform: [{ translateX: shake }] }]}>
           <Txt style={[styles.answerText, !input && { color: "#b4bfca" }]}>{input || "?"}</Txt>
           {flash === "ok" && <Ionicons name="checkmark-circle" size={30} color={colors.success} style={styles.mark} />}
           {flash === "bad" && <Ionicons name="close-circle" size={30} color={colors.destructive} style={styles.mark} />}
