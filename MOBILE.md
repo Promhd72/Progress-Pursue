@@ -97,7 +97,7 @@ Profile > How Rapid Math works):
   Train > Full curriculum shows the whole journey.
 - **Coaching** (inside every lesson): Hint shows the first step; a wrong answer opens a
   step-by-step walkthrough for those exact numbers; results show how to solve each miss.
-- **Apply** (Scenarios tab): 61 real-life scenarios with charts and tables, priced in USD, across
+- **Apply** (Scenarios tab): 100 real-life scenarios (20 per topic) with charts and tables, priced in USD, across
   Everyday life, General business, Sales, Marketing and Finance.
 
 **Onboarding:** Welcome > goal > daily goal > plan summary > create account > app tour >
