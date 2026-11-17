@@ -2,17 +2,17 @@ import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
-import { Button, ChoiceCard, IconBadge, Muted, Txt } from "@/components/ui";
+import { Button, ChoiceCard, IconBadge, Muted, Txt, type IconName } from "@/components/ui";
 import { DEMO_MODE, submitFeedback } from "@/lib/backend";
 import type { FeedbackKind } from "@/lib/rapid-math.functions";
 import { colors, fonts, radius } from "@/theme";
 import { alertT, tr } from "@/lib/i18n";
 
-const KINDS: { id: FeedbackKind; emoji: string; title: string; subtitle: string; placeholder: string }[] = [
-  { id: "feature", emoji: "✨", title: "Request a feature", subtitle: "Something you wish the app did", placeholder: "I'd love it if Rapid Math could…" },
-  { id: "problem", emoji: "🐞", title: "Report a problem", subtitle: "Something broken or confusing", placeholder: "What happened, and what did you expect?" },
-  { id: "idea", emoji: "💡", title: "Share an idea", subtitle: "A technique, a scenario, anything", placeholder: "Here's an idea…" },
-  { id: "other", emoji: "💬", title: "Something else", subtitle: "Praise, questions, anything", placeholder: "Tell us anything…" },
+const KINDS: { id: FeedbackKind; icon: IconName; title: string; subtitle: string; placeholder: string }[] = [
+  { id: "feature", icon: "sparkles", title: "Request a feature", subtitle: "Something you wish the app did", placeholder: "I'd love it if Rapid Math could…" },
+  { id: "problem", icon: "bug", title: "Report a problem", subtitle: "Something broken or confusing", placeholder: "What happened, and what did you expect?" },
+  { id: "idea", icon: "bulb", title: "Share an idea", subtitle: "A technique, a scenario, anything", placeholder: "Here's an idea…" },
+  { id: "other", icon: "chatbubble-ellipses", title: "Something else", subtitle: "Praise, questions, anything", placeholder: "Tell us anything…" },
 ];
 
 /** Send feedback or a feature request to the team. */
@@ -72,7 +72,7 @@ export default function Feedback() {
         </View>
         <View style={{ gap: 10 }}>
           {KINDS.map((x) => (
-            <ChoiceCard key={x.id} selected={kind === x.id} onPress={() => setKind(x.id)} emoji={x.emoji} title={x.title} subtitle={x.subtitle} />
+            <ChoiceCard key={x.id} selected={kind === x.id} onPress={() => setKind(x.id)} icon={x.icon} title={x.title} subtitle={x.subtitle} />
           ))}
         </View>
         <View style={{ gap: 6 }}>

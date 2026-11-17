@@ -38,6 +38,7 @@ export function CoachingToggle({ enabled, onToggle }: { enabled: boolean; onTogg
   return (
     <Pressable
       accessibilityRole="switch"
+      hitSlop={10}
       accessibilityState={{ checked: enabled }}
       accessibilityLabel={enabled ? "Tips after every question" : "Tips after mistakes only"}
       onPress={() => {

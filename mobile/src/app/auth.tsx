@@ -202,8 +202,9 @@ export default function AuthScreen() {
   );
 }
 
-function Field({ label, style, ...props }: TextInputProps & { label: string }) {
+function Field({ label, style, secureTextEntry, ...props }: TextInputProps & { label: string }) {
   const [focused, setFocused] = useState(false);
+  const [shown, setShown] = useState(false);
   return (
     <View>
       <Txt variant="label" style={{ marginBottom: 6 }}>
@@ -211,12 +212,24 @@ function Field({ label, style, ...props }: TextInputProps & { label: string }) {
       </Txt>
       <TextInput
         accessibilityLabel={auto(label)}
-        placeholderTextColor="#98a3b5"
+        placeholderTextColor="#7b879b"
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        style={[styles.input, focused && { borderColor: colors.primary, backgroundColor: "#fbfdff" }, style]}
+        style={[styles.input, focused && { borderColor: colors.primary, backgroundColor: "#fbfdff" }, secureTextEntry && { paddingRight: 52 }, style]}
+        secureTextEntry={secureTextEntry && !shown}
         {...props}
       />
+      {secureTextEntry ? (
+        <Pressable
+          onPress={() => setShown((v) => !v)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={shown ? tr("Hide password") : tr("Show password")}
+          style={styles.eye}
+        >
+          <Ionicons name={shown ? "eye-off-outline" : "eye-outline"} size={22} color={colors.mutedForeground} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -244,6 +257,7 @@ const styles = StyleSheet.create({
   },
   content: { paddingHorizontal: 24, paddingBottom: 32 },
   legal: { fontFamily: fonts.semibold },
+  eye: { position: "absolute", right: 6, bottom: 4, width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   input: {
     backgroundColor: colors.card,
     borderWidth: 1.5,

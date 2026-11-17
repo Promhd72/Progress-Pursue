@@ -15,7 +15,7 @@ function Streak() {
       style={{ flexDirection: "row", alignItems: "center", marginRight: 16, height: 32, paddingHorizontal: 11, borderRadius: 16, backgroundColor: colors.warmSoft }}
     >
       <Ionicons name="flame" size={15} color={colors.warm} />
-      <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.warm, marginLeft: 4 }}>
+      <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.warmText, marginLeft: 4 }}>
         {data.current_streak}
       </Text>
     </View>

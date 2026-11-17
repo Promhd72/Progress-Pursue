@@ -91,7 +91,7 @@ export default function Train() {
         <Row gap={8}>
           <View style={styles.chip} accessibilityLabel={`${profile.current_streak}-day streak`}>
             <Ionicons name="flame" size={16} color={colors.warm} />
-            <Txt style={styles.chipText} color={colors.warm}>{profile.current_streak}</Txt>
+            <Txt style={styles.chipText} color={colors.warmText}>{profile.current_streak}</Txt>
           </View>
           {overview.isPro ? (
             <View style={[styles.chip, { backgroundColor: colors.ink }]} accessibilityLabel="Pro member">
@@ -247,7 +247,7 @@ function MeetingCard({ onStart }: { onStart: () => void }) {
               <Txt style={{ fontFamily: fonts.bold, fontSize: 11 }} color={colors.gold}>{MEETING_SECONDS}s</Txt>
             </View>
           </Row>
-          <Txt variant="caption" color="rgba(255,255,255,0.78)" style={{ fontSize: 14, lineHeight: 20, marginTop: 4 }}>
+          <Txt variant="caption" color="rgba(255,255,255,0.92)" style={{ fontSize: 14, lineHeight: 20, marginTop: 4 }}>
             Numbers the way they come up at work and on the go. Great right before a call.
           </Txt>
           {stats && stats.rounds > 0 ? (
@@ -275,7 +275,7 @@ function DailyGoal({ lessonsToday, streak, onStart }: { lessonsToday: number; st
           </Txt>
         </Ring>
         <View style={{ flex: 1 }}>
-          <Txt variant="caption" color="rgba(255,255,255,0.8)" style={{ fontFamily: fonts.semibold, letterSpacing: 0.8 }}>
+          <Txt variant="caption" color="rgba(255,255,255,0.92)" style={{ fontFamily: fonts.semibold, letterSpacing: 0.8 }}>
             TODAY'S GOAL
           </Txt>
           <Txt variant="heading" color={colors.white} style={{ marginTop: 4, fontSize: 20, lineHeight: 25 }}>
@@ -285,7 +285,7 @@ function DailyGoal({ lessonsToday, streak, onStart }: { lessonsToday: number; st
                 ? `${target.minutes} minutes keeps the streak alive`
                 : `${target.lessons - lessonsToday} more to hit your goal`}
           </Txt>
-          <Txt variant="caption" color="rgba(255,255,255,0.85)" style={{ marginTop: 4 }}>
+          <Txt variant="caption" color="rgba(255,255,255,0.92)" style={{ marginTop: 4 }}>
             {streak > 0 ? `${streak}-day streak. Keep it going.` : "Start your streak today"}
           </Txt>
         </View>

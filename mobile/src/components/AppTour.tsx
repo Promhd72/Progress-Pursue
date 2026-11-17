@@ -75,7 +75,7 @@ function MockTrain() {
           <Txt style={{ fontFamily: fonts.displayBold, fontSize: 13 }} color={colors.white}>1/2</Txt>
         </Ring>
         <View style={{ flex: 1 }}>
-          <Txt style={{ fontSize: 10, fontFamily: fonts.semibold, letterSpacing: 0.6 }} color="rgba(255,255,255,0.8)">TODAY'S GOAL</Txt>
+          <Txt style={{ fontSize: 10, fontFamily: fonts.semibold, letterSpacing: 0.6 }} color="rgba(255,255,255,0.92)">TODAY'S GOAL</Txt>
           <Txt style={{ fontFamily: fonts.display, fontSize: 14 }} color={colors.white}>1 more to hit your goal</Txt>
           <View style={styles.whitePill}>
             <Txt style={{ fontSize: 11, fontFamily: fonts.semibold }} color={colors.primary}>Next lesson →</Txt>

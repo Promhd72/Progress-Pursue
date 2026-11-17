@@ -52,7 +52,7 @@
     "android": {
       "package": "app.rapidmath.android",
       "adaptiveIcon": {
-        "backgroundColor": "#2584f5",
+        "backgroundColor": "#1866d8",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -78,7 +78,7 @@
       [
         "expo-notifications",
         {
-          "color": "#2584f5"
+          "color": "#1866d8"
         }
       ],
       "expo-status-bar",

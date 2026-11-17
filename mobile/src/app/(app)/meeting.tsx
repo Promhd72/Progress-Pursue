@@ -11,6 +11,7 @@ import { answerHaptic, finishHaptic, keyHaptic } from "@/lib/native";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts, radius } from "@/theme";
 import { auto, mark, tr } from "@/lib/i18n";
+import { prefersReducedMotion } from "@/lib/motion";
 
 type Answered = MeetingQuestion & { given: string; correct: boolean };
 type Phase = "intro" | "running" | "done";
@@ -154,7 +155,7 @@ function Runner({ questions, onDone }: { questions: MeetingQuestion[]; onDone: (
     setFlash(correct ? "ok" : "bad");
     answerHaptic(correct);
     if (!correct) {
-      Animated.sequence(
+      if (!prefersReducedMotion()) Animated.sequence(
         [8, -8, 6, -6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true })),
       ).start();
     }

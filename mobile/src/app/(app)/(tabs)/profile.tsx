@@ -19,7 +19,7 @@ import { SUPPORT_EMAIL } from "@/lib/legal";
 import { MANAGE_URL, restore } from "@/lib/purchases";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
-import { alertT, tr } from "@/lib/i18n";
+import { alertT, auto, tr } from "@/lib/i18n";
 
 const pad = (h: number) => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}`;
 
@@ -122,7 +122,7 @@ export default function Profile() {
             <Txt variant="heading" color={colors.white} numberOfLines={1} style={{ fontSize: 21, lineHeight: 26 }}>
               {p.name || "Your profile"}
             </Txt>
-            <Txt variant="caption" color="rgba(255,255,255,0.8)" numberOfLines={1}>{p.email}</Txt>
+            <Txt variant="caption" color="rgba(255,255,255,0.92)" numberOfLines={1}>{p.email}</Txt>
           </View>
           <View style={[styles.plan, isPro && { backgroundColor: colors.gold }]}>
             {isPro ? <Ionicons name="diamond" size={12} color={colors.ink} /> : null}
@@ -246,6 +246,8 @@ export default function Profile() {
                   saveOnboarding({ dailyTarget: t.id });
                   void qc.invalidateQueries({ queryKey: ["curriculum"] });
                 }}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: target === t.id }}
                 style={[styles.segment, target === t.id && styles.segmentOn]}
               >
                 <Txt style={{ fontFamily: fonts.displayBold, fontSize: 18 }}>{t.minutes} min</Txt>
@@ -343,7 +345,7 @@ function Mini({ label, value }: { label: string; value: string }) {
   return (
     <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.16)", borderRadius: radius.md, paddingVertical: 12, alignItems: "center" }}>
       <Txt numberOfLines={1} adjustsFontSizeToFit style={{ fontFamily: fonts.displayBold, fontSize: 20 }} color={colors.white}>{value}</Txt>
-      <Txt variant="caption" color="rgba(255,255,255,0.8)" style={{ fontSize: 12 }}>{label}</Txt>
+      <Txt variant="caption" color="rgba(255,255,255,0.92)" style={{ fontSize: 12 }}>{label}</Txt>
     </View>
   );
 }
@@ -351,6 +353,9 @@ function Mini({ label, value }: { label: string; value: string }) {
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      hitSlop={6}
       onPress={() => {
         keyHaptic();
         onPress();
@@ -372,7 +377,12 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
 function LinkRow({ icon, label, onPress, destructive }: { icon: IconName; label: string; onPress: () => void; destructive?: boolean }) {
   const color = destructive ? colors.destructive : colors.foreground;
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.rowItem, pressed && { backgroundColor: colors.muted }]}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={auto(label)}
+      style={({ pressed }) => [styles.rowItem, pressed && { backgroundColor: colors.muted }]}
+    >
       <Ionicons name={icon} size={20} color={destructive ? colors.destructive : colors.mutedForeground} />
       <Txt variant="label" color={color} style={{ flex: 1, marginLeft: 12 }}>{label}</Txt>
       {!destructive && <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />}

@@ -6,6 +6,7 @@ import { Button, Ionicons, Muted, ProgressBar, Row, Txt } from "@/components/ui"
 import type { Question } from "@/lib/curriculum";
 import { answerHaptic, keyHaptic } from "@/lib/native";
 import { colors, fonts, radius } from "@/theme";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export type DrillAnswer = ReviewItem & { index: number };
 
@@ -83,7 +84,7 @@ export function DrillRunner({
     setFlash(isOk ? "ok" : "bad");
     answerHaptic(isOk);
     if (!isOk) {
-      Animated.sequence(
+      if (!prefersReducedMotion()) Animated.sequence(
         [8, -8, 6, -6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 45, useNativeDriver: true })),
       ).start();
     }

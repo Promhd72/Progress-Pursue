@@ -114,7 +114,7 @@ export default function ProScreen() {
               <Txt variant="title" color={colors.white} style={{ marginTop: compact ? 4 : 14, fontSize: compact ? 26 : 30, lineHeight: compact ? 31 : 35 }}>
                 Rapid Math Pro
               </Txt>
-              <Txt color="rgba(255,255,255,0.8)" style={{ marginTop: 6 }}>
+              <Txt color="rgba(255,255,255,0.92)" style={{ marginTop: 6 }}>
                 Go from quick to confident. Unlock every level and train without limits.
               </Txt>
             </View>

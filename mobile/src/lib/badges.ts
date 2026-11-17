@@ -32,9 +32,9 @@ export interface BadgeData {
 }
 
 const GOLD = "#f5a524";
-const BLUE = "#2584f5";
-const GREEN = "#32b36e";
-const ORANGE = "#f97316";
+const BLUE = "#1866d8";
+const GREEN = "#15803d";
+const ORANGE = "#ea580c";
 const PURPLE = "#8b5cf6";
 const PINK = "#ec4899";
 

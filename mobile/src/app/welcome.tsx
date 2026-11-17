@@ -31,7 +31,17 @@ import { auto, mark, tr } from "@/lib/i18n";
 type Step = "intro" | "goal" | "target" | "ready";
 const ORDER: Step[] = ["intro", "goal", "target", "ready"];
 
-const TARGET_EMOJI: Record<DailyTargetId, string> = { casual: "🌱", regular: "⚡", serious: "🔥" };
+const TARGET_ICON: Record<DailyTargetId, { icon: IconName; tint: { fg: string; bg: string } }> = {
+  casual: { icon: "leaf", tint: { fg: "#15803d", bg: "#e2f6ec" } },
+  regular: { icon: "flash", tint: { fg: "#1866d8", bg: "#e8f1ff" } },
+  serious: { icon: "flame", tint: { fg: "#c2410c", bg: "#fff0e3" } },
+};
+const GOAL_ICON: Record<GoalId, { icon: IconName; tint: { fg: string; bg: string } }> = {
+  meetings: { icon: "briefcase", tint: { fg: "#1866d8", bg: "#e8f1ff" } },
+  interviews: { icon: "ribbon", tint: { fg: "#6d4ef0", bg: "#efebff" } },
+  money: { icon: "wallet", tint: { fg: "#15803d", bg: "#e2f6ec" } },
+  sharp: { icon: "bulb", tint: { fg: "#c2410c", bg: "#fff0e3" } },
+};
 
 export default function Welcome() {
   const router = useRouter();
@@ -80,7 +90,8 @@ export default function Welcome() {
                   key={g.id}
                   selected={goal === g.id}
                   onPress={() => setGoal(g.id)}
-                  emoji={g.emoji}
+                  icon={GOAL_ICON[g.id].icon}
+                  tint={GOAL_ICON[g.id].tint}
                   title={g.title}
                   subtitle={g.blurb}
                 />
@@ -99,7 +110,8 @@ export default function Welcome() {
                   key={t.id}
                   selected={target === t.id}
                   onPress={() => setTarget(t.id)}
-                  emoji={TARGET_EMOJI[t.id]}
+                  icon={TARGET_ICON[t.id].icon}
+                  tint={TARGET_ICON[t.id].tint}
                   title={`${t.minutes} min a day`}
                   subtitle={mark(`${auto(t.label)} · ${lessonCount(t.lessons)}`)}
                 />
@@ -166,7 +178,7 @@ function Intro() {
         <Txt variant="hero" color={colors.white} style={{ marginTop: 22 }}>
           Think faster.{"\n"}Talk numbers.
         </Txt>
-        <Txt color="rgba(255,255,255,0.85)" style={{ marginTop: 10, fontSize: 16, lineHeight: 23 }}>
+        <Txt color="rgba(255,255,255,0.92)" style={{ marginTop: 10, fontSize: 16, lineHeight: 23 }}>
           Get quicker and more confident with numbers, in meetings and on the go. Five minutes a day.
         </Txt>
         <View style={styles.sums}>
@@ -187,7 +199,7 @@ function Intro() {
 function Sum({ q, a }: { q: string; a: string }) {
   return (
     <View style={styles.sum}>
-      <Txt style={{ fontFamily: fonts.semibold, fontSize: 13 }} color="rgba(255,255,255,0.85)">
+      <Txt style={{ fontFamily: fonts.semibold, fontSize: 13 }} color="rgba(255,255,255,0.92)">
         {q} ={" "}
       </Txt>
       <Txt style={{ fontFamily: fonts.displayBold, fontSize: 14 }} color={colors.white}>
@@ -225,7 +237,7 @@ function Ready({ goal, target }: { goal: GoalId | null; target: DailyTargetId })
         </Txt>
       </View>
       <Card style={{ marginTop: 28, gap: 14 }}>
-        <KeyValue label="Focus" value={g ? mark(`${g.emoji} ${auto(g.title)}`) : "🧠 All-round speed"} />
+        <KeyValue label="Focus" value={g ? auto(g.title) : "All-round speed"} />
         <KeyValue label="Daily goal" value={mark(`${t.minutes} min · ${lessonCount(t.lessons)}`)} />
         <KeyValue label="First step" value="2-minute placement test" />
       </Card>

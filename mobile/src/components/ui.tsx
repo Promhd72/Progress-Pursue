@@ -48,6 +48,7 @@ export function Txt({
     flat.fontSize && !flat.lineHeight ? { lineHeight: Math.round(flat.fontSize * 1.22) } : null;
   return (
     <Text
+      maxFontSizeMultiplier={1.35}
       {...rest}
       style={[
         { color: color ?? colors.foreground },
@@ -98,6 +99,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={auto(title)}
       accessibilityState={{ disabled: !!off, busy: !!loading }}
       disabled={off}
       onPress={() => {
@@ -178,6 +180,8 @@ export function ChoiceCard({
   selected,
   onPress,
   emoji,
+  icon,
+  tint,
   title,
   subtitle,
   right,
@@ -185,6 +189,9 @@ export function ChoiceCard({
   selected: boolean;
   onPress: () => void;
   emoji?: string;
+  /** Vector icon shown in a tinted tile (preferred over emoji). */
+  icon?: IconName;
+  tint?: { fg: string; bg: string };
   title: string;
   subtitle?: string;
   right?: string;
@@ -203,7 +210,19 @@ export function ChoiceCard({
         pressed && { transform: [{ scale: 0.985 }] },
       ]}
     >
-      {emoji ? <Text style={{ fontSize: 26, marginRight: 14 }}>{emoji}</Text> : null}
+      {icon ? (
+        <View
+          style={{ width: 40, height: 40, borderRadius: 12, marginRight: 14, alignItems: "center", justifyContent: "center", backgroundColor: tint?.bg ?? colors.primarySoft }}
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+        >
+          <Ionicons name={icon} size={21} color={tint?.fg ?? colors.primary} />
+        </View>
+      ) : emoji ? (
+        <Text style={{ fontSize: 26, marginRight: 14 }} accessibilityElementsHidden importantForAccessibility="no">
+          {emoji}
+        </Text>
+      ) : null}
       <View style={{ flex: 1 }}>
         <Txt variant="label">{title}</Txt>
         {subtitle ? <Muted variant="caption" style={{ marginTop: 2, fontSize: 14 }}>{subtitle}</Muted> : null}

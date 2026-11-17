@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Easing, Modal, StyleSheet, View } from "react-native";
 import { getAdvancedProgress } from "@/lib/backend";
 import { badgeById, earnedBadges, markBadgesSeen, seenBadges, type Badge, type BadgeData } from "@/lib/badges";
+import { useReducedMotion } from "@/lib/motion";
 import { finishHaptic } from "@/lib/native";
 import { useLevelStats, useOverview, useProfile } from "@/lib/queries";
 import { getMeetingStats } from "@/lib/meeting";
@@ -89,8 +90,16 @@ function Celebration({ badge, more, onClose }: { badge: Badge; more: number; onC
   const spin = useRef(new Animated.Value(0)).current;
   const burst = useRef(new Animated.Value(0)).current;
 
+  const still = useReducedMotion();
+
   useEffect(() => {
     finishHaptic();
+    if (still) {
+      // Reduce Motion: show the badge straight away, no burst or spin.
+      scale.setValue(1);
+      burst.setValue(1);
+      return;
+    }
     scale.setValue(0.3);
     burst.setValue(0);
     Animated.parallel([
@@ -98,7 +107,7 @@ function Celebration({ badge, more, onClose }: { badge: Badge; more: number; onC
       Animated.timing(burst, { toValue: 1, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
       Animated.loop(Animated.timing(spin, { toValue: 1, duration: 9000, easing: Easing.linear, useNativeDriver: true })),
     ]).start();
-  }, [badge.id, scale, spin, burst]);
+  }, [badge.id, scale, spin, burst, still]);
 
   const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
   const dots = Array.from({ length: 12 }, (_, i) => (i / 12) * Math.PI * 2);

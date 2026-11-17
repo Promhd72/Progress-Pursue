@@ -15,9 +15,9 @@ import { colors } from "@/theme";
 import { mark, tr } from "@/lib/i18n";
 
 const TIMES = [
-  { label: "Morning", sub: "8 AM", hour: 8, emoji: "☀️" },
-  { label: "Lunch break", sub: "1 PM", hour: 13, emoji: "🥗" },
-  { label: "Evening", sub: "8 PM", hour: 20, emoji: "🌙" },
+  { label: "Morning", sub: "8 AM", hour: 8, icon: "sunny" as const },
+  { label: "Lunch break", sub: "1 PM", hour: 13, icon: "restaurant" as const },
+  { label: "Evening", sub: "8 PM", hour: 20, icon: "moon" as const },
 ];
 
 /** After sign-up: reminder time + notification permission, then the placement test. */
@@ -95,7 +95,7 @@ export default function Onboarding() {
                   key={t.label}
                   selected={time === i}
                   onPress={() => setTime(i)}
-                  emoji={t.emoji}
+                  icon={t.icon}
                   title={t.label}
                   right={t.sub}
                 />

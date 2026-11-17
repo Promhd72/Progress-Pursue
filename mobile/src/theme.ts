@@ -7,20 +7,22 @@ export const colors = {
   card: "#ffffff",
   muted: "#e9eef6",
   mutedForeground: "#566279",
-  primary: "#2584f5",
-  primaryDark: "#1566d6",
-  primaryDeep: "#1238a8",
+  // Blues and status colours meet WCAG AA (4.5:1) for text on white and on their tints.
+  primary: "#1866d8",
+  primaryDark: "#1253b8",
+  primaryDeep: "#0f2c8a",
   primarySoft: "#e8f1ff",
   accent: "#cfe4ff",
   ink: "#0b1437",
   inkSoft: "#1b2a6b",
   gold: "#f6b93b",
   goldSoft: "#fff4d9",
-  destructive: "#e5343d",
+  destructive: "#d92d36",
   destructiveSoft: "#fdecee",
-  success: "#1faa66",
+  success: "#15803d",
   successSoft: "#e2f6ec",
-  warm: "#f97316",
+  warm: "#ea580c",
+  warmText: "#c2410c",
   warmSoft: "#fff0e3",
   amberSoft: "#fef5e1",
   amberText: "#8a530a",
@@ -30,18 +32,18 @@ export const colors = {
 
 /** Hero gradients (top-left to bottom-right). */
 export const gradients = {
-  primary: ["#1238a8", "#2584f5", "#38b6ff"],
+  primary: ["#0f2c8a", "#1866d8", "#1f6fe5"],
   ink: ["#0b1437", "#1b2a6b", "#2a4bb8"],
-  warm: ["#f97316", "#fb9a3c"],
+  warm: ["#ea580c", "#f97316"],
 } as const;
 
 /** Each skill has its own colour so tracks are easy to tell apart at a glance. */
 export const trackColors: Record<string, { fg: string; bg: string }> = {
-  addition: { fg: "#2584f5", bg: "#e8f1ff" },
-  subtraction: { fg: "#7c5cfc", bg: "#efebff" },
-  multiplication: { fg: "#f97316", bg: "#fff0e3" },
-  division: { fg: "#0ea5a0", bg: "#dff6f4" },
-  percentage: { fg: "#e0468f", bg: "#fde8f2" },
+  addition: { fg: "#1866d8", bg: "#e8f1ff" },
+  subtraction: { fg: "#6d4ef0", bg: "#efebff" },
+  multiplication: { fg: "#ea580c", bg: "#fff0e3" },
+  division: { fg: "#0b8a86", bg: "#dff6f4" },
+  percentage: { fg: "#d0347c", bg: "#fde8f2" },
 };
 
 export const fonts = {

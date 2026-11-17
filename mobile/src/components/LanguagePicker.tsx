@@ -18,7 +18,7 @@ export function LanguageToggle() {
             accessibilityRole="radio"
             accessibilityState={{ selected: on }}
             accessibilityLabel={l.label}
-            hitSlop={6}
+            hitSlop={10}
             onPress={() => {
               keyHaptic();
               setLang(l.id);
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  seg: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
+  seg: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.pill },
   segOn: { backgroundColor: colors.primary },
   row: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, minHeight: 52, paddingVertical: 10 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, marginLeft: 0 },
