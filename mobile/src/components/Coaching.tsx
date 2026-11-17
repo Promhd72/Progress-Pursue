@@ -201,12 +201,12 @@ export function CoachingReview({ items }: { items: ReviewItem[] }) {
             <Row style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
               <Txt style={{ fontFamily: fonts.displayBold, fontSize: 20 }}>{item.prompt}</Txt>
               <Muted variant="caption">
-                You:{" "}
+                {mark(`${tr("You:")} `)}
                 <Txt variant="caption" color={item.correct ? colors.success : colors.destructive}>
-                  {item.given === "" ? "skipped" : item.given}
+                  {item.given === "" ? tr("skipped") : mark(item.given)}
                 </Txt>
-                {item.usedHint ? " (with a hint)" : ""}
-                {"  ·  "}Answer: <Txt variant="caption">{String(item.answer)}</Txt>
+                {mark((item.usedHint ? ` ${tr("(with a hint)")}` : "") + `  ·  ${tr("Answer:")} `)}
+                <Txt variant="caption">{mark(String(item.answer))}</Txt>
               </Muted>
             </Row>
             <TipCard track={item.track} ops={item.ops} />

@@ -9,6 +9,7 @@ import { LearnCard, hasLearned, markLearned } from "@/components/LearnCard";
 import { Button, ErrorState, Gradient, IconBadge, Ionicons, Loading, Muted, Row, Stars, Txt } from "@/components/ui";
 import {
   FREE_BASE_LEVEL,
+  FREE_MAX_LEVEL,
   MAX_LEVEL,
   PASS_THRESHOLD,
   TRACK_LABELS,
@@ -103,7 +104,8 @@ function Locked({
   const router = useRouter();
   const [title, body, icon] =
     reason === "locked_pro"
-      ? [tr("Level {n} is Pro-only", { n: level }), tr("Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro.", { track: auto(TRACK_LABELS[track]), free: freeMax, next: freeMax + 1 }), "diamond-outline" as const]
+      ? [tr("Level {n} is Pro-only", { n: level }), tr("Your free levels on {track}: 1–{free}.", { track: auto(TRACK_LABELS[track]), free: freeMax }) +
+            (freeMax < FREE_MAX_LEVEL ? ` ${tr("A higher placement score unlocks up to Level {n} free.", { n: FREE_MAX_LEVEL })}` : ""), "diamond-outline" as const]
       : reason === "locked_progression"
         ? ["Finish earlier levels first", `Pass the previous level (80% or more) to unlock Level ${level}.`, "lock-closed-outline" as const]
         : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow, or go unlimited with Pro.", "moon-outline" as const];
@@ -118,6 +120,9 @@ function Locked({
       <Muted center style={{ marginTop: 8 }}>{body}</Muted>
       {reason === "locked_pro" || reason === "daily_limit" ? (
         <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ marginTop: 28, alignSelf: "stretch" }} />
+      ) : null}
+      {reason === "locked_pro" && freeMax < FREE_MAX_LEVEL ? (
+        <Button title="Retake placement test" variant="secondary" onPress={() => router.replace("/placement")} style={{ marginTop: 10, alignSelf: "stretch" }} />
       ) : null}
       <Button
         title="Back to training"
