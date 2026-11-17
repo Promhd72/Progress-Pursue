@@ -24,7 +24,13 @@ export const TRACK_SYMBOL: Record<SkillTrack, string> = {
 export const MAX_LEVEL = 10;
 export const QUESTIONS_PER_LESSON = 10;
 export const PASS_THRESHOLD = 0.8; // 80% correct to pass
-export const FREE_MAX_LEVEL = 4;   // Free users can play L1–L4
+/** Free levels per skill: 1–2 by default, up to 1–4 with a good placement result. */
+export const FREE_BASE_LEVEL = 2;
+export const FREE_MAX_LEVEL = 4;
+/** Highest free level on a skill, from the level placed at there (null = no placement). */
+export function freeMaxFor(placementLevel: number | null | undefined): number {
+  return Math.max(FREE_BASE_LEVEL, Math.min(FREE_MAX_LEVEL, placementLevel ?? FREE_BASE_LEVEL));
+}
 export const FREE_DAILY_LESSONS = 3;
 
 export interface Question {

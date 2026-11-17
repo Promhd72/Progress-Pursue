@@ -5,7 +5,7 @@ import {
   TRACKS,
   MAX_LEVEL,
   starsFor,
-  FREE_MAX_LEVEL,
+  freeMaxFor,
   FREE_DAILY_LESSONS,
   type SkillTrack,
 } from "./curriculum";
@@ -20,6 +20,8 @@ export type TrackProgressRow = {
   track: SkillTrack;
   current_level: number;
   highest_level_passed: number;
+  /** Highest level a free user can play on this skill (2–4, set by placement). */
+  free_max: number;
 };
 
 export type CurriculumOverview = {
@@ -44,7 +46,7 @@ export const getCurriculumOverview = serverFn()
         .limit(1),
       supabase
         .from("track_progress")
-        .select("track, current_level, highest_level_passed")
+        .select("track, current_level, highest_level_passed, placement_level")
         .eq("user_id", userId),
       supabase
         .from("lesson_attempts")
@@ -63,10 +65,11 @@ export const getCurriculumOverview = serverFn()
         track: r.track as SkillTrack,
         current_level: r.current_level,
         highest_level_passed: r.highest_level_passed,
+        free_max: freeMaxFor(r.placement_level),
       });
     }
     const tracks: TrackProgressRow[] = TRACKS.map(
-      (t) => existing.get(t) ?? { track: t, current_level: 1, highest_level_passed: 0 },
+      (t) => existing.get(t) ?? { track: t, current_level: 1, highest_level_passed: 0, free_max: freeMaxFor(null) },
     );
 
     // Recommend the lowest current_level among tracks not yet finished.
@@ -147,6 +150,8 @@ export type LessonAccess = {
   lessonsUsedToday: number;
   dailyLimit: number | null;
   currentLevel: number;
+  /** Highest free level on this skill. */
+  freeMax: number;
 };
 
 export const getLessonAccess = serverFn()
@@ -158,7 +163,7 @@ export const getLessonAccess = serverFn()
       supabase.from("profiles").select("is_pro").eq("id", userId).maybeSingle(),
       supabase
         .from("track_progress")
-        .select("current_level")
+        .select("current_level, placement_level")
         .eq("user_id", userId)
         .eq("track", data.track)
         .maybeSingle(),
@@ -171,19 +176,15 @@ export const getLessonAccess = serverFn()
 
     const isPro = resolveIsPro(profileRes.data);
     const currentLevel = progressRes.data?.current_level ?? 1;
+    const freeMax = freeMaxFor(progressRes.data?.placement_level);
     const lessonsUsedToday = todayRes.data?.length ?? 0;
     const dailyLimit = isPro ? null : FREE_DAILY_LESSONS;
 
-    if (!isPro && data.level > FREE_MAX_LEVEL) {
-      return { allowed: false, reason: "locked_pro", isPro, lessonsUsedToday, dailyLimit, currentLevel };
-    }
-    if (data.level > currentLevel) {
-      return { allowed: false, reason: "locked_progression", isPro, lessonsUsedToday, dailyLimit, currentLevel };
-    }
-    if (!isPro && lessonsUsedToday >= FREE_DAILY_LESSONS) {
-      return { allowed: false, reason: "daily_limit", isPro, lessonsUsedToday, dailyLimit, currentLevel };
-    }
-    return { allowed: true, reason: "ok", isPro, lessonsUsedToday, dailyLimit, currentLevel };
+    const base = { isPro, lessonsUsedToday, dailyLimit, currentLevel, freeMax };
+    if (!isPro && data.level > freeMax) return { ...base, allowed: false, reason: "locked_pro" };
+    if (data.level > currentLevel) return { ...base, allowed: false, reason: "locked_progression" };
+    if (!isPro && lessonsUsedToday >= FREE_DAILY_LESSONS) return { ...base, allowed: false, reason: "daily_limit" };
+    return { ...base, allowed: true, reason: "ok" };
   });
 
 const SubmitLessonSchema = z.object({

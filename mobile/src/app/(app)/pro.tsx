@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, ErrorState, Gradient, Ionicons, Loading, Muted, Row, Txt, type IconName } from "@/components/ui";
-import { FREE_MAX_LEVEL, MAX_LEVEL } from "@/lib/curriculum";
+import { MAX_LEVEL } from "@/lib/curriculum";
 import { finishHaptic, keyHaptic } from "@/lib/native";
 import { DEMO_MODE } from "@/lib/backend";
 import { buy, getPlans, restore, type Plan, type PlanId } from "@/lib/purchases";
@@ -13,7 +13,7 @@ import { colors, elevation, fonts, gradients, radius } from "@/theme";
 import { alertT, auto, mark, tr } from "@/lib/i18n";
 
 const BENEFITS: { icon: IconName; title: string; text: string }[] = [
-  { icon: "rocket", title: `Levels ${FREE_MAX_LEVEL + 1} to ${MAX_LEVEL} on every skill`, text: "Work-ready and expert levels: bigger numbers, real meeting maths." },
+  { icon: "rocket", title: `All ${MAX_LEVEL} levels on every skill`, text: "Work-ready and expert levels: bigger numbers, real meeting maths." },
   { icon: "infinite", title: "Unlimited lessons", text: "Train as much as you like, no daily cap." },
   { icon: "briefcase", title: "Unlimited scenarios", text: "All 100 real-life problems, any time." },
 ];

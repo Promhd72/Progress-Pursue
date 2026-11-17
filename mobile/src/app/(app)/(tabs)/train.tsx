@@ -29,7 +29,7 @@ import {
 import { ConfidenceCard } from "@/components/Confidence";
 import { getAdvancedProgress } from "@/lib/backend";
 import { MEETING_SECONDS, getMeetingStats } from "@/lib/meeting";
-import { FREE_MAX_LEVEL, MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, levelSummary, type SkillTrack } from "@/lib/curriculum";
+import { MAX_LEVEL, TRACK_LABELS, TRACK_SYMBOL, levelSummary, type SkillTrack } from "@/lib/curriculum";
 import { type TrackSpeedStat } from "@/lib/curriculum.functions";
 import { getRecentLessons, getTrackSpeedStats } from "@/lib/backend";
 import { rankForXp } from "@/lib/drill-engine";
@@ -67,11 +67,14 @@ export default function Train() {
   const totalQs = lessons.reduce((s, l) => s + l.total, 0);
   const accuracy = totalQs > 0 ? Math.round((totalCorrect / totalQs) * 100) : null;
   // Free users placed or progressed past the free levels practise the top free level instead.
+  const freeMaxOf = (track: SkillTrack) => overview.tracks.find((t) => t.track === track)?.free_max ?? 2;
   const next = overview.recommended
-    ? overview.isPro || overview.recommended.level <= FREE_MAX_LEVEL
+    ? overview.isPro || overview.recommended.level <= freeMaxOf(overview.recommended.track)
       ? overview.recommended
-      : { ...overview.recommended, level: FREE_MAX_LEVEL }
+      : { ...overview.recommended, level: freeMaxOf(overview.recommended.track) }
     : null;
+  // Skills where a free user has reached the end of their free levels.
+  const capped = overview.isPro ? [] : overview.tracks.filter((t) => t.current_level > t.free_max);
   const openLesson = (track: SkillTrack, level: number) =>
     router.push({ pathname: "/lesson/[track]/[level]", params: { track, level: String(level) } });
 
@@ -147,14 +150,16 @@ export default function Train() {
         </Card>
       )}
 
-      {!overview.isPro && overview.tracks.some((t) => t.current_level > FREE_MAX_LEVEL) && (
+      {capped.length > 0 && (
         <Card style={{ gap: 12, borderColor: "#f3d9a0", backgroundColor: "#fffaf0" }}>
           <Row gap={12} style={{ alignItems: "flex-start" }}>
             <IconBadge name="diamond" size={40} color="#b47a06" bg={colors.goldSoft} />
             <View style={{ flex: 1 }}>
-              <Txt variant="heading">You're ready for Level {FREE_MAX_LEVEL + 1}</Txt>
+              <Txt variant="heading">
+                {tr("You're ready for Level {n} in {track}", { n: capped[0].free_max + 1, track: auto(TRACK_LABELS[capped[0].track]) })}
+              </Txt>
               <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
-                Levels {FREE_MAX_LEVEL + 1}–{MAX_LEVEL} and unlimited practice come with Pro.
+                {tr("Every level and unlimited practice come with Pro.")}
               </Muted>
             </View>
           </Row>
@@ -184,7 +189,8 @@ export default function Train() {
             currentLevel={t.current_level}
             highestPassed={t.highest_level_passed}
             isPro={overview.isPro}
-            onPlay={() => openLesson(t.track, Math.min(t.current_level, overview.isPro ? MAX_LEVEL : FREE_MAX_LEVEL))}
+            freeMax={t.free_max}
+            onPlay={() => openLesson(t.track, Math.min(t.current_level, overview.isPro ? MAX_LEVEL : t.free_max))}
           />
         ))}
       </View>
@@ -335,17 +341,19 @@ function TrackCard({
   currentLevel,
   highestPassed,
   isPro,
+  freeMax,
   onPlay,
 }: {
   track: SkillTrack;
   currentLevel: number;
   highestPassed: number;
   isPro: boolean;
+  freeMax: number;
   onPlay: () => void;
 }) {
   // Free users past the free levels keep practising the top free level, so there's never a dead end.
-  const playLevel = Math.min(currentLevel, isPro ? MAX_LEVEL : FREE_MAX_LEVEL);
-  const capped = !isPro && currentLevel > FREE_MAX_LEVEL;
+  const playLevel = Math.min(currentLevel, isPro ? MAX_LEVEL : freeMax);
+  const capped = !isPro && currentLevel > freeMax;
   const tc = trackColors[track];
   return (
     <Card style={{ gap: 12 }}>
@@ -378,7 +386,7 @@ function TrackCard({
         {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((l) => {
           const passed = l <= highestPassed;
           const current = l === currentLevel;
-          const locked = !isPro && l > FREE_MAX_LEVEL;
+          const locked = !isPro && l > freeMax;
           return (
             <View
               key={l}

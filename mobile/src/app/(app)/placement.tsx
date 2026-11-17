@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CoachingReview } from "@/components/Coaching";
 import { DrillHeader, DrillRunner, type DrillAnswer } from "@/components/DrillRunner";
 import { Button, Card, IconBadge, Ionicons, Loading, Muted, Row, Txt } from "@/components/ui";
-import { FREE_MAX_LEVEL, PLACEMENT_LENGTH, TRACK_LABELS, TRACKS, buildPlacement, type SkillTrack } from "@/lib/curriculum";
+import { FREE_MAX_LEVEL, PLACEMENT_LENGTH, freeMaxFor, TRACK_LABELS, TRACKS, buildPlacement, type SkillTrack } from "@/lib/curriculum";
 import { submitPlacement } from "@/lib/backend";
 import { finishHaptic } from "@/lib/native";
 import { useProfile } from "@/lib/queries";
@@ -115,6 +115,11 @@ export default function PlacementScreen() {
               <Card key={t} style={{ width: "48.3%", padding: 14 }}>
                 <Muted variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 12 }}>{mark(auto(TRACK_LABELS[t]).toUpperCase())}</Muted>
                 <Txt style={{ fontFamily: fonts.displayBold, fontSize: 24, marginTop: 4 }}>Level {levels[t]}</Txt>
+                {!profile?.is_pro ? (
+                  <Muted variant="caption" style={{ fontSize: 12, marginTop: 2 }}>
+                    {tr("Free: Levels 1–{n}", { n: freeMaxFor(levels[t]) })}
+                  </Muted>
+                ) : null}
               </Card>
             ))}
           </View>

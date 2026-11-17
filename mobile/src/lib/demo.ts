@@ -17,7 +17,7 @@ import {
 } from "./advanced.functions";
 import {
   FREE_DAILY_LESSONS,
-  FREE_MAX_LEVEL,
+  freeMaxFor,
   MAX_LEVEL,
   PASS_THRESHOLD,
   TRACKS,
@@ -38,7 +38,7 @@ import {
 } from "./curriculum.functions";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Progress = { current_level: number; highest_level_passed: number };
+type Progress = { current_level: number; highest_level_passed: number; placement_level?: number | null };
 type AdvancedRow = { question_id: string; selected_index: number; is_correct: boolean; created_at: string };
 
 type DemoDB = {
@@ -173,6 +173,7 @@ function tracksOf(db: DemoDB) {
     track: t,
     current_level: db.progress[t]?.current_level ?? 1,
     highest_level_passed: db.progress[t]?.highest_level_passed ?? 0,
+    free_max: freeMaxFor(db.progress[t]?.placement_level),
   }));
 }
 
@@ -210,8 +211,9 @@ export async function getLessonAccess(opts?: { data?: unknown }): Promise<Lesson
   const p = requireProfile(db);
   const currentLevel = db.progress[track]?.current_level ?? 1;
   const lessonsUsedToday = db.lessons.filter((l) => isToday(l.created_at)).length;
-  const base = { isPro: p.is_pro, lessonsUsedToday, dailyLimit: p.is_pro ? null : FREE_DAILY_LESSONS, currentLevel };
-  if (!p.is_pro && level > FREE_MAX_LEVEL) return { ...base, allowed: false, reason: "locked_pro" };
+  const freeMax = freeMaxFor(db.progress[track]?.placement_level);
+  const base = { isPro: p.is_pro, lessonsUsedToday, dailyLimit: p.is_pro ? null : FREE_DAILY_LESSONS, currentLevel, freeMax };
+  if (!p.is_pro && level > freeMax) return { ...base, allowed: false, reason: "locked_pro" };
   if (level > currentLevel) return { ...base, allowed: false, reason: "locked_progression" };
   if (!p.is_pro && lessonsUsedToday >= FREE_DAILY_LESSONS) return { ...base, allowed: false, reason: "daily_limit" };
   return { ...base, allowed: true, reason: "ok" };
@@ -261,8 +263,8 @@ export async function submitLesson(opts?: { data?: unknown }): Promise<SubmitLes
   const p = requireProfile(db);
   const usedToday = db.lessons.filter((l) => isToday(l.created_at)).length;
   if (!p.is_pro && usedToday >= FREE_DAILY_LESSONS) throw new Error("Daily lesson limit reached");
-  if (!p.is_pro && d.level > FREE_MAX_LEVEL) throw new Error("This level is Pro-only");
   const prog = db.progress[d.track] ?? { current_level: 1, highest_level_passed: 0 };
+  if (!p.is_pro && d.level > freeMaxFor(prog.placement_level)) throw new Error("This level is Pro-only");
   if (d.level > prog.current_level) throw new Error("Finish earlier levels first");
 
   const passed = d.correct / d.total >= PASS_THRESHOLD;
@@ -284,7 +286,7 @@ export async function submitLesson(opts?: { data?: unknown }): Promise<SubmitLes
     },
     ...db.lessons,
   ];
-  db.progress = { ...db.progress, [d.track]: { current_level: newCurrent, highest_level_passed: newHighest } };
+  db.progress = { ...db.progress, [d.track]: { ...prog, current_level: newCurrent, highest_level_passed: newHighest } };
   db.profile = touchStreak(p, xp);
   save(db);
   return { passed, xpEarned: xp, newCurrentLevel: newCurrent, newHighestPassed: newHighest };
@@ -300,7 +302,10 @@ export async function submitPlacement(opts?: { data?: unknown }): Promise<Submit
     const lvl = e ? placementToLevel(e.score, e.max) : 1;
     startingLevels[t] = lvl;
     const prev = db.progress[t] ?? { current_level: 1, highest_level_passed: 0 };
-    db.progress = { ...db.progress, [t]: { ...prev, current_level: Math.max(prev.current_level, lvl) } };
+    db.progress = {
+      ...db.progress,
+      [t]: { ...prev, current_level: Math.max(prev.current_level, lvl), placement_level: Math.max(prev.placement_level ?? 0, lvl) },
+    };
   }
   db.hasPlacement = true;
   save(db);

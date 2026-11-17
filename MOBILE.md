@@ -20,6 +20,7 @@ Store, so you don't need Xcode. The backend is your own Supabase project.
    2. `supabase/migrations/20261111000000_feedback.sql`
    3. `supabase/migrations/20261112000000_pro_subscriptions.sql`
    4. `supabase/migrations/20261113000000_delete_account_feedback.sql`
+   5. `supabase/migrations/20261114000000_free_levels_by_placement.sql`
 3. **Auth settings** (Authentication > Sign In / Providers > Email): turn **off**
    "Confirm email" for launch. The app handles it if you leave it on, but users then have to
    leave the app to click a link before they can sign in.
@@ -109,7 +110,10 @@ reminder time > placement test > Train.
 **Progress:** stars per level, XP raises your Rank (Starter → Mastermind), daily goal ring,
 streak, local reminders that skip days you've trained.
 
-**Free plan:** Levels 1 to 4 on all five tracks, 3 lessons and 3 scenarios per day. The Meeting
+**Free plan:** Levels 1 and 2 on every skill, or up to Level 4 on skills where the placement
+test puts you higher (placed at Level 3: Levels 1–3 free; placed at 4 or 5: Levels 1–4 free).
+Passing levels doesn't raise the free limit, only placement does, and a retake never lowers it.
+Also 3 lessons and 3 scenarios per day. The Meeting
 warm-up is free and unlimited.
 
 **Feedback:** Profile > Help us improve > Request a feature / Send feedback. Messages land
@@ -132,7 +136,7 @@ Pro unlocks Levels 5 to 10 and removes the daily caps on lessons and scenarios.
 | Yearly | $29.99 (about $2.50/month) |
 
 Apple converts these to local prices (AED in the UAE). The app always shows the store's real
-price. There is no free trial: Levels 1 to 4 are the free taster. Free users see "Upgrade to Pro" when they reach Level 5, run out of daily lessons
+price. There is no free trial: the free levels are the taster. Free users see "Upgrade to Pro" when they reach the end of their free levels, run out of daily lessons
 or scenarios, place above Level 4, and in Profile > Rapid Math Pro.
 
 **How it works:** the app buys through Apple using RevenueCat. Right after a purchase it asks the
@@ -217,7 +221,7 @@ own codes; use Apple's Offer Codes instead.
 - Description: Rapid Math melatihmu menghitung di kepala dengan cepat: persentase, diskon,
   membagi tagihan, pertumbuhan, dan margin. Pelajari triknya, latih sampai otomatis, dan pakai
   di soal kerja nyata. Pelajaran 2 menit, streak harian, pemanasan 60 detik sebelum rapat, dan
-  100 skenario dunia nyata. Level 1–4 gratis. Rapid Math Pro membuka Level 5–10 dan latihan
+  100 skenario dunia nyata. Level awal gratis. Rapid Math Pro membuka semua level dan latihan
   tanpa batas.
 
 ## App Store review checklist

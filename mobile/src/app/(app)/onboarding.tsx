@@ -111,7 +111,7 @@ export default function Onboarding() {
             <Muted style={{ marginTop: 8 }}>
               {overview?.hasPlacement
                 ? "Your starting levels are already saved. Jump into your first lesson."
-                : "A quick 2-minute test across all five tracks, so lessons start at the right difficulty. No pressure: skipping a question is fine."}
+                : "A quick 2-minute test across all five tracks, so lessons start at the right difficulty. Do well and you unlock up to Level 4 free on that skill."}
             </Muted>
             <Card style={{ marginTop: 24, gap: 14 }}>
               <KeyValue label="Focus" value={focusTrackFor(prefs.goal)} />

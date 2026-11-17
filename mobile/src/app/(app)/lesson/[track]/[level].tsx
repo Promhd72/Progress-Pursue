@@ -8,7 +8,7 @@ import { DrillHeader, DrillRunner, type DrillAnswer } from "@/components/DrillRu
 import { LearnCard, hasLearned, markLearned } from "@/components/LearnCard";
 import { Button, ErrorState, Gradient, IconBadge, Ionicons, Loading, Muted, Row, Stars, Txt } from "@/components/ui";
 import {
-  FREE_MAX_LEVEL,
+  FREE_BASE_LEVEL,
   MAX_LEVEL,
   PASS_THRESHOLD,
   TRACK_LABELS,
@@ -83,7 +83,7 @@ function LessonGate({
   if (accessQ.isLoading) return <Loading />;
   if (accessQ.error || !accessQ.data) return <ErrorState message="Check your connection and try again." onRetry={() => accessQ.refetch()} />;
   const a = accessQ.data;
-  if (!a.allowed) return <Locked reason={a.reason} track={track} level={level} onClose={onClose} />;
+  if (!a.allowed) return <Locked reason={a.reason} track={track} level={level} freeMax={a.freeMax} onClose={onClose} />;
   return <LessonRunner track={track} level={level} onClose={onClose} onProgress={onProgress} />;
 }
 
@@ -91,17 +91,19 @@ function Locked({
   reason,
   track,
   level,
+  freeMax,
   onClose,
 }: {
   reason: "ok" | "locked_pro" | "locked_progression" | "daily_limit";
   track: SkillTrack;
   level: number;
+  freeMax: number;
   onClose: () => void;
 }) {
   const router = useRouter();
   const [title, body, icon] =
     reason === "locked_pro"
-      ? [tr("Level {n} is Pro-only", { n: level }), tr("Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro.", { track: auto(TRACK_LABELS[track]), free: FREE_MAX_LEVEL, next: FREE_MAX_LEVEL + 1 }), "diamond-outline" as const]
+      ? [tr("Level {n} is Pro-only", { n: level }), tr("Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro.", { track: auto(TRACK_LABELS[track]), free: freeMax, next: freeMax + 1 }), "diamond-outline" as const]
       : reason === "locked_progression"
         ? ["Finish earlier levels first", `Pass the previous level (80% or more) to unlock Level ${level}.`, "lock-closed-outline" as const]
         : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow, or go unlimited with Pro.", "moon-outline" as const];
@@ -189,7 +191,8 @@ function LessonRunner({
   if (result) {
     const nextLevel = Math.min(level + 1, MAX_LEVEL);
     // Free users can't open Pro levels, so don't offer a button that leads to a lock screen.
-    const canPlayNext = isPro || nextLevel <= FREE_MAX_LEVEL;
+    const freeMax = overview?.tracks.find((t) => t.track === track)?.free_max ?? FREE_BASE_LEVEL;
+    const canPlayNext = isPro || nextLevel <= freeMax;
     return (
       <Results
         track={track}

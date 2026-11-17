@@ -7,6 +7,7 @@ import { ADVANCED_DOMAINS, ADVANCED_DOMAIN_LABELS, ADVANCED_DOMAIN_SYMBOL } from
 import { getAdvancedProgress } from "@/lib/backend";
 import {
   FREE_MAX_LEVEL,
+  freeMaxFor,
   MAX_LEVEL,
   TRACK_LABELS,
   TRACK_SYMBOL,
@@ -28,9 +29,9 @@ const STAGES = [
   { from: 9, to: 10, name: "Expert", blurb: "Fast, confident answers to tough sums." },
 ];
 
-function statusFor(level: number, current: number, highest: number, isPro: boolean): Status {
+function statusFor(level: number, current: number, highest: number, isPro: boolean, freeMax: number): Status {
   if (level <= highest) return "passed";
-  if (!isPro && level > FREE_MAX_LEVEL) return "pro";
+  if (!isPro && level > freeMax) return "pro";
   if (level === current) return "next";
   if (level < current) return "open"; // skipped ahead via placement; replayable
   return "locked";
@@ -59,8 +60,9 @@ export default function Curriculum() {
 
   if (overviewQ.isLoading) return <Loading />;
   if (!overviewQ.data) return <ErrorState message="Check your connection and try again." onRetry={() => overviewQ.refetch()} />;
-  const { tracks, isPro } = overviewQ.data;
-  const rowFor = (t: SkillTrack) => tracks.find((r) => r.track === t) ?? { track: t, current_level: 1, highest_level_passed: 0 };
+  const { tracks, isPro, hasPlacement } = overviewQ.data;
+  const rowFor = (t: SkillTrack) =>
+    tracks.find((r) => r.track === t) ?? { track: t, current_level: 1, highest_level_passed: 0, free_max: freeMaxFor(null) };
   const totalPassed = tracks.reduce((s, r) => s + r.highest_level_passed, 0);
   const total = TRACKS.length * MAX_LEVEL;
   const sel = rowFor(track);
@@ -108,7 +110,7 @@ export default function Curriculum() {
                 </Txt>
                 <View style={{ flex: 1, flexDirection: "row", gap: 3 }}>
                   {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((l) => {
-                    const st = statusFor(l, r.current_level, r.highest_level_passed, isPro);
+                    const st = statusFor(l, r.current_level, r.highest_level_passed, isPro, r.free_max);
                     const fill =
                       st === "passed" ? colors.success : st === "next" ? colors.primary : st === "open" ? colors.accent : colors.muted;
                     return <View key={l} style={[styles.dot, { backgroundColor: fill }]} />;
@@ -172,7 +174,7 @@ export default function Curriculum() {
           </View>
           <Card style={{ padding: 0 }}>
             {Array.from({ length: stage.to - stage.from + 1 }, (_, i) => stage.from + i).map((level, i) => {
-              const st = statusFor(level, sel.current_level, sel.highest_level_passed, isPro);
+              const st = statusFor(level, sel.current_level, sel.highest_level_passed, isPro, sel.free_max);
               const s = STATUS_STYLE[st];
               const info = levelSummary(track, level);
               const playable = st === "passed" || st === "next" || st === "open";
@@ -226,9 +228,21 @@ export default function Curriculum() {
       {!isPro && (
         <Card style={{ gap: 10, alignItems: "center" }}>
           <Muted variant="caption" center style={{ fontSize: 14 }}>
-            Levels 1–{FREE_MAX_LEVEL} are free on every track. Levels {FREE_MAX_LEVEL + 1}–10 come with Pro.
+            {tr("Your free plan covers {track} Levels 1–{n}. Levels {next}–10 come with Pro.", {
+              track: auto(TRACK_LABELS[track]),
+              n: sel.free_max,
+              next: sel.free_max + 1,
+            })}
           </Muted>
+          {!hasPlacement || sel.free_max < FREE_MAX_LEVEL ? (
+            <Muted variant="caption" center style={{ fontSize: 13 }}>
+              {tr("A strong placement result unlocks up to Level {n} free on that skill.", { n: FREE_MAX_LEVEL })}
+            </Muted>
+          ) : null}
           <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch" }} />
+          {!hasPlacement ? (
+            <Button title="Take the placement test" variant="ghost" onPress={() => router.push("/placement")} style={{ alignSelf: "stretch" }} />
+          ) : null}
         </Card>
       )}
 

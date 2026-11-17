@@ -261,6 +261,7 @@ export type Database = {
           current_level: number
           highest_level_passed: number
           id: string
+          placement_level: number | null
           track: Database["public"]["Enums"]["skill_track"]
           updated_at: string
           user_id: string
@@ -269,6 +270,7 @@ export type Database = {
           current_level?: number
           highest_level_passed?: number
           id?: string
+          placement_level?: number | null
           track: Database["public"]["Enums"]["skill_track"]
           updated_at?: string
           user_id: string
@@ -277,6 +279,7 @@ export type Database = {
           current_level?: number
           highest_level_passed?: number
           id?: string
+          placement_level?: number | null
           track?: Database["public"]["Enums"]["skill_track"]
           updated_at?: string
           user_id?: string
