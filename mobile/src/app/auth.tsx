@@ -164,6 +164,20 @@ export default function AuthScreen() {
 
           <Button title={cta} onPress={submit} loading={loading} style={{ marginTop: 24 }} />
 
+          {mode === "signup" && (
+            <Muted variant="caption" center style={{ marginTop: 12, lineHeight: 19 }}>
+              By creating an account you agree to our{" "}
+              <Txt variant="caption" color={colors.primary} style={styles.legal} onPress={() => router.push("/legal/terms")} accessibilityRole="link">
+                Terms of Use
+              </Txt>{" "}
+              and{" "}
+              <Txt variant="caption" color={colors.primary} style={styles.legal} onPress={() => router.push("/legal/privacy")} accessibilityRole="link">
+                Privacy Policy
+              </Txt>
+              .
+            </Muted>
+          )}
+
           <View style={{ marginTop: 20, alignItems: "center", gap: 14 }}>
             {mode === "signin" && (
               <TextLink label="Forgot password? Sign in with an email code" onPress={() => setMode("code")} />
@@ -188,12 +202,20 @@ export default function AuthScreen() {
 }
 
 function Field({ label, style, ...props }: TextInputProps & { label: string }) {
+  const [focused, setFocused] = useState(false);
   return (
     <View>
       <Txt variant="label" style={{ marginBottom: 6 }}>
         {label}
       </Txt>
-      <TextInput placeholderTextColor="#9aa5b1" style={[styles.input, style]} {...props} />
+      <TextInput
+        accessibilityLabel={label}
+        placeholderTextColor="#98a3b5"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={[styles.input, focused && { borderColor: colors.primary, backgroundColor: "#fbfdff" }, style]}
+        {...props}
+      />
     </View>
   );
 }
@@ -220,13 +242,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.amberSoft,
   },
   content: { paddingHorizontal: 24, paddingBottom: 32 },
+  legal: { fontFamily: fonts.semibold },
   input: {
     backgroundColor: colors.card,
     borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 15,
     fontSize: 17,
     fontFamily: fonts.regular,
     color: colors.foreground,

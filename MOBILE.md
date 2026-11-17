@@ -8,7 +8,7 @@ Store, so you don't need Xcode. The backend is your own Supabase project.
 | --- | --- |
 | `mobile/` | The app: screens in `mobile/src/app`, logic in `mobile/src/lib` |
 | `supabase/migrations/` | Full database schema and rules. Run once on a new project |
-| `site/` | Landing page + privacy policy (Apple requires a privacy policy URL) |
+| `site/` | Landing page, privacy policy and terms (Apple requires a privacy policy URL) |
 
 ## 1. Create your Supabase project (10 minutes, free)
 
@@ -19,6 +19,7 @@ Store, so you don't need Xcode. The backend is your own Supabase project.
    1. `supabase/migrations/20261110000000_rapidmath_init.sql`
    2. `supabase/migrations/20261111000000_feedback.sql`
    3. `supabase/migrations/20261112000000_pro_subscriptions.sql`
+   4. `supabase/migrations/20261113000000_delete_account_feedback.sql`
 3. **Auth settings** (Authentication > Sign In / Providers > Email): turn **off**
    "Confirm email" for launch. The app handles it if you leave it on, but users then have to
    leave the app to click a link before they can sign in.
@@ -75,8 +76,9 @@ Every time you save a change, the app on your phone reloads automatically.
    The first build asks you to sign in with your Apple ID and creates the certificates for
    you. Submit uploads the build to App Store Connect, where it appears in TestFlight.
 5. **Host the `site/` folder** anywhere free (GitHub Pages, Netlify drop, Cloudflare Pages)
-   and replace `support@example.com` with your support email. Use `.../privacy.html` as the
-   privacy policy URL and `.../index.html` as the support URL.
+   and replace `support@example.com` with your support email (it appears in `index.html`,
+   `privacy.html` and `terms.html`). Use `.../privacy.html` as the privacy policy URL and
+   `.../index.html` as the support URL.
 6. **App Store Connect:** screenshots (6.9" iPhone), description, privacy policy URL, support
    URL, App Privacy (email, name and app usage data; linked to the user; not used for
    tracking), and a **demo account** (email + password) in the review notes.
@@ -170,15 +172,16 @@ that device.
 7. **App keys:** add these to `mobile/.env` and to EAS (same way as the Supabase keys):
    ```
    EXPO_PUBLIC_REVENUECAT_IOS_KEY=appl_...   (RevenueCat > API keys > Apple public key)
-   EXPO_PUBLIC_PRIVACY_URL=https://your-site/privacy.html
+   EXPO_PUBLIC_SUPPORT_EMAIL=you@yourdomain.com
    ```
+   The support email appears in the in-app Privacy Policy, Terms and Profile > Contact support.
 8. **Test in TestFlight** with a Sandbox tester (App Store Connect > Users and Access > Sandbox).
    Sandbox time runs fast: the 3-day trial lasts about 3 minutes, so you can watch it renew.
 
 **For App Review:** submit the subscriptions together with the build (they're reviewed with it),
-and mention in the review notes that Pro is on the Profile tab. The Pro screen already shows the
-price, trial length, auto-renew terms, Restore, Terms of Use and Privacy Policy, which Apple
-requires.
+and mention in the review notes where Pro is (see "App Store review checklist" below). The Pro
+screen already shows the price, trial length, auto-renew terms, Restore, Terms of Use and
+Privacy Policy, which Apple requires.
 
 To give Pro to a tester without paying, run in the SQL Editor:
 
@@ -190,6 +193,52 @@ where email = 'tester@example.com';
 Apple takes 15% under the Small Business Program (apply in App Store Connect). In-app coupon
 codes aren't offered because Apple's guideline 3.1.1 doesn't allow unlocking features with your
 own codes; use Apple's Offer Codes instead.
+
+## App Store review checklist
+
+What's already built in, so you don't have to worry about it:
+
+| Apple rule | How the app meets it |
+| --- | --- |
+| 5.1.1 Privacy policy | Privacy Policy and Terms open inside the app: on sign-up, on the Pro screen and in Profile. Text lives in `mobile/src/lib/legal.ts`; `site/privacy.html` and `site/terms.html` mirror it |
+| 5.1.1(v) Account deletion | Profile > Delete account removes the account and all data at once, including feedback messages |
+| 3.1.1 In-app purchase | Pro is only sold through the App Store. No codes, no outside payment links |
+| 3.1.2 Subscriptions | Pro screen shows the plan name, length, billed price (the largest price on the card), trial length, auto-renew terms, Restore purchases, Terms and Privacy |
+| 4.5.4 / 5.1.1 Notifications | Reminders are optional and only asked for when the user turns them on |
+| Privacy manifest | Declared in `mobile/app.json` (`ios.privacyManifests`): no tracking |
+| Export compliance | `usesNonExemptEncryption: false`, so no encryption paperwork |
+| 2.1 App completeness | A build without Supabase keys runs in demo mode and shows a "Demo mode" notice. **Never submit that build**: check step 3 of "Ship to the App Store" is done first |
+
+What you fill in on App Store Connect:
+
+1. **Demo account.** Create a normal account in the app (for example `review@yourdomain.com`) and
+   put the email and password in App Review Information > Sign-in required. In Supabase >
+   Authentication > Sign In / Providers > Email, turn off "Confirm email" (or confirm that one
+   account by hand) so the reviewer can sign in straight away.
+2. **Review notes.** Suggested text: "Rapid Math is a mental maths trainer. Sign in with the demo
+   account. Lessons are on the Train tab. Rapid Math Pro (auto-renewing subscription, 3-day free
+   trial) opens from the 'Try Pro' button on the Train tab or from Profile. Account deletion is
+   at Profile > Delete account."
+3. **App Privacy answers.** Data collected: Email Address, Name, Product Interaction (training
+   results), Purchases, Customer Support (feedback messages). All linked to the user, used for
+   App Functionality only. Tracking: No.
+4. **Age rating.** Answer "None" to every content question. Result: 4+. Don't choose the Kids
+   category.
+5. **Category.** Education (primary), Productivity (secondary).
+6. **Subscriptions.** Attach both subscriptions to the version before you submit, each with a
+   review screenshot of the Pro screen. Add the Terms link (Apple's standard EULA is fine) in
+   the App Description or the EULA field.
+7. **Screenshots.** 6.9" iPhone, at least 3. Show the real app: Train tab, a lesson, results,
+   Meeting warm-up, Pro screen. No prices in screenshots.
+8. **Name.** "Rapid Math" may be taken on the App Store. Have a backup such as
+   "Rapid Math: Mental Maths".
+
+Common reasons for a first rejection, and what to check:
+
+- The reviewer can't sign in (demo account wrong, or email confirmation still on).
+- Subscriptions weren't submitted with the build, so the Pro screen shows an error.
+- The privacy policy URL in App Store Connect doesn't load.
+- Screenshots don't match the app.
 
 ## Known gaps
 

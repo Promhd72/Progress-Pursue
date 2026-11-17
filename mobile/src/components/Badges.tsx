@@ -58,7 +58,7 @@ export function BadgeIcon({ badge, earned, size = 64 }: { badge: Badge; earned: 
 }
 
 /** Watches progress and celebrates each newly earned badge. Mount once inside the signed-in app. */
-export function BadgeWatcher() {
+export function BadgeWatcher({ paused }: { paused?: boolean }) {
   const { ready, earned } = useBadges();
   const [queue, setQueue] = useState<string[]>([]);
 
@@ -78,7 +78,8 @@ export function BadgeWatcher() {
   }, [ready, earned]);
 
   const current = queue[0] ? badgeById(queue[0]) : undefined;
-  if (!current) return null;
+  // Hold celebrations while the paywall or a legal page is open.
+  if (!current || paused) return null;
   return <Celebration badge={current} more={queue.length - 1} onClose={() => setQueue((q) => q.slice(1))} />;
 }
 

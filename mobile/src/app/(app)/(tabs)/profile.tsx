@@ -6,7 +6,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, TextInput, V
 import { BadgeIcon, useBadges } from "@/components/Badges";
 import { ConfidenceResult } from "@/components/Confidence";
 import { getConfidence } from "@/lib/confidence";
-import { Card, ErrorState, Ionicons, Loading, Muted, Pill, Row, Txt, type IconName } from "@/components/ui";
+import { Card, ErrorState, Gradient, Ionicons, Loading, Muted, Row, SectionLabel, Txt, type IconName } from "@/components/ui";
 import { BADGES } from "@/lib/badges";
 import { deleteAccount, signOut, updateProfile } from "@/lib/account";
 import { MAX_LEVEL, TRACK_LABELS, TRACKS } from "@/lib/curriculum";
@@ -14,9 +14,12 @@ import { rankForXp } from "@/lib/drill-engine";
 import { getReminderPrefs, keyHaptic, trainedTodayFrom, updateReminderPrefs, type ReminderPrefs } from "@/lib/native";
 import { DAILY_TARGETS, getOnboarding, saveOnboarding, type DailyTargetId } from "@/lib/onboarding";
 import { resolveIsPro } from "@/lib/plan";
-import { MANAGE_URL } from "@/lib/purchases";
+import { SUPPORT_EMAIL } from "@/lib/legal";
+import { MANAGE_URL, restore } from "@/lib/purchases";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
+
+const pad = (h: number) => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}`;
 
 const TIMES = [8, 13, 18, 20, 22];
 
@@ -63,10 +66,30 @@ export default function Profile() {
     }
   }
 
+  async function restorePurchases() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const active = await restore();
+      await qc.invalidateQueries();
+      Alert.alert(
+        active ? "Pro restored" : "Nothing to restore",
+        active ? "Welcome back. Everything is unlocked." : "We couldn't find an active Rapid Math Pro subscription for this Apple Account.",
+      );
+    } catch (err) {
+      Alert.alert("Couldn't restore", err instanceof Error ? err.message : "Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function confirmDelete() {
     Alert.alert(
       "Delete your account?",
-      "All your Rapid Math data (progress, streaks, history) will be permanently removed. This can't be undone.",
+      "All your Rapid Math data (progress, streaks, history) will be permanently removed. This can't be undone." +
+        (isPro && p.pro_source === "store"
+          ? "\n\nThis doesn't cancel your subscription. Cancel it in iPhone Settings > your name > Subscriptions."
+          : ""),
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -86,24 +109,32 @@ export default function Profile() {
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Row gap={14}>
-        <View style={styles.avatar}>
-          <Txt style={{ fontFamily: fonts.displayBold, fontSize: 26 }} color={colors.white}>
-            {(p.name || p.email || "?").slice(0, 1).toUpperCase()}
-          </Txt>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Txt variant="heading" numberOfLines={1}>{p.name || "Your profile"}</Txt>
-          <Muted variant="caption" numberOfLines={1}>{p.email}</Muted>
-        </View>
-        <Pill label={isPro ? "Pro" : "Free"} color={isPro ? colors.primary : colors.mutedForeground} bg={isPro ? colors.primarySoft : colors.muted} />
-      </Row>
-
-      <Row gap={10}>
-        <Mini label="Rank" value={rank.name} />
-        <Mini label="Total XP" value={p.xp.toLocaleString()} />
-        <Mini label="Best streak" value={`${p.longest_streak}d`} />
-      </Row>
+      <Gradient style={styles.header}>
+        <Row gap={14}>
+          <View style={styles.avatar}>
+            <Txt style={{ fontFamily: fonts.displayBold, fontSize: 26 }} color={colors.primary}>
+              {(p.name || p.email || "?").slice(0, 1).toUpperCase()}
+            </Txt>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Txt variant="heading" color={colors.white} numberOfLines={1} style={{ fontSize: 21, lineHeight: 26 }}>
+              {p.name || "Your profile"}
+            </Txt>
+            <Txt variant="caption" color="rgba(255,255,255,0.8)" numberOfLines={1}>{p.email}</Txt>
+          </View>
+          <View style={[styles.plan, isPro && { backgroundColor: colors.gold }]}>
+            {isPro ? <Ionicons name="diamond" size={12} color={colors.ink} /> : null}
+            <Txt style={{ fontFamily: fonts.bold, fontSize: 12 }} color={isPro ? colors.ink : colors.white}>
+              {isPro ? "PRO" : "FREE"}
+            </Txt>
+          </View>
+        </Row>
+        <Row gap={8} style={{ marginTop: 18 }}>
+          <Mini label="Rank" value={rank.name} />
+          <Mini label="Total XP" value={p.xp.toLocaleString()} />
+          <Mini label="Best streak" value={`${p.longest_streak}d`} />
+        </Row>
+      </Gradient>
 
       <Section title="Badges">
         <Pressable onPress={() => router.push("/badges")} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
@@ -149,7 +180,7 @@ export default function Profile() {
             <>
               <LinkRow icon="diamond-outline" label="Try Pro free for 3 days" onPress={() => router.push("/pro")} />
               <Divider />
-              <LinkRow icon="refresh-outline" label="Restore purchases" onPress={() => router.push("/pro")} />
+              <LinkRow icon="refresh-outline" label="Restore purchases" onPress={() => void restorePurchases()} />
             </>
           )}
         </Card>
@@ -197,7 +228,7 @@ export default function Profile() {
           {reminder.enabled && (
             <Row gap={8} style={{ flexWrap: "wrap" }}>
               {TIMES.map((h) => (
-                <Chip key={h} label={`${h}:00`} selected={reminder.hour === h} onPress={() => applyReminder({ ...reminder, hour: h, minute: 0 })} />
+                <Chip key={h} label={pad(h)} selected={reminder.hour === h} onPress={() => applyReminder({ ...reminder, hour: h, minute: 0 })} />
               ))}
             </Row>
           )}
@@ -258,6 +289,24 @@ export default function Profile() {
         </Card>
       </Section>
 
+      <Section title="Legal and support">
+        <Card style={{ padding: 0 }}>
+          <LinkRow icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => router.push("/legal/privacy")} />
+          <Divider />
+          <LinkRow icon="document-text-outline" label="Terms of Use" onPress={() => router.push("/legal/terms")} />
+          <Divider />
+          <LinkRow
+            icon="mail-outline"
+            label="Contact support"
+            onPress={() =>
+              SUPPORT_EMAIL
+                ? void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=Rapid%20Math%20support`).catch(() => router.push("/feedback"))
+                : router.push("/feedback")
+            }
+          />
+        </Card>
+      </Section>
+
       <Section title="">
         <Card style={{ padding: 0 }}>
           <LinkRow icon="log-out-outline" label="Sign out" onPress={() => void signOut()} />
@@ -276,11 +325,7 @@ export default function Profile() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View style={{ gap: 8 }}>
-      {title ? (
-        <Muted variant="caption" style={{ fontFamily: fonts.semibold, letterSpacing: 0.6, marginLeft: 4 }}>
-          {title.toUpperCase()}
-        </Muted>
-      ) : null}
+      {title ? <SectionLabel style={{ marginLeft: 4 }}>{title}</SectionLabel> : null}
       {children}
     </View>
   );
@@ -288,9 +333,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Mini({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ flex: 1, backgroundColor: colors.muted, borderRadius: radius.md, paddingVertical: 14, alignItems: "center" }}>
-      <Txt style={{ fontFamily: fonts.displayBold, fontSize: 22 }}>{value}</Txt>
-      <Muted variant="caption" style={{ fontSize: 12 }}>{label}</Muted>
+    <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.16)", borderRadius: radius.md, paddingVertical: 12, alignItems: "center" }}>
+      <Txt numberOfLines={1} adjustsFontSizeToFit style={{ fontFamily: fonts.displayBold, fontSize: 20 }} color={colors.white}>{value}</Txt>
+      <Txt variant="caption" color="rgba(255,255,255,0.8)" style={{ fontSize: 12 }}>{label}</Txt>
     </View>
   );
 }
@@ -335,9 +380,19 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
+  },
+  header: { borderRadius: radius.xl, padding: 18 },
+  plan: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   rowItem: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, minHeight: 52, paddingVertical: 10 },
   inlineInput: { flex: 1, textAlign: "right", fontSize: 16, fontFamily: fonts.regular, color: colors.foreground, paddingVertical: 4 },

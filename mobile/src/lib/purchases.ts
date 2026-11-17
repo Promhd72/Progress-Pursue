@@ -4,8 +4,8 @@
 // `revenuecat` Edge Function to check the subscription with RevenueCat and
 // update the profile (see supabase/functions/revenuecat).
 //
-// Without a RevenueCat key (web preview, demo mode) purchases are simulated so
-// the whole flow can be tried without a store.
+// In demo mode (no Supabase connected) purchases are simulated so the whole
+// flow can be tried without a store. Terms and Privacy live in src/lib/legal.ts.
 
 import { Platform } from "react-native";
 import type { PurchasesPackage } from "react-native-purchases";
@@ -15,8 +15,6 @@ import { demoSetPro } from "./demo";
 
 export const ENTITLEMENT = "pro";
 export const TRIAL_DAYS = 3;
-export const TERMS_URL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
-export const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL ?? "";
 export const MANAGE_URL = "https://apps.apple.com/account/subscriptions";
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
@@ -131,6 +129,9 @@ export type BuyResult = "purchased" | "cancelled";
 
 export async function buy(plan: Plan): Promise<BuyResult> {
   if (!storeEnabled) {
+    // Only the local demo simulates a purchase. A real account can never be
+    // unlocked without the App Store.
+    if (!DEMO_MODE) throw new Error("Subscriptions are available in the App Store version of Rapid Math.");
     demoSetPro(true);
     return "purchased";
   }

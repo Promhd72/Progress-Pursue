@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   ChoiceCard,
+  Gradient,
   IconBadge,
   Ionicons,
   KeyValue,
@@ -23,7 +24,7 @@ import {
   type DailyTargetId,
   type GoalId,
 } from "@/lib/onboarding";
-import { colors, fonts } from "@/theme";
+import { colors, fonts, radius } from "@/theme";
 
 type Step = "intro" | "goal" | "target" | "ready";
 const ORDER: Step[] = ["intro", "goal", "target", "ready"];
@@ -44,7 +45,7 @@ export default function Welcome() {
 
   return (
     <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
-      <View style={styles.top}>
+      <View style={[styles.top, idx === 0 && { height: 8 }]}>
         {idx > 0 ? (
           <Pressable onPress={() => go(ORDER[idx - 1])} hitSlop={12} accessibilityLabel="Back">
             <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
@@ -108,8 +109,8 @@ export default function Welcome() {
           <>
             <Button title="Get started" onPress={() => go("goal")} />
             <Link href={{ pathname: "/auth", params: { mode: "signin" } }} asChild>
-              <Pressable style={styles.link} hitSlop={8}>
-                <Txt variant="label" color={colors.primary}>
+              <Pressable style={styles.link} hitSlop={8} accessibilityRole="button">
+                <Txt variant="label" color={colors.primary} style={{ fontSize: 16 }}>
                   I already have an account
                 </Txt>
               </Pressable>
@@ -148,23 +149,43 @@ export default function Welcome() {
 
 function Intro() {
   return (
-    <View style={{ paddingTop: 24 }}>
-      <View style={styles.logo}>
-        <Txt style={{ fontFamily: fonts.displayBold, fontSize: 40 }} color={colors.white}>
-          R
+    <View>
+      <Gradient style={styles.hero}>
+        <View style={styles.logo}>
+          <Txt style={{ fontFamily: fonts.displayBold, fontSize: 30 }} color={colors.primary}>
+            R
+          </Txt>
+        </View>
+        <Txt variant="hero" color={colors.white} style={{ marginTop: 22 }}>
+          Think faster.{"\n"}Talk numbers.
         </Txt>
-      </View>
-      <Txt variant="hero" center style={{ marginTop: 28 }}>
-        Think faster.{"\n"}Talk numbers.
-      </Txt>
-      <Muted center style={{ marginTop: 12, paddingHorizontal: 20 }}>
-        Get quicker and more confident with numbers, in meetings and on the go. Five minutes a day.
-      </Muted>
-      <View style={{ marginTop: 36, gap: 18 }}>
-        <Benefit icon="chatbubbles-outline" title="Speak up in meetings" text="18% of 250? Say it before the slide changes." />
-        <Benefit icon="walk-outline" title="Numbers on the go" text="Split a bill, check a discount, size a deal. No calculator." />
+        <Txt color="rgba(255,255,255,0.85)" style={{ marginTop: 10, fontSize: 16, lineHeight: 23 }}>
+          Get quicker and more confident with numbers, in meetings and on the go. Five minutes a day.
+        </Txt>
+        <View style={styles.sums}>
+          <Sum q="18% of 250" a="45" />
+          <Sum q="$180 ÷ 4" a="$45" />
+          <Sum q="64 × 5" a="320" />
+        </View>
+      </Gradient>
+      <View style={{ marginTop: 24, gap: 16 }}>
+        <Benefit icon="chatbubbles" title="Speak up in meetings" text="Have the number ready before the slide changes." />
+        <Benefit icon="walk" title="Numbers on the go" text="Split a bill, check a discount, size a deal. No calculator." />
         <Benefit icon="trending-up" title="Confidence that builds" text="Short daily lessons, streaks and progress you can see." />
       </View>
+    </View>
+  );
+}
+
+function Sum({ q, a }: { q: string; a: string }) {
+  return (
+    <View style={styles.sum}>
+      <Txt style={{ fontFamily: fonts.semibold, fontSize: 13 }} color="rgba(255,255,255,0.85)">
+        {q} ={" "}
+      </Txt>
+      <Txt style={{ fontFamily: fonts.displayBold, fontSize: 14 }} color={colors.white}>
+        {a}
+      </Txt>
     </View>
   );
 }
@@ -172,7 +193,7 @@ function Intro() {
 function Benefit({ icon, title, text }: { icon: IconName; title: string; text: string }) {
   return (
     <View style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
-      <IconBadge name={icon} size={46} />
+      <IconBadge name={icon} size={44} />
       <View style={{ flex: 1 }}>
         <Txt variant="label">{title}</Txt>
         <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
@@ -209,22 +230,27 @@ function Ready({ goal, target }: { goal: GoalId | null; target: DailyTargetId })
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   top: { height: 52, flexDirection: "row", alignItems: "center", paddingHorizontal: 20 },
-  content: { paddingHorizontal: 24, paddingBottom: 24 },
+  content: { paddingHorizontal: 20, paddingBottom: 24 },
   sub: { marginTop: 8 },
   list: { marginTop: 24, gap: 12 },
-  actions: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8, gap: 4 },
+  actions: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 8, gap: 4 },
   link: { alignItems: "center", paddingVertical: 14 },
+  hero: { borderRadius: radius.xl + 4, padding: 24, paddingTop: 26 },
   logo: {
-    width: 84,
-    height: 84,
-    borderRadius: 26,
-    backgroundColor: colors.primary,
-    alignSelf: "center",
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: colors.primary,
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+  },
+  sums: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 20 },
+  sum: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(255,255,255,0.16)",
   },
 });

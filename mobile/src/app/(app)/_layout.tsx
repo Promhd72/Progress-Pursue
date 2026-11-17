@@ -98,7 +98,7 @@ export default function AppLayout() {
       <Stack.Screen name="badges" options={header("Badges")} />
       <Stack.Screen name="science" options={header("Why it works")} />
     </Stack>
-    {!inSetup || segments.includes("placement") ? <BadgeWatcher /> : null}
+    {!inSetup || segments.includes("placement") ? <BadgeWatcher paused={segments.includes("pro")} /> : null}
     </>
   );
 }

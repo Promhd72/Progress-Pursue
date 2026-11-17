@@ -68,6 +68,7 @@ function RootNavigator() {
         <Stack.Screen name="welcome" />
         <Stack.Screen name="auth" />
       </Stack.Protected>
+      <Stack.Screen name="legal/[doc]" options={{ presentation: "modal" }} />
       <Stack.Protected guard={signedIn} redirectTo="/welcome">
         <Stack.Screen name="(app)" />
       </Stack.Protected>

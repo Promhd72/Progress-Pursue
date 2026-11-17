@@ -4,7 +4,7 @@ import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { Button, ErrorState, IconBadge, Loading, Muted, Pill, Txt } from "@/components/ui";
 import { TRACK_LABELS, TRACK_SYMBOL, type SkillTrack } from "@/lib/curriculum";
 import { getRecentLessons } from "@/lib/backend";
-import { colors, fonts, radius } from "@/theme";
+import { colors, fonts, radius, trackColors } from "@/theme";
 
 function dayLabel(iso: string) {
   const d = new Date(iso);
@@ -54,8 +54,8 @@ export default function History() {
               </Muted>
             )}
             <View style={styles.item}>
-              <View style={styles.symbol}>
-                <Txt style={{ fontFamily: fonts.displayBold, fontSize: 18 }} color={colors.primary}>
+              <View style={[styles.symbol, { backgroundColor: trackColors[item.track]?.bg ?? colors.primarySoft }]}>
+                <Txt style={{ fontFamily: fonts.displayBold, fontSize: 18 }} color={trackColors[item.track]?.fg ?? colors.primary}>
                   {TRACK_SYMBOL[item.track as SkillTrack] ?? "#"}
                 </Txt>
               </View>

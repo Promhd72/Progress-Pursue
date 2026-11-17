@@ -3,9 +3,12 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Button,
   Card,
+  Gradient,
+  SectionLabel,
   ErrorState,
   IconBadge,
   Ionicons,
@@ -32,7 +35,7 @@ import { getRecentLessons, getTrackSpeedStats } from "@/lib/backend";
 import { rankForXp } from "@/lib/drill-engine";
 import { dailyTargetFor, getOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
-import { colors, fonts, radius } from "@/theme";
+import { colors, elevation, fonts, gradients, radius, trackColors } from "@/theme";
 
 export default function Train() {
   const router = useRouter();
@@ -42,6 +45,7 @@ export default function Train() {
   const speedQ = useQuery({ queryKey: ["lessons", "speed"], queryFn: () => getTrackSpeedStats() });
   const advancedQ = useQuery({ queryKey: ["advanced-progress"], queryFn: () => getAdvancedProgress() });
   const [refreshing, setRefreshing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   async function refresh() {
     setRefreshing(true);
@@ -72,17 +76,35 @@ export default function Train() {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 12 }]}
+      showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}
     >
-      <View>
-        <Txt variant="title">Hi {profile.name || "there"} 👋</Txt>
-        <Muted style={{ marginTop: 4 }}>
-          {profile.current_streak > 0
-            ? `You're on a ${profile.current_streak}-day streak. Keep it going.`
-            : "Pick a track and start your next lesson."}
-        </Muted>
-      </View>
+      <Row style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <View style={{ flex: 1 }}>
+          <SectionLabel>{greeting()}</SectionLabel>
+          <Txt variant="title" numberOfLines={1} style={{ marginTop: 2 }}>
+            {profile.name || "Welcome"}
+          </Txt>
+        </View>
+        <Row gap={8}>
+          <View style={styles.chip} accessibilityLabel={`${profile.current_streak}-day streak`}>
+            <Ionicons name="flame" size={16} color={colors.warm} />
+            <Txt style={styles.chipText} color={colors.warm}>{profile.current_streak}</Txt>
+          </View>
+          {overview.isPro ? (
+            <View style={[styles.chip, { backgroundColor: colors.ink }]} accessibilityLabel="Pro member">
+              <Ionicons name="diamond" size={14} color={colors.gold} />
+              <Txt style={styles.chipText} color={colors.white}>PRO</Txt>
+            </View>
+          ) : (
+            <Pressable onPress={() => router.push("/pro")} hitSlop={6} style={[styles.chip, { backgroundColor: colors.goldSoft }]} accessibilityRole="button" accessibilityLabel="Try Pro">
+              <Ionicons name="diamond" size={14} color="#b47a06" />
+              <Txt style={styles.chipText} color="#8a5a00">Try Pro</Txt>
+            </Pressable>
+          )}
+        </Row>
+      </Row>
 
       <DailyGoal
         lessonsToday={overview.lessonsUsedToday}
@@ -90,21 +112,24 @@ export default function Train() {
         onStart={next ? () => openLesson(next.track, next.level) : undefined}
       />
 
+      <View style={styles.statRow}>
+        <Stat icon="trophy" label={rank.name} value={profile.xp.toLocaleString()} sub={rank.next ? `${rank.toNext} XP to ${rank.next}` : "Top rank"} tint={colors.primary} bg={colors.primarySoft} />
+        <View style={styles.statDivider} />
+        <Stat icon="locate" label="Accuracy" value={accuracy === null ? "–" : `${accuracy}%`} sub={totalQs > 0 ? "last 20 lessons" : "no lessons yet"} tint={colors.success} bg={colors.successSoft} />
+        <View style={styles.statDivider} />
+        <Stat
+          icon="checkmark-done"
+          label="Today"
+          value={overview.dailyLimit === null ? `${overview.lessonsUsedToday}` : `${overview.lessonsUsedToday}/${overview.dailyLimit}`}
+          sub={overview.dailyLimit === null ? "lessons done" : "free lessons"}
+          tint="#7c5cfc"
+          bg="#efebff"
+        />
+      </View>
+
       <MeetingCard onStart={() => router.push("/meeting")} />
 
       <ConfidenceCard />
-
-      <View style={styles.grid}>
-        <Stat icon="trophy-outline" label={`Rank · ${rank.name}`} value={`${profile.xp.toLocaleString()} XP`} sub={rank.next ? `${rank.toNext} XP to ${rank.next}` : "Top rank"} tint={colors.primary} bg={colors.primarySoft} />
-        <Stat icon="flame-outline" label="Streak" value={`${profile.current_streak}`} sub={`days · best ${profile.longest_streak}`} tint={colors.warm} bg={colors.warmSoft} />
-        <Stat icon="locate-outline" label="Accuracy" value={accuracy === null ? "–" : `${accuracy}%`} sub={totalQs > 0 ? "last 20 lessons" : "run a lesson first"} />
-        <Stat
-          icon="checkmark-circle-outline"
-          label="Today"
-          value={overview.dailyLimit === null ? `${overview.lessonsUsedToday}` : `${overview.lessonsUsedToday}/${overview.dailyLimit}`}
-          sub={overview.dailyLimit === null ? "lessons" : "free lessons used"}
-        />
-      </View>
 
       {!overview.hasPlacement && (
         <Card style={{ borderStyle: "dashed", borderColor: colors.primary, backgroundColor: colors.primarySoft, gap: 12 }}>
@@ -122,9 +147,9 @@ export default function Train() {
       )}
 
       {!overview.isPro && overview.tracks.some((t) => t.current_level > FREE_MAX_LEVEL) && (
-        <Card style={{ gap: 12, borderColor: colors.primary }}>
+        <Card style={{ gap: 12, borderColor: "#f3d9a0", backgroundColor: "#fffaf0" }}>
           <Row gap={12} style={{ alignItems: "flex-start" }}>
-            <IconBadge name="diamond-outline" size={40} />
+            <IconBadge name="diamond" size={40} color="#b47a06" bg={colors.goldSoft} />
             <View style={{ flex: 1 }}>
               <Txt variant="heading">You're ready for Level {FREE_MAX_LEVEL + 1}</Txt>
               <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
@@ -209,21 +234,30 @@ export default function Train() {
 function MeetingCard({ onStart }: { onStart: () => void }) {
   const { data: stats } = useQuery({ queryKey: ["meeting-stats"], queryFn: () => getMeetingStats() });
   return (
-    <Card style={{ gap: 12 }}>
+    <Gradient colors={gradients.ink} style={styles.meeting}>
       <Row gap={12} style={{ alignItems: "flex-start" }}>
-        <IconBadge name="chatbubbles-outline" size={40} />
+        <View style={styles.meetingIcon}>
+          <Ionicons name="chatbubbles" size={20} color={colors.gold} />
+        </View>
         <View style={{ flex: 1 }}>
-          <Txt variant="heading">Meeting warm-up</Txt>
-          <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
-            {MEETING_SECONDS} seconds of numbers the way they come up at work and on the go. Great right before a call.
-          </Muted>
+          <Row gap={8}>
+            <Txt variant="heading" color={colors.white}>Meeting warm-up</Txt>
+            <View style={styles.meetingTag}>
+              <Txt style={{ fontFamily: fonts.bold, fontSize: 11 }} color={colors.gold}>{MEETING_SECONDS}s</Txt>
+            </View>
+          </Row>
+          <Txt variant="caption" color="rgba(255,255,255,0.78)" style={{ fontSize: 14, lineHeight: 20, marginTop: 4 }}>
+            Numbers the way they come up at work and on the go. Great right before a call.
+          </Txt>
+          {stats && stats.rounds > 0 ? (
+            <Txt variant="caption" color={colors.gold} style={{ marginTop: 6, fontFamily: fonts.semibold }}>
+              Your best: {stats.best} correct
+            </Txt>
+          ) : null}
         </View>
       </Row>
-      {stats && stats.rounds > 0 ? (
-        <Muted variant="caption">Your best: {stats.best} correct</Muted>
-      ) : null}
-      <Button title="Start warm-up" icon="play" variant="secondary" onPress={onStart} />
-    </Card>
+      <Button title="Start warm-up" icon="play" variant="gold" onPress={onStart} style={{ marginTop: 14 }} />
+    </Gradient>
   );
 }
 
@@ -232,7 +266,7 @@ function DailyGoal({ lessonsToday, streak, onStart }: { lessonsToday: number; st
   const done = Math.min(lessonsToday, target.lessons);
   const complete = lessonsToday >= target.lessons;
   return (
-    <View style={styles.goal}>
+    <Gradient style={styles.goal}>
       <Row gap={18}>
         <Ring value={done / target.lessons}>
           <Txt style={{ fontFamily: fonts.displayBold, fontSize: 20 }} color={colors.white}>
@@ -245,13 +279,13 @@ function DailyGoal({ lessonsToday, streak, onStart }: { lessonsToday: number; st
           </Txt>
           <Txt variant="heading" color={colors.white} style={{ marginTop: 4, fontSize: 20, lineHeight: 25 }}>
             {complete
-              ? "Goal smashed. See you tomorrow!"
+              ? "Goal done. See you tomorrow!"
               : lessonsToday === 0
                 ? `${target.minutes} minutes keeps the streak alive`
                 : `${target.lessons - lessonsToday} more to hit your goal`}
           </Txt>
           <Txt variant="caption" color="rgba(255,255,255,0.85)" style={{ marginTop: 4 }}>
-            {streak > 0 ? `🔥 ${streak}-day streak` : "🔥 Start your streak today"}
+            {streak > 0 ? `${streak}-day streak. Keep it going.` : "Start your streak today"}
           </Txt>
         </View>
       </Row>
@@ -264,7 +298,7 @@ function DailyGoal({ lessonsToday, streak, onStart }: { lessonsToday: number; st
           style={{ marginTop: 16 }}
         />
       )}
-    </View>
+    </Gradient>
   );
 }
 
@@ -284,18 +318,14 @@ function Stat({
   bg?: string;
 }) {
   return (
-    <Card style={styles.stat}>
-      <Row gap={8}>
-        <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
-          <Ionicons name={icon} size={16} color={tint} />
-        </View>
-        <Muted variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 12, letterSpacing: 0.5 }}>
-          {label.toUpperCase()}
-        </Muted>
-      </Row>
-      <Txt variant="number" style={{ marginTop: 10, fontSize: 26 }}>{value}</Txt>
-      <Muted variant="caption" style={{ marginTop: 2, fontSize: 12 }}>{sub}</Muted>
-    </Card>
+    <View style={styles.stat}>
+      <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
+        <Ionicons name={icon} size={16} color={tint} />
+      </View>
+      <Txt variant="number" numberOfLines={1} adjustsFontSizeToFit style={{ marginTop: 8, fontSize: 22 }}>{value}</Txt>
+      <Txt variant="caption" numberOfLines={1} style={{ fontFamily: fonts.semibold, fontSize: 13 }}>{label}</Txt>
+      <Muted variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>{sub}</Muted>
+    </View>
   );
 }
 
@@ -315,11 +345,12 @@ function TrackCard({
   // Free users past the free levels keep practising the top free level, so there's never a dead end.
   const playLevel = Math.min(currentLevel, isPro ? MAX_LEVEL : FREE_MAX_LEVEL);
   const capped = !isPro && currentLevel > FREE_MAX_LEVEL;
+  const tc = trackColors[track];
   return (
     <Card style={{ gap: 12 }}>
       <Row gap={12}>
-        <View style={styles.symbol}>
-          <Txt style={{ fontFamily: fonts.displayBold, fontSize: 20 }} color={colors.primary}>
+        <View style={[styles.symbol, { backgroundColor: tc.bg }]}>
+          <Txt style={{ fontFamily: fonts.displayBold, fontSize: 22 }} color={tc.fg}>
             {TRACK_SYMBOL[track]}
           </Txt>
         </View>
@@ -336,7 +367,7 @@ function TrackCard({
         </View>
         <Pressable
           onPress={onPlay}
-          style={({ pressed }) => [styles.play, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [styles.play, { backgroundColor: tc.fg }, pressed && { opacity: 0.85, transform: [{ scale: 0.94 }] }]}
           accessibilityLabel={`Play ${TRACK_LABELS[track]} level ${playLevel}`}
         >
           <Ionicons name="play" size={18} color={colors.white} />
@@ -352,8 +383,8 @@ function TrackCard({
               key={l}
               style={[
                 styles.step,
-                passed && { backgroundColor: colors.primary },
-                current && !passed && { backgroundColor: colors.accent, borderColor: colors.primary, borderWidth: 1.5 },
+                passed && { backgroundColor: tc.fg },
+                current && !passed && { backgroundColor: tc.bg, borderColor: tc.fg, borderWidth: 1.5 },
                 locked && !passed && { backgroundColor: colors.muted, opacity: 0.6 },
               ]}
             />
@@ -398,7 +429,7 @@ function SpeedByTrack({ stats }: { stats: TrackSpeedStat[] }) {
 function Sparkline({ values }: { values: number[] }) {
   const w = 120;
   const h = 28;
-  if (values.length < 2) return <View style={{ height: h, justifyContent: "center" }}><ProgressBar value={0} height={2} /></View>;
+  if (values.length < 2 || values.some((v) => !Number.isFinite(v))) return <View style={{ height: h, justifyContent: "center" }}><ProgressBar value={0} height={2} /></View>;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -410,23 +441,58 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
+/** Time-of-day greeting. */
+function greeting() {
+  const h = new Date().getHours();
+  return h < 5 ? "Still up" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+}
+
 const styles = StyleSheet.create({
-  content: { padding: 16, paddingBottom: 32, gap: 20 },
-  goal: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.xl,
-    padding: 18,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
+  content: { paddingHorizontal: 16, paddingBottom: 32, gap: 18 },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    backgroundColor: colors.warmSoft,
   },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 12 },
-  stat: { width: "48.3%", padding: 14 },
-  symbol: {
+  chipText: { fontFamily: fonts.bold, fontSize: 14 },
+  goal: {
+    borderRadius: radius.xl,
+    padding: 20,
+    shadowColor: colors.primaryDeep,
+    shadowOpacity: 0.32,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
+  statRow: {
+    flexDirection: "row",
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#edf1f7",
+    ...elevation,
+  },
+  stat: { flex: 1, paddingHorizontal: 14 },
+  statDivider: { width: 1, backgroundColor: colors.border, marginVertical: 4 },
+  meeting: { borderRadius: radius.xl, padding: 18 },
+  meetingIcon: {
     width: 42,
     height: 42,
-    borderRadius: 12,
+    borderRadius: 13,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  meetingTag: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: "rgba(246,185,59,0.18)" },
+  symbol: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
     backgroundColor: colors.primarySoft,
     alignItems: "center",
     justifyContent: "center",
@@ -444,8 +510,8 @@ const styles = StyleSheet.create({
     width: 200,
     backgroundColor: colors.card,
     borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: "#edf1f7",
     padding: 14,
   },
 });

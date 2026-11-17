@@ -1,19 +1,20 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, ErrorState, Ionicons, Loading, Muted, Row, Txt, type IconName } from "@/components/ui";
+import { Button, ErrorState, Gradient, Ionicons, Loading, Muted, Row, Txt, type IconName } from "@/components/ui";
 import { FREE_MAX_LEVEL, MAX_LEVEL } from "@/lib/curriculum";
 import { finishHaptic, keyHaptic } from "@/lib/native";
-import { PRIVACY_URL, TERMS_URL, buy, getPlans, restore, storeEnabled, type Plan, type PlanId } from "@/lib/purchases";
+import { DEMO_MODE } from "@/lib/backend";
+import { buy, getPlans, restore, type Plan, type PlanId } from "@/lib/purchases";
 import { useProfile } from "@/lib/queries";
-import { colors, fonts, radius } from "@/theme";
+import { colors, elevation, fonts, gradients, radius } from "@/theme";
 
 const BENEFITS: { icon: IconName; title: string; text: string }[] = [
-  { icon: "rocket-outline", title: `Levels ${FREE_MAX_LEVEL + 1} to ${MAX_LEVEL} on every skill`, text: "Work-ready and expert levels: bigger numbers, real meeting maths." },
-  { icon: "infinite-outline", title: "Unlimited lessons", text: "Train as much as you like, no daily cap." },
-  { icon: "briefcase-outline", title: "Unlimited scenarios", text: "All 100 real-life problems, any time." },
+  { icon: "rocket", title: `Levels ${FREE_MAX_LEVEL + 1} to ${MAX_LEVEL} on every skill`, text: "Work-ready and expert levels: bigger numbers, real meeting maths." },
+  { icon: "infinite", title: "Unlimited lessons", text: "Train as much as you like, no daily cap." },
+  { icon: "briefcase", title: "Unlimited scenarios", text: "All 100 real-life problems, any time." },
 ];
 
 const periodWord = (p: Plan) => (p.period === "year" ? "year" : "month");
@@ -26,15 +27,16 @@ export default function ProScreen() {
   const plansQ = useQuery({ queryKey: ["pro-plans"], queryFn: getPlans, staleTime: 5 * 60_000 });
   const [selected, setSelected] = useState<PlanId>("annual");
   const [busy, setBusy] = useState<"buy" | "restore" | null>(null);
+  const compact = useWindowDimensions().height < 720;
   const close = () => (router.canGoBack() ? router.back() : router.replace("/train"));
 
   if (profile?.is_pro) {
     return (
       <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
         <View style={styles.done}>
-          <View style={styles.crown}>
-            <Ionicons name="diamond" size={40} color={colors.white} />
-          </View>
+          <Gradient colors={gradients.ink} orbs={false} style={styles.crown}>
+            <Ionicons name="diamond" size={40} color={colors.gold} />
+          </Gradient>
           <Txt variant="title" center style={{ marginTop: 20 }}>
             You're Pro
           </Txt>
@@ -88,33 +90,42 @@ export default function ProScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
-      <View style={styles.bar}>
-        <Pressable onPress={close} hitSlop={12} accessibilityLabel="Close">
-          <Ionicons name="close" size={28} color={colors.mutedForeground} />
-        </Pressable>
-        <Pressable onPress={restorePurchases} hitSlop={10} disabled={!!busy}>
-          <Txt variant="label" color={colors.primary} style={{ fontSize: 15 }}>
-            {busy === "restore" ? "Restoring…" : "Restore"}
-          </Txt>
-        </Pressable>
-      </View>
+    <View style={styles.root}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false} bounces={false}>
+        <Gradient colors={gradients.ink} style={styles.hero}>
+          <SafeAreaView edges={["top"]}>
+            <View style={styles.bar}>
+              <Pressable onPress={close} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close" style={styles.round}>
+                <Ionicons name="close" size={22} color={colors.white} />
+              </Pressable>
+              <Pressable onPress={restorePurchases} hitSlop={10} disabled={!!busy} accessibilityRole="button">
+                <Txt variant="label" color="rgba(255,255,255,0.9)" style={{ fontSize: 15 }}>
+                  {busy === "restore" ? "Restoring…" : "Restore purchases"}
+                </Txt>
+              </Pressable>
+            </View>
+            <View style={{ paddingHorizontal: 24, paddingTop: compact ? 0 : 6, paddingBottom: compact ? 18 : 26 }}>
+              {!compact && (
+                <View style={styles.gem}>
+                  <Ionicons name="diamond" size={26} color={colors.gold} />
+                </View>
+              )}
+              <Txt variant="title" color={colors.white} style={{ marginTop: compact ? 4 : 14, fontSize: compact ? 26 : 30, lineHeight: compact ? 31 : 35 }}>
+                Rapid Math Pro
+              </Txt>
+              <Txt color="rgba(255,255,255,0.8)" style={{ marginTop: 6 }}>
+                Go from quick to confident. Unlock every level and train without limits.
+              </Txt>
+            </View>
+          </SafeAreaView>
+        </Gradient>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.crown, { width: 60, height: 60, borderRadius: 18 }]}>
-          <Ionicons name="diamond" size={28} color={colors.white} />
-        </View>
-        <Txt variant="title" center style={{ marginTop: 12 }}>
-          Rapid Math Pro
-        </Txt>
-        <Muted center style={{ marginTop: 6 }}>
-          Go from quick to confident: unlock every level and train without limits.
-        </Muted>
-
-        <View style={{ marginTop: 18, gap: 12 }}>
+        <View style={[styles.benefits, compact && { marginTop: 14, gap: 10 }]}>
           {BENEFITS.map((b) => (
             <Row key={b.title} gap={12} style={{ alignItems: "flex-start" }}>
-              <Ionicons name={b.icon} size={22} color={colors.primary} style={{ marginTop: 1 }} />
+              <View style={styles.benefitIcon}>
+                <Ionicons name={b.icon} size={17} color={colors.primary} />
+              </View>
               <View style={{ flex: 1 }}>
                 <Txt variant="label">{b.title}</Txt>
                 <Muted variant="caption" style={{ fontSize: 14 }}>
@@ -125,7 +136,7 @@ export default function ProScreen() {
           ))}
         </View>
 
-        <View style={{ marginTop: 20, gap: 10 }}>
+        <View style={{ marginTop: 18, gap: 10, paddingHorizontal: 20 }} accessibilityRole="radiogroup">
           {plans.map((p) => {
             const on = p.id === plan.id;
             const saving =
@@ -139,6 +150,7 @@ export default function ProScreen() {
                 key={p.id}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
+                accessibilityLabel={`${p.title}. ${p.trialDays ? `${p.trialDays}-day free trial, then ` : ""}${p.price} per ${periodWord(p)}`}
                 onPress={() => {
                   keyHaptic();
                   setSelected(p.id);
@@ -148,34 +160,36 @@ export default function ProScreen() {
                 <View style={[styles.radio, on && styles.radioOn]}>{on && <Ionicons name="checkmark" size={14} color={colors.white} />}</View>
                 <View style={{ flex: 1 }}>
                   <Row gap={8}>
-                    <Txt variant="label">{p.title}</Txt>
-                    {saving ? (
+                    <Txt variant="label" style={{ fontSize: 16 }}>{p.title}</Txt>
+                    {saving && saving > 0 ? (
                       <View style={styles.save}>
-                        <Txt style={{ fontFamily: fonts.semibold, fontSize: 12 }} color={colors.white}>
+                        <Txt style={{ fontFamily: fonts.bold, fontSize: 11 }} color={colors.ink}>
                           SAVE {saving}%
                         </Txt>
                       </View>
                     ) : null}
                   </Row>
-                  <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
-                    {p.trialDays ? `${p.trialDays}-day free trial, then ` : ""}
-                    {p.price}/{periodWord(p)}
+                  <Muted variant="caption" style={{ fontSize: 13, marginTop: 2 }}>
+                    {p.trialDays ? `${p.trialDays} days free, then billed ${p.period === "year" ? "yearly" : "monthly"}` : `Billed ${p.period === "year" ? "yearly" : "monthly"}`}
                   </Muted>
                 </View>
-                {p.perMonth ? (
-                  <Muted variant="caption" style={{ fontSize: 13 }}>
-                    {p.perMonth}/mo
+                {/* The amount actually billed is the most prominent price. */}
+                <View style={{ alignItems: "flex-end" }}>
+                  <Txt style={{ fontFamily: fonts.displayBold, fontSize: 19 }}>{p.price}</Txt>
+                  <Muted variant="caption" style={{ fontSize: 12 }}>
+                    per {periodWord(p)}
+                    {p.perMonth ? ` · ${p.perMonth}/mo` : ""}
                   </Muted>
-                ) : null}
+                </View>
               </Pressable>
             );
           })}
         </View>
       </ScrollView>
 
-      <View style={styles.actions}>
+      <SafeAreaView edges={["bottom"]} style={styles.actions}>
         <Button
-          title={trial ? `Start my ${trial}-day free trial` : `Subscribe for ${plan.price}/${periodWord(plan)}`}
+          title={trial ? `Start ${trial}-day free trial` : `Subscribe for ${plan.price}/${periodWord(plan)}`}
           loading={busy === "buy"}
           disabled={!!busy}
           onPress={purchase}
@@ -186,41 +200,35 @@ export default function ProScreen() {
             : `${plan.price} per ${periodWord(plan)}. `}
           Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before{" "}
           {trial ? "the trial ends" : "the renewal date"} and you won't be charged.
-          {!storeEnabled ? " (Preview: no real payment is taken.)" : ""}
+          {DEMO_MODE ? " (Demo: no real payment is taken.)" : ""}
         </Muted>
         <Row gap={18} style={{ justifyContent: "center", marginTop: 8 }}>
-          <Pressable onPress={() => void Linking.openURL(TERMS_URL)} hitSlop={8}>
+          <Pressable onPress={() => router.push("/legal/terms")} hitSlop={8} accessibilityRole="link">
             <Muted variant="caption" style={styles.link}>
               Terms of Use
             </Muted>
           </Pressable>
-          {PRIVACY_URL ? (
-            <Pressable onPress={() => void Linking.openURL(PRIVACY_URL)} hitSlop={8}>
-              <Muted variant="caption" style={styles.link}>
-                Privacy Policy
-              </Muted>
-            </Pressable>
-          ) : null}
+          <Pressable onPress={() => router.push("/legal/privacy")} hitSlop={8} accessibilityRole="link">
+            <Muted variant="caption" style={styles.link}>
+              Privacy Policy
+            </Muted>
+          </Pressable>
         </Row>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
+  hero: { borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
   bar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 },
-  content: { paddingHorizontal: 24, paddingBottom: 16 },
+  round: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" },
+  gem: { width: 52, height: 52, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
+  benefits: { marginTop: 20, gap: 14, paddingHorizontal: 22 },
+  benefitIcon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: "center", justifyContent: "center" },
   done: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
-  crown: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "center",
-  },
+  crown: { width: 84, height: 84, borderRadius: 26, alignItems: "center", justifyContent: "center", alignSelf: "center" },
   plan: {
     flexDirection: "row",
     alignItems: "center",
@@ -228,13 +236,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: radius.lg,
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     backgroundColor: colors.card,
   },
-  planOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  planOn: { borderColor: colors.primary, backgroundColor: colors.primarySoft, ...elevation },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
   radioOn: { backgroundColor: colors.primary, borderColor: colors.primary },
-  save: { backgroundColor: colors.success, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
-  actions: { paddingHorizontal: 24, paddingBottom: 8, paddingTop: 8 },
+  save: { backgroundColor: colors.gold, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
+  actions: { paddingHorizontal: 20, paddingBottom: 8, paddingTop: 10, backgroundColor: colors.background },
   link: { textDecorationLine: "underline" },
 });

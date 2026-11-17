@@ -5,7 +5,7 @@ import { Card, Ionicons, Muted, ProgressBar, Row, Txt } from "@/components/ui";
 import { TRACK_LABELS, TRACK_SYMBOL, TRACKS } from "@/lib/curriculum";
 import { keyHaptic } from "@/lib/native";
 import { TECHNIQUES, learnedTechniques } from "@/lib/techniques";
-import { colors, fonts } from "@/theme";
+import { colors, fonts, trackColors } from "@/theme";
 
 /** The technique library: the theory behind every skill, before (or alongside) practice. */
 export default function Learn() {
@@ -51,8 +51,8 @@ export default function Learn() {
       {TRACKS.map((track) => (
         <View key={track} style={{ gap: 10 }}>
           <Row gap={10}>
-            <View style={styles.symbol}>
-              <Txt style={{ fontFamily: fonts.displayBold, fontSize: 18 }} color={colors.primary}>
+            <View style={[styles.symbol, { backgroundColor: trackColors[track].bg }]}>
+              <Txt style={{ fontFamily: fonts.displayBold, fontSize: 18 }} color={trackColors[track].fg}>
                 {TRACK_SYMBOL[track]}
               </Txt>
             </View>

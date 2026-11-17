@@ -16,7 +16,7 @@ import {
 } from "@/lib/curriculum";
 import { keyHaptic } from "@/lib/native";
 import { useLevelStats, useOverview } from "@/lib/queries";
-import { colors, fonts, radius } from "@/theme";
+import { colors, fonts, radius, trackColors } from "@/theme";
 
 type Status = "passed" | "next" | "open" | "locked" | "pro";
 
@@ -102,7 +102,7 @@ export default function Curriculum() {
                 style={[styles.mapRow, on && { backgroundColor: colors.primarySoft }]}
                 accessibilityLabel={`${TRACK_LABELS[t]}: ${r.highest_level_passed} of ${MAX_LEVEL} passed`}
               >
-                <Txt style={{ width: 22, fontFamily: fonts.displayBold, fontSize: 17 }} color={colors.primary}>
+                <Txt style={{ width: 22, fontFamily: fonts.displayBold, fontSize: 17 }} color={trackColors[t].fg}>
                   {TRACK_SYMBOL[t]}
                 </Txt>
                 <View style={{ flex: 1, flexDirection: "row", gap: 3 }}>

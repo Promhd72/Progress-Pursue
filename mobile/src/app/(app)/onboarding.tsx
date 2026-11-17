@@ -14,9 +14,9 @@ import { useOverview, useProfile } from "@/lib/queries";
 import { colors } from "@/theme";
 
 const TIMES = [
-  { label: "Morning", sub: "8:00", hour: 8, emoji: "☀️" },
-  { label: "Lunch break", sub: "13:00", hour: 13, emoji: "🥗" },
-  { label: "Evening", sub: "20:00", hour: 20, emoji: "🌙" },
+  { label: "Morning", sub: "8 AM", hour: 8, emoji: "☀️" },
+  { label: "Lunch break", sub: "1 PM", hour: 13, emoji: "🥗" },
+  { label: "Evening", sub: "8 PM", hour: 20, emoji: "🌙" },
 ];
 
 /** After sign-up: reminder time + notification permission, then the placement test. */

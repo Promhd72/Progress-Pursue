@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CoachingReview, CoachingToggle, useCoachingPreference } from "@/components/Coaching";
 import { DrillHeader, DrillRunner, type DrillAnswer } from "@/components/DrillRunner";
 import { LearnCard, hasLearned, markLearned } from "@/components/LearnCard";
-import { Button, ErrorState, IconBadge, Ionicons, Loading, Muted, Row, Stars, Txt } from "@/components/ui";
+import { Button, ErrorState, Gradient, IconBadge, Ionicons, Loading, Muted, Row, Stars, Txt } from "@/components/ui";
 import {
   FREE_MAX_LEVEL,
   MAX_LEVEL,
@@ -22,7 +22,7 @@ import { getLessonAccess, submitLesson } from "@/lib/backend";
 import { finishHaptic, shareText } from "@/lib/native";
 import { useOverview } from "@/lib/queries";
 import { useQuitGuard } from "@/lib/useQuitGuard";
-import { colors, fonts, radius } from "@/theme";
+import { colors, fonts, gradients, radius } from "@/theme";
 
 type Result = { correct: number; total: number; durationMs: number; xpEarned: number; passed: boolean };
 
@@ -106,7 +106,11 @@ function Locked({
         : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow, or go unlimited with Pro.", "moon-outline" as const];
   return (
     <View style={styles.centerBox}>
-      <IconBadge name={icon} size={64} />
+      {reason === "locked_pro" ? (
+        <IconBadge name="diamond" size={64} color="#b47a06" bg={colors.goldSoft} />
+      ) : (
+        <IconBadge name={icon} size={64} />
+      )}
       <Txt variant="title" center style={{ marginTop: 20 }}>{title}</Txt>
       <Muted center style={{ marginTop: 8 }}>{body}</Muted>
       {reason === "locked_pro" || reason === "daily_limit" ? (
@@ -219,7 +223,7 @@ function LessonRunner({
         onDone={finish}
         header={({ index, correct }) => (
           <DrillHeader
-            left={`Question ${index + 1} of ${questions.length} · ${correct} correct`}
+            left={`${index + 1} of ${questions.length} · ${correct} correct`}
             right={
               <Row gap={8}>
                 {index === 0 && correct === 0 && (
@@ -266,23 +270,23 @@ function Results({
   const stars = starsFor(track, level, result.passed, avgSec);
   const nextInfo = level < MAX_LEVEL ? levelSummary(track, level + 1) : null;
   return (
-    <ScrollView contentContainerStyle={{ padding: 20, gap: 20 }}>
-      <View style={{ alignItems: "center", paddingTop: 8 }}>
-        <Txt style={{ fontSize: 56 }}>{result.passed ? "🎉" : "💪"}</Txt>
-        <Txt variant="title" center style={{ marginTop: 8 }}>
+    <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }} showsVerticalScrollIndicator={false}>
+      <Gradient colors={result.passed ? gradients.primary : gradients.ink} style={styles.resultHero}>
+        <Txt style={{ fontSize: 46 }}>{result.passed ? "🎉" : "💪"}</Txt>
+        <Txt variant="title" center color={colors.white} style={{ marginTop: 6 }}>
           {result.passed ? `${info.name}: passed!` : "Not quite. Try again."}
         </Txt>
         {result.passed && (
           <View style={{ marginTop: 10, alignItems: "center", gap: 6 }}>
             <Stars count={stars} size={30} />
-            <Muted variant="caption" center>
+            <Txt variant="caption" center color="rgba(255,255,255,0.85)">
               {stars === 3
                 ? `Under ${info.targetSec}s per question. Full marks for speed.`
                 : `${avg}s per question. Beat ${stars === 2 ? info.targetSec : Math.round(info.targetSec * 1.5 * 10) / 10}s for ${stars + 1} stars.`}
-            </Muted>
+            </Txt>
           </View>
         )}
-        <Muted center style={{ marginTop: 6 }}>
+        <Txt center color="rgba(255,255,255,0.85)" style={{ marginTop: 6 }}>
           {result.passed
             ? level >= MAX_LEVEL
               ? "You've finished this track."
@@ -290,8 +294,13 @@ function Results({
                 ? `Levels ${level + 1}–10 come with Pro. Try it free for 3 days.`
                 : `Unlocked: Level ${level + 1}, ${nextInfo?.name ?? ""}.`
             : `You need ${Math.round(PASS_THRESHOLD * 100)}% to advance.`}
-        </Muted>
-      </View>
+        </Txt>
+        <Row gap={8} style={{ marginTop: 18, alignSelf: "stretch" }}>
+          <StatBox label="Accuracy" value={`${accuracy}%`} />
+          <StatBox label="Avg time" value={`${avg}s`} />
+          <StatBox label="XP" value={`+${result.xpEarned}`} accent />
+        </Row>
+      </Gradient>
 
       {!result.passed && (
         <View style={{ backgroundColor: colors.amberSoft, borderRadius: radius.md, padding: 14 }}>
@@ -303,19 +312,13 @@ function Results({
 
       {result.passed && (
         <View style={{ backgroundColor: colors.successSoft, borderRadius: radius.md, padding: 14, flexDirection: "row", gap: 10 }}>
-          <Ionicons name="ribbon-outline" size={20} color={colors.success} />
+          <Ionicons name="ribbon" size={20} color={colors.success} />
           <Txt style={{ flex: 1, fontSize: 15, lineHeight: 21 }}>
             <Txt style={{ fontFamily: fonts.semibold, fontSize: 15 }}>New skill: </Txt>
             {info.outcome}
           </Txt>
         </View>
       )}
-
-      <Row gap={10}>
-        <StatBox label="Accuracy" value={`${accuracy}%`} />
-        <StatBox label="Avg time" value={`${avg}s`} />
-        <StatBox label="XP" value={`+${result.xpEarned}`} accent />
-      </Row>
 
       <Button
         title="Share result"
@@ -344,11 +347,11 @@ function Results({
 
 function StatBox({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <View style={{ flex: 1, backgroundColor: colors.muted, borderRadius: radius.md, paddingVertical: 16, alignItems: "center" }}>
-      <Txt style={{ fontFamily: fonts.displayBold, fontSize: 26 }} color={accent ? colors.primary : colors.foreground}>
+    <View style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.16)", borderRadius: radius.md, paddingVertical: 14, alignItems: "center" }}>
+      <Txt style={{ fontFamily: fonts.displayBold, fontSize: 24 }} color={accent ? "#ffe08a" : colors.white}>
         {value}
       </Txt>
-      <Muted variant="caption" style={{ marginTop: 2 }}>{label}</Muted>
+      <Txt variant="caption" color="rgba(255,255,255,0.8)" style={{ marginTop: 2 }}>{label}</Txt>
     </View>
   );
 }
@@ -357,5 +360,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   bar: { height: 52, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16 },
   runner: { flex: 1, paddingHorizontal: 20, paddingBottom: 12, paddingTop: 4 },
+  resultHero: { borderRadius: radius.xl, padding: 22, alignItems: "center" },
   centerBox: { flex: 1, alignItems: "center", justifyContent: "center", padding: 28 },
 });
