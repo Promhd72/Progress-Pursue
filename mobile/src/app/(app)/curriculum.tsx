@@ -228,7 +228,7 @@ export default function Curriculum() {
           <Muted variant="caption" center style={{ fontSize: 14 }}>
             Levels 1–{FREE_MAX_LEVEL} are free on every track. Levels {FREE_MAX_LEVEL + 1}–10 come with Pro.
           </Muted>
-          <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch" }} />
+          <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch" }} />
         </Card>
       )}
 

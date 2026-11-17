@@ -180,7 +180,7 @@ export default function Profile() {
             </>
           ) : (
             <>
-              <LinkRow icon="diamond-outline" label="Try Pro free for 3 days" onPress={() => router.push("/pro")} />
+              <LinkRow icon="diamond-outline" label="Upgrade to Pro" onPress={() => router.push("/pro")} />
               <Divider />
               <LinkRow icon="refresh-outline" label="Restore purchases" onPress={() => void restorePurchases()} />
             </>

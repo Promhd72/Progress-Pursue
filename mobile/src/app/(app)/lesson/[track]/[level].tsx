@@ -101,7 +101,7 @@ function Locked({
   const router = useRouter();
   const [title, body, icon] =
     reason === "locked_pro"
-      ? [tr("Level {n} is Pro-only", { n: level }), tr("Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro. Try it free for 3 days.", { track: auto(TRACK_LABELS[track]), free: FREE_MAX_LEVEL, next: FREE_MAX_LEVEL + 1 }), "diamond-outline" as const]
+      ? [tr("Level {n} is Pro-only", { n: level }), tr("Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro.", { track: auto(TRACK_LABELS[track]), free: FREE_MAX_LEVEL, next: FREE_MAX_LEVEL + 1 }), "diamond-outline" as const]
       : reason === "locked_progression"
         ? ["Finish earlier levels first", `Pass the previous level (80% or more) to unlock Level ${level}.`, "lock-closed-outline" as const]
         : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow, or go unlimited with Pro.", "moon-outline" as const];
@@ -115,7 +115,7 @@ function Locked({
       <Txt variant="title" center style={{ marginTop: 20 }}>{title}</Txt>
       <Muted center style={{ marginTop: 8 }}>{body}</Muted>
       {reason === "locked_pro" || reason === "daily_limit" ? (
-        <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ marginTop: 28, alignSelf: "stretch" }} />
+        <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ marginTop: 28, alignSelf: "stretch" }} />
       ) : null}
       <Button
         title="Back to training"
@@ -294,7 +294,7 @@ function Results({
             ? level >= MAX_LEVEL
               ? "You've finished this track."
               : proLocked
-                ? `Levels ${level + 1}–10 come with Pro. Try it free for 3 days.`
+                ? `Levels ${level + 1}–10 come with Pro.`
                 : tr("Unlocked: Level {n}, {name}.", { n: level + 1, name: auto(nextInfo?.name ?? "") })
             : `You need ${Math.round(PASS_THRESHOLD * 100)}% to advance.`}
         </Txt>

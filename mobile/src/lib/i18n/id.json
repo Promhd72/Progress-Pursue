@@ -2453,5 +2453,10 @@
  "Question 1 of 10 · 0 correct": "Soal 1 dari 10 · 0 benar",
  "All-round speed": "Kecepatan menyeluruh",
  "Hide password": "Sembunyikan kata sandi",
- "Show password": "Tampilkan kata sandi"
+ "Show password": "Tampilkan kata sandi",
+ "Upgrade to Pro": "Upgrade ke Pro",
+ "Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro.": "Paket gratis mencakup {track} Level 1–{free}. Level {next}–10 tersedia di Pro.",
+ "Levels 6–10 come with Pro.": "Level 6–10 tersedia di Pro.",
+ "Billed yearly. Cancel anytime.": "Ditagih tahunan. Batalkan kapan saja.",
+ "Billed monthly. Cancel anytime.": "Ditagih bulanan. Batalkan kapan saja."
 }

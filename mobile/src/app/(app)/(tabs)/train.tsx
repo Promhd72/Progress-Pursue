@@ -158,7 +158,7 @@ export default function Train() {
               </Muted>
             </View>
           </Row>
-          <Button title="Try Pro free for 3 days" onPress={() => router.push("/pro")} />
+          <Button title="Upgrade to Pro" onPress={() => router.push("/pro")} />
         </Card>
       )}
 

@@ -10,7 +10,7 @@ import { DEMO_MODE } from "@/lib/backend";
 import { buy, getPlans, restore, type Plan, type PlanId } from "@/lib/purchases";
 import { useProfile } from "@/lib/queries";
 import { colors, elevation, fonts, gradients, radius } from "@/theme";
-import { alertT, mark, tr } from "@/lib/i18n";
+import { alertT, auto, mark, tr } from "@/lib/i18n";
 
 const BENEFITS: { icon: IconName; title: string; text: string }[] = [
   { icon: "rocket", title: `Levels ${FREE_MAX_LEVEL + 1} to ${MAX_LEVEL} on every skill`, text: "Work-ready and expert levels: bigger numbers, real meeting maths." },
@@ -20,7 +20,7 @@ const BENEFITS: { icon: IconName; title: string; text: string }[] = [
 
 const periodWord = (p: Plan) => (p.period === "year" ? "year" : "month");
 
-/** Rapid Math Pro: plans, free trial, purchase and restore. */
+/** Rapid Math Pro: plans, purchase and restore. */
 export default function ProScreen() {
   const router = useRouter();
   const qc = useQueryClient();
@@ -60,7 +60,6 @@ export default function ProScreen() {
   const plans = plansQ.data;
   const plan = plans.find((p) => p.id === selected) ?? plans[0];
   const monthly = plans.find((p) => p.id === "monthly");
-  const trial = plan.trialDays;
 
   async function purchase() {
     setBusy("buy");
@@ -151,7 +150,7 @@ export default function ProScreen() {
                 key={p.id}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={`${p.title}. ${p.trialDays ? `${p.trialDays}-day free trial, then ` : ""}${p.price} per ${periodWord(p)}`}
+                accessibilityLabel={`${auto(p.title)}. ${p.price} ${p.period === "year" ? tr("per year") : tr("per month")}`}
                 onPress={() => {
                   keyHaptic();
                   setSelected(p.id);
@@ -171,13 +170,7 @@ export default function ProScreen() {
                     ) : null}
                   </Row>
                   <Muted variant="caption" style={{ fontSize: 13, marginTop: 2 }}>
-                    {p.trialDays
-                      ? p.period === "year"
-                        ? tr("{n} days free, then billed yearly", { n: p.trialDays })
-                        : tr("{n} days free, then billed monthly", { n: p.trialDays })
-                      : p.period === "year"
-                        ? tr("Billed yearly")
-                        : tr("Billed monthly")}
+                    {p.period === "year" ? tr("Billed yearly. Cancel anytime.") : tr("Billed monthly. Cancel anytime.")}
                   </Muted>
                 </View>
                 {/* The amount actually billed is the most prominent price. */}
@@ -198,22 +191,17 @@ export default function ProScreen() {
 
       <SafeAreaView edges={["bottom"]} style={styles.actions}>
         <Button
-          title={trial ? tr("Start {n}-day free trial", { n: trial }) : tr("Subscribe for {price}/{period}", { price: plan.price, period: tr(periodWord(plan)) })}
+          title={tr("Subscribe for {price}/{period}", { price: plan.price, period: tr(periodWord(plan)) })}
           loading={busy === "buy"}
           disabled={!!busy}
           onPress={purchase}
         />
         <Muted variant="caption" center style={{ fontSize: 12, lineHeight: 17, marginTop: 8 }}>
           {mark(
-            (trial
-              ? tr(
-                  "Free for {n} days, then {price} per {period}. Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the trial ends and you won't be charged.",
-                  { n: trial, price: plan.price, period: tr(periodWord(plan)) },
-                )
-              : tr(
-                  "{price} per {period}. Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the renewal date and you won't be charged.",
-                  { price: plan.price, period: tr(periodWord(plan)) },
-                )) + (DEMO_MODE ? ` ${tr("(Demo: no real payment is taken.)")}` : ""),
+            tr(
+              "{price} per {period}. Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the renewal date and you won't be charged.",
+              { price: plan.price, period: tr(periodWord(plan)) },
+            ) + (DEMO_MODE ? ` ${tr("(Demo: no real payment is taken.)")}` : ""),
           )}
         </Muted>
         <Row gap={18} style={{ justifyContent: "center", marginTop: 8 }}>

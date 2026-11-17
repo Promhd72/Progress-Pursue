@@ -126,13 +126,13 @@ Store guideline 5.1.1(v)).
 
 Pro unlocks Levels 5 to 10 and removes the daily caps on lessons and scenarios.
 
-| Plan | Price (USD) | Free trial |
-| --- | --- | --- |
-| Monthly | $4.99 | 3 days |
-| Yearly | $29.99 (about $2.50/month) | 3 days |
+| Plan | Price (USD) |
+| --- | --- |
+| Monthly | $4.99 |
+| Yearly | $29.99 (about $2.50/month) |
 
 Apple converts these to local prices (AED in the UAE). The app always shows the store's real
-price. Free users see "Try Pro free for 3 days" when they reach Level 5, run out of daily lessons
+price. There is no free trial: Levels 1 to 4 are the free taster. Free users see "Upgrade to Pro" when they reach Level 5, run out of daily lessons
 or scenarios, place above Level 4, and in Profile > Rapid Math Pro.
 
 **How it works:** the app buys through Apple using RevenueCat. Right after a purchase it asks the
@@ -152,7 +152,7 @@ that device.
    - Create a subscription group called `Rapid Math Pro`.
    - Add two subscriptions: `rapidmath_pro_monthly` (1 month, USD 4.99) and
      `rapidmath_pro_yearly` (1 year, USD 29.99). Give each a display name and description.
-   - On each one, add an **Introductory Offer**: Free, 3 days, all countries.
+   - Don't add an Introductory Offer (no free trial). If one is ever added, the app ignores it.
 3. **RevenueCat** (free until USD 2,500/month revenue): sign up at revenuecat.com, create a
    project, add an **App Store** app with Bundle ID `app.rapidmath.ios`, and follow its steps to
    connect App Store Connect (In-App Purchase key).
@@ -176,11 +176,11 @@ that device.
    ```
    The support email appears in the in-app Privacy Policy, Terms and Profile > Contact support.
 8. **Test in TestFlight** with a Sandbox tester (App Store Connect > Users and Access > Sandbox).
-   Sandbox time runs fast: the 3-day trial lasts about 3 minutes, so you can watch it renew.
+   Sandbox time runs fast: a monthly subscription renews every 5 minutes, so you can watch it renew.
 
 **For App Review:** submit the subscriptions together with the build (they're reviewed with it),
 and mention in the review notes where Pro is (see "App Store review checklist" below). The Pro
-screen already shows the price, trial length, auto-renew terms, Restore, Terms of Use and
+screen already shows the price, billing period, auto-renew terms, Restore, Terms of Use and
 Privacy Policy, which Apple requires.
 
 To give Pro to a tester without paying, run in the SQL Editor:
@@ -218,7 +218,7 @@ own codes; use Apple's Offer Codes instead.
   membagi tagihan, pertumbuhan, dan margin. Pelajari triknya, latih sampai otomatis, dan pakai
   di soal kerja nyata. Pelajaran 2 menit, streak harian, pemanasan 60 detik sebelum rapat, dan
   100 skenario dunia nyata. Level 1–4 gratis. Rapid Math Pro membuka Level 5–10 dan latihan
-  tanpa batas, dengan uji coba gratis 3 hari.
+  tanpa batas.
 
 ## App Store review checklist
 
@@ -229,7 +229,7 @@ What's already built in, so you don't have to worry about it:
 | 5.1.1 Privacy policy | Privacy Policy and Terms open inside the app: on sign-up, on the Pro screen and in Profile. Text lives in `mobile/src/lib/legal.ts`; `site/privacy.html` and `site/terms.html` mirror it |
 | 5.1.1(v) Account deletion | Profile > Delete account removes the account and all data at once, including feedback messages |
 | 3.1.1 In-app purchase | Pro is only sold through the App Store. No codes, no outside payment links |
-| 3.1.2 Subscriptions | Pro screen shows the plan name, length, billed price (the largest price on the card), trial length, auto-renew terms, Restore purchases, Terms and Privacy |
+| 3.1.2 Subscriptions | Pro screen shows the plan name, length, billed price (the largest price on the card), auto-renew terms, Restore purchases, Terms and Privacy |
 | 4.5.4 / 5.1.1 Notifications | Reminders are optional and only asked for when the user turns them on |
 | Privacy manifest | Declared in `mobile/app.json` (`ios.privacyManifests`): no tracking |
 | Export compliance | `usesNonExemptEncryption: false`, so no encryption paperwork |
@@ -242,8 +242,8 @@ What you fill in on App Store Connect:
    Authentication > Sign In / Providers > Email, turn off "Confirm email" (or confirm that one
    account by hand) so the reviewer can sign in straight away.
 2. **Review notes.** Suggested text: "Rapid Math is a mental maths trainer. Sign in with the demo
-   account. Lessons are on the Train tab. Rapid Math Pro (auto-renewing subscription, 3-day free
-   trial) opens from the 'Try Pro' button on the Train tab or from Profile. Account deletion is
+   account. Lessons are on the Train tab. Rapid Math Pro (auto-renewing
+   subscription) opens from the 'Try Pro' button on the Train tab or from Profile. Account deletion is
    at Profile > Delete account."
 3. **App Privacy answers.** Data collected: Email Address, Name, Product Interaction (training
    results), Purchases, Customer Support (feedback messages). All linked to the user, used for

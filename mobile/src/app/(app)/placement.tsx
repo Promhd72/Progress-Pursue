@@ -135,7 +135,7 @@ export default function PlacementScreen() {
                   free: FREE_MAX_LEVEL,
                 })}
               </Muted>
-              <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} />
+              <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} />
             </Card>
           )}
           <CoachingReview items={review} />
