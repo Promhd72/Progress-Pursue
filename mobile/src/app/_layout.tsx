@@ -14,6 +14,7 @@ import { AppState, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { colors } from "@/theme";
+import { useLang } from "@/lib/i18n";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -36,12 +37,15 @@ export default function RootLayout() {
     SpaceGrotesk_700Bold,
   });
 
+  // Switching language rebuilds the screens so every text is re-read.
+  const lang = useLang();
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <StatusBar style="dark" />
-          {fontsLoaded ? <RootNavigator /> : null}
+          {fontsLoaded ? <RootNavigator key={lang} /> : null}
         </AuthProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

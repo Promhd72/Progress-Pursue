@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DEMO_MODE } from "@/lib/backend";
 import { demoSignIn, demoSignUp } from "@/lib/demo";
 import { colors, fonts, radius } from "@/theme";
+import { alertT, auto, tr } from "@/lib/i18n";
 
 type Mode = "signin" | "signup" | "code" | "verify" | "confirm-email";
 
@@ -35,7 +36,7 @@ export default function AuthScreen() {
     try {
       await fn();
     } catch (err) {
-      Alert.alert("Couldn't continue", err instanceof Error ? err.message : "Something went wrong");
+      alertT("Couldn't continue", err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -81,10 +82,10 @@ export default function AuthScreen() {
     signin: ["Welcome back", "Sign in to continue your streak.", "Sign in"],
     signup: ["Create your account", "Free, and it saves your streak and progress.", "Create account"],
     code: ["Sign in with a code", "We'll email you a 6-digit code. No password needed.", "Email me a code"],
-    verify: ["Enter your code", `Sent to ${email.trim()}.`, "Sign in"],
+    verify: ["Enter your code", tr("Sent to {email}.", { email: email.trim() }), "Sign in"],
     "confirm-email": [
       "Check your email",
-      `We sent a confirmation link to ${email.trim()}. Open it, then sign in here.`,
+      tr("We sent a confirmation link to {email}. Open it, then sign in here.", { email: email.trim() }),
       "Back to sign in",
     ],
   };
@@ -123,7 +124,7 @@ export default function AuthScreen() {
 
           <View style={{ marginTop: 28, gap: 16 }}>
             {mode === "signup" && (
-              <Field label="Name" value={name} onChangeText={setName} placeholder="Your name" autoComplete="name" textContentType="name" />
+              <Field label="Name" value={name} onChangeText={setName} placeholder={tr("Your name")} autoComplete="name" textContentType="name" />
             )}
             {(mode === "signin" || mode === "signup" || mode === "code") && (
               <Field
@@ -142,7 +143,7 @@ export default function AuthScreen() {
                 label="Password"
                 value={password}
                 onChangeText={setPassword}
-                placeholder="At least 6 characters"
+                placeholder={tr("At least 6 characters")}
                 secureTextEntry
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 textContentType={mode === "signup" ? "newPassword" : "password"}
@@ -209,7 +210,7 @@ function Field({ label, style, ...props }: TextInputProps & { label: string }) {
         {label}
       </Txt>
       <TextInput
-        accessibilityLabel={label}
+        accessibilityLabel={auto(label)}
         placeholderTextColor="#98a3b5"
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}

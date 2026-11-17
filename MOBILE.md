@@ -194,6 +194,32 @@ Apple takes 15% under the Small Business Program (apply in App Store Connect). I
 codes aren't offered because Apple's guideline 3.1.1 doesn't allow unlocking features with your
 own codes; use Apple's Offer Codes instead.
 
+## Languages (English and Bahasa Indonesia)
+
+- The app follows the iPhone language on first launch (Indonesian phones open in Bahasa
+  Indonesia). People can switch any time: the EN | ID toggle on the welcome screen, or
+  Profile > Language. iOS also lists both languages in Settings > Rapid Math > Language.
+- English text in the code is the source. Indonesian lives in `mobile/src/lib/i18n/id.json`
+  (English sentence → Indonesian). Text components translate themselves; numbers inside a
+  sentence are matched automatically, so "3 of 10 correct" and "7 of 10 correct" share one entry.
+- Anything without a translation shows in English, so a missing line never breaks the app.
+- Prices stay in US dollars inside scenarios and warm-ups. Real subscription prices come from
+  the App Store, so Indonesian users see rupiah on the Pro screen.
+- When you add or change English text, add the Indonesian line to `id.json` too.
+
+**App Store listing in Indonesian** (App Store Connect > your app > add localization
+"Indonesian"):
+
+- Name: Rapid Math: Hitung Cepat
+- Subtitle: Latihan hitung di kepala
+- Promotional text: Lebih cepat dan percaya diri dengan angka, di rapat maupun di perjalanan. Lima menit sehari.
+- Keywords: hitung cepat,matematika,berhitung,persen,diskon,otak,latihan,kerja,rapat,angka
+- Description: Rapid Math melatihmu menghitung di kepala dengan cepat: persentase, diskon,
+  membagi tagihan, pertumbuhan, dan margin. Pelajari triknya, latih sampai otomatis, dan pakai
+  di soal kerja nyata. Pelajaran 2 menit, streak harian, pemanasan 60 detik sebelum rapat, dan
+  100 skenario dunia nyata. Level 1–4 gratis. Rapid Math Pro membuka Level 5–10 dan latihan
+  tanpa batas, dengan uji coba gratis 3 hari.
+
 ## App Store review checklist
 
 What's already built in, so you don't have to worry about it:

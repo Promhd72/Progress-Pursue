@@ -81,7 +81,16 @@
           "color": "#2584f5"
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-localization",
+        {
+          "supportedLocales": [
+            "en",
+            "id"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

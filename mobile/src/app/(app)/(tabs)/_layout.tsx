@@ -4,6 +4,7 @@ import { Platform, Text, View } from "react-native";
 import { useProfile } from "@/lib/queries";
 import { keyHaptic } from "@/lib/native";
 import { colors, fonts } from "@/theme";
+import { tr } from "@/lib/i18n";
 
 function Streak() {
   const { data } = useProfile();
@@ -49,11 +50,11 @@ export default function TabLayout() {
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
-      <Tabs.Screen name="train" options={{ title: "Train", headerShown: false, tabBarIcon: icon("school", "school-outline") }} />
-      <Tabs.Screen name="learn" options={{ title: "Learn", tabBarIcon: icon("library", "library-outline") }} />
-      <Tabs.Screen name="advanced" options={{ title: "Scenarios", tabBarIcon: icon("briefcase", "briefcase-outline") }} />
-      <Tabs.Screen name="history" options={{ title: "History", tabBarIcon: icon("time", "time-outline") }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: icon("person", "person-outline") }} />
+      <Tabs.Screen name="train" options={{ title: tr("Train"), headerShown: false, tabBarIcon: icon("school", "school-outline") }} />
+      <Tabs.Screen name="learn" options={{ title: tr("Learn"), tabBarIcon: icon("library", "library-outline") }} />
+      <Tabs.Screen name="advanced" options={{ title: tr("Scenarios"), tabBarIcon: icon("briefcase", "briefcase-outline") }} />
+      <Tabs.Screen name="history" options={{ title: tr("History"), tabBarIcon: icon("time", "time-outline") }} />
+      <Tabs.Screen name="profile" options={{ title: tr("Profile"), tabBarIcon: icon("person", "person-outline") }} />
     </Tabs>
   );
 }

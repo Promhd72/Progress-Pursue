@@ -5,15 +5,16 @@ import { Button, ErrorState, IconBadge, Loading, Muted, Pill, Txt } from "@/comp
 import { TRACK_LABELS, TRACK_SYMBOL, type SkillTrack } from "@/lib/curriculum";
 import { getRecentLessons } from "@/lib/backend";
 import { colors, fonts, radius, trackColors } from "@/theme";
+import { getLang, mark, tr } from "@/lib/i18n";
 
 function dayLabel(iso: string) {
   const d = new Date(iso);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return "Today";
-  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  if (d.toDateString() === today.toDateString()) return tr("Today");
+  if (d.toDateString() === yesterday.toDateString()) return tr("Yesterday");
+  return d.toLocaleDateString(getLang() === "id" ? "id-ID" : undefined, { weekday: "short", day: "numeric", month: "short" });
 }
 
 export default function History() {
@@ -50,7 +51,7 @@ export default function History() {
           <View>
             {showDay && (
               <Muted variant="caption" style={{ fontFamily: fonts.semibold, marginBottom: 8, marginTop: index === 0 ? 0 : 8, letterSpacing: 0.5 }}>
-                {dayLabel(item.created_at).toUpperCase()}
+                {mark(dayLabel(item.created_at).toUpperCase())}
               </Muted>
             )}
             <View style={styles.item}>

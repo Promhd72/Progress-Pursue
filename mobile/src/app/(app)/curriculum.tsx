@@ -17,6 +17,7 @@ import {
 import { keyHaptic } from "@/lib/native";
 import { useLevelStats, useOverview } from "@/lib/queries";
 import { colors, fonts, radius, trackColors } from "@/theme";
+import { auto, tr } from "@/lib/i18n";
 
 type Status = "passed" | "next" | "open" | "locked" | "pro";
 
@@ -165,7 +166,7 @@ export default function Curriculum() {
         <View key={stage.name} style={{ gap: 8 }}>
           <View>
             <Muted variant="caption" style={{ fontFamily: fonts.semibold, letterSpacing: 0.6 }}>
-              LEVELS {stage.from}–{stage.to} · {stage.name.toUpperCase()}
+              {tr("LEVELS {a}–{b} · {name}", { a: stage.from, b: stage.to, name: auto(stage.name).toUpperCase() })}
             </Muted>
             <Muted variant="caption" style={{ fontSize: 13 }}>{stage.blurb}</Muted>
           </View>

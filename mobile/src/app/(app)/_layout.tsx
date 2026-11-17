@@ -7,6 +7,7 @@ import { scheduleStreakReminders, trainedTodayFrom } from "@/lib/native";
 import { getOnboarding } from "@/lib/onboarding";
 import { initPurchases, storeEnabled, syncPro } from "@/lib/purchases";
 import { colors, fonts } from "@/theme";
+import { tr } from "@/lib/i18n";
 
 export default function AppLayout() {
   const segments = useSegments();
@@ -38,8 +39,8 @@ export default function AppLayout() {
 
   const header = (title: string) => ({
     headerShown: true,
-    title,
-    headerBackTitle: "Back",
+    title: tr(title),
+    headerBackTitle: tr("Back"),
     headerTintColor: colors.primary,
     headerStyle: { backgroundColor: colors.background },
     headerShadowVisible: false,
@@ -59,8 +60,8 @@ export default function AppLayout() {
         name="technique/[id]"
         options={{
           headerShown: true,
-          title: "Technique",
-          headerBackTitle: "Back",
+          title: tr("Technique"),
+          headerBackTitle: tr("Back"),
           headerTintColor: colors.primary,
           headerStyle: { backgroundColor: colors.background },
           headerShadowVisible: false,
@@ -75,8 +76,8 @@ export default function AppLayout() {
         name="feedback"
         options={{
           headerShown: true,
-          title: "Feedback",
-          headerBackTitle: "Back",
+          title: tr("Feedback"),
+          headerBackTitle: tr("Back"),
           headerTintColor: colors.primary,
           headerStyle: { backgroundColor: colors.background },
           headerShadowVisible: false,
@@ -87,8 +88,8 @@ export default function AppLayout() {
         name="curriculum"
         options={{
           headerShown: true,
-          title: "Curriculum",
-          headerBackTitle: "Back",
+          title: tr("Curriculum"),
+          headerBackTitle: tr("Back"),
           headerTintColor: colors.primary,
           headerStyle: { backgroundColor: colors.background },
           headerShadowVisible: false,

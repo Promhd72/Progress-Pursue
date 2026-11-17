@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from "react-native";
 import { BadgeIcon, useBadges } from "@/components/Badges";
+import { LanguageList } from "@/components/LanguagePicker";
 import { ConfidenceResult } from "@/components/Confidence";
 import { getConfidence } from "@/lib/confidence";
 import { Card, ErrorState, Gradient, Ionicons, Loading, Muted, Row, SectionLabel, Txt, type IconName } from "@/components/ui";
@@ -18,6 +19,7 @@ import { SUPPORT_EMAIL } from "@/lib/legal";
 import { MANAGE_URL, restore } from "@/lib/purchases";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
+import { alertT, tr } from "@/lib/i18n";
 
 const pad = (h: number) => `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}`;
 
@@ -52,7 +54,7 @@ export default function Profile() {
       await updateProfile(p.id, { name: clean });
       void qc.invalidateQueries({ queryKey: ["profile"] });
     } catch (err) {
-      Alert.alert("Couldn't save your name", err instanceof Error ? err.message : "Try again.");
+      alertT("Couldn't save your name", err instanceof Error ? err.message : "Try again.");
     }
   }
 
@@ -62,7 +64,7 @@ export default function Profile() {
     setReminder(saved);
     setBusy(false);
     if (next.enabled && !saved.enabled) {
-      Alert.alert("Notifications are off", "Turn on notifications for Rapid Math in iPhone Settings to get reminders.");
+      alertT("Notifications are off", "Turn on notifications for Rapid Math in iPhone Settings to get reminders.");
     }
   }
 
@@ -72,19 +74,19 @@ export default function Profile() {
     try {
       const active = await restore();
       await qc.invalidateQueries();
-      Alert.alert(
+      alertT(
         active ? "Pro restored" : "Nothing to restore",
         active ? "Welcome back. Everything is unlocked." : "We couldn't find an active Rapid Math Pro subscription for this Apple Account.",
       );
     } catch (err) {
-      Alert.alert("Couldn't restore", err instanceof Error ? err.message : "Try again.");
+      alertT("Couldn't restore", err instanceof Error ? err.message : "Try again.");
     } finally {
       setBusy(false);
     }
   }
 
   function confirmDelete() {
-    Alert.alert(
+    alertT(
       "Delete your account?",
       "All your Rapid Math data (progress, streaks, history) will be permanently removed. This can't be undone." +
         (isPro && p.pro_source === "store"
@@ -99,7 +101,7 @@ export default function Profile() {
             try {
               await deleteAccount();
             } catch (err) {
-              Alert.alert("Couldn't delete your account", err instanceof Error ? err.message : "Try again.");
+              alertT("Couldn't delete your account", err instanceof Error ? err.message : "Try again.");
             }
           },
         },
@@ -195,7 +197,7 @@ export default function Profile() {
               onChangeText={setName}
               onEndEditing={saveName}
               returnKeyType="done"
-              placeholder="Your name"
+              placeholder={tr("Your name")}
               style={styles.inlineInput}
             />
           </View>
@@ -251,6 +253,12 @@ export default function Profile() {
               </Pressable>
             ))}
           </Row>
+        </Card>
+      </Section>
+
+      <Section title="Language">
+        <Card style={{ padding: 0 }}>
+          <LanguageList />
         </Card>
       </Section>
 

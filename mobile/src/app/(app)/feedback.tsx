@@ -6,6 +6,7 @@ import { Button, ChoiceCard, IconBadge, Muted, Txt } from "@/components/ui";
 import { DEMO_MODE, submitFeedback } from "@/lib/backend";
 import type { FeedbackKind } from "@/lib/rapid-math.functions";
 import { colors, fonts, radius } from "@/theme";
+import { alertT, tr } from "@/lib/i18n";
 
 const KINDS: { id: FeedbackKind; emoji: string; title: string; subtitle: string; placeholder: string }[] = [
   { id: "feature", emoji: "✨", title: "Request a feature", subtitle: "Something you wish the app did", placeholder: "I'd love it if Rapid Math could…" },
@@ -31,7 +32,7 @@ export default function Feedback() {
       });
       setSent(true);
     } catch (err) {
-      Alert.alert("Couldn't send", err instanceof Error ? err.message : "Check your connection and try again.");
+      alertT("Couldn't send", err instanceof Error ? err.message : "Check your connection and try again.");
     } finally {
       setSending(false);
     }
@@ -79,7 +80,7 @@ export default function Feedback() {
           <TextInput
             value={message}
             onChangeText={setMessage}
-            placeholder={k.placeholder}
+            placeholder={tr(k.placeholder)}
             placeholderTextColor="#9aa5b1"
             multiline
             maxLength={2000}

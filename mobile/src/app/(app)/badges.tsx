@@ -5,6 +5,7 @@ import { Button, Card, Loading, Muted, ProgressBar, Txt } from "@/components/ui"
 import { BADGE_GROUPS, BADGES, type Badge } from "@/lib/badges";
 import { keyHaptic } from "@/lib/native";
 import { colors, fonts } from "@/theme";
+import { auto, mark, tr } from "@/lib/i18n";
 
 /** Every badge: earned ones in colour, locked ones show how to earn them. */
 export default function BadgesScreen() {
@@ -31,7 +32,7 @@ export default function BadgesScreen() {
                 {open.name}
               </Txt>
               <Muted center style={{ marginTop: 6 }}>
-                {earned.has(open.id) ? `Earned. ${open.cheer}` : `How to earn it: ${open.how}`}
+                {earned.has(open.id) ? tr("Earned. {cheer}", { cheer: auto(open.cheer) }) : tr("How to earn it: {how}", { how: auto(open.how) })}
               </Muted>
               <View style={{ alignSelf: "stretch", marginTop: 18 }}>
                 <Button title="Close" variant="secondary" onPress={() => setOpen(null)} />
@@ -47,7 +48,7 @@ export default function BadgesScreen() {
         return (
           <View key={g} style={{ gap: 10 }}>
             <Muted variant="caption" style={{ fontFamily: fonts.semibold, letterSpacing: 0.6, marginLeft: 4 }}>
-              {g.toUpperCase()} · {got}/{list.length}
+              {mark(`${auto(g).toUpperCase()} · ${got}/${list.length}`)}
             </Muted>
             <View style={styles.grid}>
               {list.map((b) => {

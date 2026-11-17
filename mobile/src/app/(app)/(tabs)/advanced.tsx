@@ -9,6 +9,7 @@ import { type AdvancedAccess, type AdvancedAnswerResult } from "@/lib/advanced.f
 import { getAdvancedAccess, getAdvancedProgress, submitAdvancedAnswer } from "@/lib/backend";
 import { answerHaptic, keyHaptic } from "@/lib/native";
 import { colors, fonts, radius } from "@/theme";
+import { alertT, auto, tr } from "@/lib/i18n";
 
 export default function Advanced() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function Advanced() {
       void progressQ.refetch();
       void qc.invalidateQueries({ queryKey: ["profile"] });
     },
-    onError: (err) => Alert.alert("Couldn't submit", err instanceof Error ? err.message : "Try again."),
+    onError: (err) => alertT("Couldn't submit", err instanceof Error ? err.message : "Try again."),
   });
 
   function reset() {
@@ -233,7 +234,11 @@ function Question({
             <Txt style={{ marginTop: 4, fontSize: 15, lineHeight: 22 }}>{result.explanation}</Txt>
           </View>
           <View style={{ gap: 8 }}>
-            <Txt variant="label">How to do it in your head{result.technique ? ` · ${result.technique}` : ""}</Txt>
+            <Txt variant="label">
+              {result.technique
+                ? tr("How to do it in your head · {name}", { name: auto(result.technique) })
+                : tr("How to do it in your head")}
+            </Txt>
             {result.steps.map((s, i) => (
               <Row key={i} gap={10} style={{ alignItems: "flex-start" }}>
                 <View style={styles.hintNum}>

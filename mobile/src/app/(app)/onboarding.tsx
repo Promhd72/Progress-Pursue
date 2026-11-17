@@ -12,6 +12,7 @@ import { getReminderPrefs, updateReminderPrefs } from "@/lib/native";
 import { dailyTargetFor, focusTrackFor, getOnboarding, saveOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors } from "@/theme";
+import { mark, tr } from "@/lib/i18n";
 
 const TIMES = [
   { label: "Morning", sub: "8 AM", hour: 8, emoji: "☀️" },
@@ -116,7 +117,7 @@ export default function Onboarding() {
               <KeyValue label="Focus" value={focusTrackFor(prefs.goal)} />
               <KeyValue
                 label="Daily goal"
-                value={`${target.minutes} min · ${target.lessons} lesson${target.lessons === 1 ? "" : "s"}`}
+                value={mark(`${target.minutes} min · ${target.lessons === 1 ? tr("1 lesson") : tr("{n} lessons", { n: target.lessons })}`)}
               />
             </Card>
           </>

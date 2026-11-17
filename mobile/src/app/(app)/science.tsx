@@ -1,6 +1,7 @@
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Card, IconBadge, Ionicons, Muted, Row, Txt, type IconName } from "@/components/ui";
 import { colors, fonts } from "@/theme";
+import { auto, mark, tr } from "@/lib/i18n";
 
 type Source = { n: number; text: string; url: string };
 
@@ -147,7 +148,7 @@ export default function Science() {
               <Txt variant="label">{s.name}</Txt>
             </Row>
             <Txt>{s.why}</Txt>
-            <Muted variant="caption">Used for: {s.where}</Muted>
+            <Muted variant="caption">{mark(`${tr("Used for:")} ${auto(s.where)}`)}</Muted>
           </Card>
         ))}
       </View>

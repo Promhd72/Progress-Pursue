@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
 import * as Notifications from "expo-notifications";
 import { Platform, Share } from "react-native";
+import { tr } from "@/lib/i18n";
 
 /* Haptics -------------------------------------------------------------- */
 
@@ -119,7 +120,7 @@ export async function scheduleStreakReminders(trainedToday: boolean) {
       const msg = MESSAGES[(at.getDate() + day) % MESSAGES.length];
       await Notifications.scheduleNotificationAsync({
         identifier: `${REMINDER_PREFIX}${day}`,
-        content: { title: msg.title, body: msg.body },
+        content: { title: tr(msg.title), body: tr(msg.body) },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at },
       });
     }

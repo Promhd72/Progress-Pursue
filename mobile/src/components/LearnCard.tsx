@@ -3,6 +3,7 @@ import { TipCard } from "@/components/Coaching";
 import { Button, Ionicons, Muted, Row, Txt } from "@/components/ui";
 import { buildQuestion, levelDef, levelSummary, TRACK_LABELS, type SkillTrack } from "@/lib/curriculum";
 import { colors, fonts, radius } from "@/theme";
+import { auto, tr } from "@/lib/i18n";
 
 const KEY = (t: SkillTrack, l: number) => `rapidmath.learned.${t}.${l}`;
 
@@ -31,7 +32,7 @@ export function LearnCard({ track, level, onStart }: { track: SkillTrack; level:
       <ScrollView contentContainerStyle={{ gap: 16, paddingBottom: 16 }}>
         <View style={{ gap: 6 }}>
           <Muted variant="caption" style={{ fontFamily: fonts.semibold, letterSpacing: 0.8 }}>
-            {TRACK_LABELS[track].toUpperCase()} · LEVEL {level}
+            {tr("{track} · LEVEL {n}", { track: auto(TRACK_LABELS[track]).toUpperCase(), n: level })}
           </Muted>
           <Txt variant="title">{info.name}</Txt>
           <Row gap={8} style={{ alignItems: "flex-start" }}>

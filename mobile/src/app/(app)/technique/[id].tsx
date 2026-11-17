@@ -10,6 +10,7 @@ import { finishHaptic } from "@/lib/native";
 import { markTechniqueLearned, techniqueById } from "@/lib/techniques";
 import { useOverview } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
+import { auto, tr } from "@/lib/i18n";
 
 const TRY_COUNT = 3;
 
@@ -55,7 +56,7 @@ export default function TechniqueScreen() {
     <ScrollView contentContainerStyle={styles.content}>
       <View style={{ gap: 6 }}>
         <Muted variant="caption" style={{ fontFamily: fonts.semibold, letterSpacing: 0.8 }}>
-          {TRACK_LABELS[t.track].toUpperCase()} TECHNIQUE
+          {tr("{track} TECHNIQUE", { track: auto(TRACK_LABELS[t.track]).toUpperCase() })}
         </Muted>
         <Txt variant="title">{t.name}</Txt>
         <Muted style={{ fontSize: 17 }}>{t.tagline}</Muted>
@@ -125,7 +126,7 @@ export default function TechniqueScreen() {
             <Button
               key={l}
               variant="secondary"
-              title={`Level ${l}: ${info.name}`}
+              title={tr("Level {n}: {name}", { n: l, name: auto(info.name) })}
               icon={open ? "arrow-forward" : "lock-closed-outline"}
               onPress={() =>
                 open

@@ -1,6 +1,7 @@
 import { usePreventRemove } from "expo-router";
 import { useState } from "react";
 import { Alert, Platform } from "react-native";
+import { alertT, auto } from "@/lib/i18n";
 
 /**
  * While `active`, any attempt to leave the screen (close button, Quit button,
@@ -16,10 +17,10 @@ export function useQuitGuard(title: string, message: string, quitLabel: string) 
       repeat();
     };
     if (Platform.OS === "web") {
-      if (window.confirm(`${title}\n\n${message}`)) quit();
+      if (window.confirm(`${auto(title)}\n\n${auto(message)}`)) quit();
       return;
     }
-    Alert.alert(title, message, [
+    alertT(title, message, [
       { text: "Keep going", style: "cancel" },
       { text: quitLabel, style: "destructive", onPress: quit },
     ]);

@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import Svg, { Circle, Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import { auto, localize, mark } from "@/lib/i18n";
 import { keyHaptic } from "@/lib/native";
 import { colors, fonts, gradients, radius, shared } from "@/theme";
 
@@ -37,6 +38,7 @@ export function Txt({
   color,
   center,
   style,
+  children,
   ...rest
 }: TextProps & { variant?: Variant; color?: string; center?: boolean }) {
   // Custom font sizes get a matching line height, so big numbers and emoji
@@ -54,7 +56,9 @@ export function Txt({
         style,
         autoLineHeight,
       ]}
-    />
+    >
+      {localize(children)}
+    </Text>
   );
 }
 
@@ -330,7 +334,7 @@ export function Ring({
 export function SectionLabel({ children, color = colors.mutedForeground, style }: { children: string; color?: string; style?: StyleProp<TextStyle> }) {
   return (
     <Txt variant="caption" color={color} style={[{ fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1.1 }, style]}>
-      {children.toUpperCase()}
+      {mark(auto(children).toUpperCase())}
     </Txt>
   );
 }

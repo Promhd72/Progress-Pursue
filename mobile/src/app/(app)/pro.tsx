@@ -10,6 +10,7 @@ import { DEMO_MODE } from "@/lib/backend";
 import { buy, getPlans, restore, type Plan, type PlanId } from "@/lib/purchases";
 import { useProfile } from "@/lib/queries";
 import { colors, elevation, fonts, gradients, radius } from "@/theme";
+import { alertT, mark, tr } from "@/lib/i18n";
 
 const BENEFITS: { icon: IconName; title: string; text: string }[] = [
   { icon: "rocket", title: `Levels ${FREE_MAX_LEVEL + 1} to ${MAX_LEVEL} on every skill`, text: "Work-ready and expert levels: bigger numbers, real meeting maths." },
@@ -70,7 +71,7 @@ export default function ProScreen() {
         finishHaptic();
       }
     } catch (e) {
-      Alert.alert("Purchase didn't go through", (e as Error).message);
+      alertT("Purchase didn't go through", (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -81,9 +82,9 @@ export default function ProScreen() {
     try {
       const active = await restore();
       await qc.invalidateQueries();
-      Alert.alert(active ? "Pro restored" : "Nothing to restore", active ? "Welcome back. Everything is unlocked." : "We couldn't find an active Rapid Math Pro subscription for this Apple ID.");
+      alertT(active ? "Pro restored" : "Nothing to restore", active ? "Welcome back. Everything is unlocked." : "We couldn't find an active Rapid Math Pro subscription for this Apple ID.");
     } catch (e) {
-      Alert.alert("Couldn't restore", (e as Error).message);
+      alertT("Couldn't restore", (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -170,15 +171,23 @@ export default function ProScreen() {
                     ) : null}
                   </Row>
                   <Muted variant="caption" style={{ fontSize: 13, marginTop: 2 }}>
-                    {p.trialDays ? `${p.trialDays} days free, then billed ${p.period === "year" ? "yearly" : "monthly"}` : `Billed ${p.period === "year" ? "yearly" : "monthly"}`}
+                    {p.trialDays
+                      ? p.period === "year"
+                        ? tr("{n} days free, then billed yearly", { n: p.trialDays })
+                        : tr("{n} days free, then billed monthly", { n: p.trialDays })
+                      : p.period === "year"
+                        ? tr("Billed yearly")
+                        : tr("Billed monthly")}
                   </Muted>
                 </View>
                 {/* The amount actually billed is the most prominent price. */}
                 <View style={{ alignItems: "flex-end" }}>
                   <Txt style={{ fontFamily: fonts.displayBold, fontSize: 19 }}>{p.price}</Txt>
                   <Muted variant="caption" style={{ fontSize: 12 }}>
-                    per {periodWord(p)}
-                    {p.perMonth ? ` · ${p.perMonth}/mo` : ""}
+                    {mark(
+                      (p.period === "year" ? tr("per year") : tr("per month")) +
+                        (p.perMonth ? ` · ${tr("{price}/mo", { price: p.perMonth })}` : ""),
+                    )}
                   </Muted>
                 </View>
               </Pressable>
@@ -189,18 +198,23 @@ export default function ProScreen() {
 
       <SafeAreaView edges={["bottom"]} style={styles.actions}>
         <Button
-          title={trial ? `Start ${trial}-day free trial` : `Subscribe for ${plan.price}/${periodWord(plan)}`}
+          title={trial ? tr("Start {n}-day free trial", { n: trial }) : tr("Subscribe for {price}/{period}", { price: plan.price, period: tr(periodWord(plan)) })}
           loading={busy === "buy"}
           disabled={!!busy}
           onPress={purchase}
         />
         <Muted variant="caption" center style={{ fontSize: 12, lineHeight: 17, marginTop: 8 }}>
-          {trial
-            ? `Free for ${trial} days, then ${plan.price} per ${periodWord(plan)}. `
-            : `${plan.price} per ${periodWord(plan)}. `}
-          Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before{" "}
-          {trial ? "the trial ends" : "the renewal date"} and you won't be charged.
-          {DEMO_MODE ? " (Demo: no real payment is taken.)" : ""}
+          {mark(
+            (trial
+              ? tr(
+                  "Free for {n} days, then {price} per {period}. Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the trial ends and you won't be charged.",
+                  { n: trial, price: plan.price, period: tr(periodWord(plan)) },
+                )
+              : tr(
+                  "{price} per {period}. Renews automatically until you cancel. Cancel anytime in Settings at least 24 hours before the renewal date and you won't be charged.",
+                  { price: plan.price, period: tr(periodWord(plan)) },
+                )) + (DEMO_MODE ? ` ${tr("(Demo: no real payment is taken.)")}` : ""),
+          )}
         </Muted>
         <Row gap={18} style={{ justifyContent: "center", marginTop: 8 }}>
           <Pressable onPress={() => router.push("/legal/terms")} hitSlop={8} accessibilityRole="link">

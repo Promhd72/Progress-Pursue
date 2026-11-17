@@ -15,6 +15,7 @@ import {
   Txt,
   type IconName,
 } from "@/components/ui";
+import { LanguageToggle } from "@/components/LanguagePicker";
 import { keyHaptic } from "@/lib/native";
 import {
   DAILY_TARGETS,
@@ -25,6 +26,7 @@ import {
   type GoalId,
 } from "@/lib/onboarding";
 import { colors, fonts, radius } from "@/theme";
+import { auto, mark, tr } from "@/lib/i18n";
 
 type Step = "intro" | "goal" | "target" | "ready";
 const ORDER: Step[] = ["intro", "goal", "target", "ready"];
@@ -45,7 +47,12 @@ export default function Welcome() {
 
   return (
     <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
-      <View style={[styles.top, idx === 0 && { height: 8 }]}>
+      {idx === 0 && (
+        <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 10 }}>
+          <LanguageToggle />
+        </View>
+      )}
+      <View style={[styles.top, idx === 0 && { height: 0 }]}>
         {idx > 0 ? (
           <Pressable onPress={() => go(ORDER[idx - 1])} hitSlop={12} accessibilityLabel="Back">
             <Ionicons name="chevron-back" size={28} color={colors.mutedForeground} />
@@ -94,7 +101,7 @@ export default function Welcome() {
                   onPress={() => setTarget(t.id)}
                   emoji={TARGET_EMOJI[t.id]}
                   title={`${t.minutes} min a day`}
-                  subtitle={`${t.label} · ${t.lessons} lesson${t.lessons === 1 ? "" : "s"}`}
+                  subtitle={mark(`${auto(t.label)} · ${lessonCount(t.lessons)}`)}
                 />
               ))}
             </View>
@@ -190,6 +197,8 @@ function Sum({ q, a }: { q: string; a: string }) {
   );
 }
 
+const lessonCount = (n: number) => (n === 1 ? tr("1 lesson") : tr("{n} lessons", { n }));
+
 function Benefit({ icon, title, text }: { icon: IconName; title: string; text: string }) {
   return (
     <View style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
@@ -216,8 +225,8 @@ function Ready({ goal, target }: { goal: GoalId | null; target: DailyTargetId })
         </Txt>
       </View>
       <Card style={{ marginTop: 28, gap: 14 }}>
-        <KeyValue label="Focus" value={g ? `${g.emoji} ${g.title}` : "🧠 All-round speed"} />
-        <KeyValue label="Daily goal" value={`${t.minutes} min · ${t.lessons} lesson${t.lessons === 1 ? "" : "s"}`} />
+        <KeyValue label="Focus" value={g ? mark(`${g.emoji} ${auto(g.title)}`) : "🧠 All-round speed"} />
+        <KeyValue label="Daily goal" value={mark(`${t.minutes} min · ${lessonCount(t.lessons)}`)} />
         <KeyValue label="First step" value="2-minute placement test" />
       </Card>
       <Muted center style={{ marginTop: 20 }}>

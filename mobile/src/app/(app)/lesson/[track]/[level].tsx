@@ -23,6 +23,7 @@ import { finishHaptic, shareText } from "@/lib/native";
 import { useOverview } from "@/lib/queries";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts, gradients, radius } from "@/theme";
+import { alertT, auto, tr } from "@/lib/i18n";
 
 type Result = { correct: number; total: number; durationMs: number; xpEarned: number; passed: boolean };
 
@@ -46,7 +47,7 @@ export default function LessonScreen() {
         <Pressable onPress={close} hitSlop={12} accessibilityLabel="Close">
           <Ionicons name="close" size={28} color={colors.mutedForeground} />
         </Pressable>
-        <Txt variant="label">{valid ? `${TRACK_LABELS[track]} · Level ${level}` : "Lesson"}</Txt>
+        <Txt variant="label">{valid ? tr("{track} · Level {n}", { track: auto(TRACK_LABELS[track]), n: level }) : "Lesson"}</Txt>
         {guard.active ? (
           <Pressable onPress={close} hitSlop={12} accessibilityLabel="Quit lesson">
             <Txt variant="label" color={colors.destructive}>Quit</Txt>
@@ -100,7 +101,7 @@ function Locked({
   const router = useRouter();
   const [title, body, icon] =
     reason === "locked_pro"
-      ? [`Level ${level} is Pro-only`, `Free covers ${TRACK_LABELS[track]} Levels 1–${FREE_MAX_LEVEL}. Levels ${FREE_MAX_LEVEL + 1}–10 come with Pro. Try it free for 3 days.`, "diamond-outline" as const]
+      ? [tr("Level {n} is Pro-only", { n: level }), tr("Free covers {track} Levels 1–{free}. Levels {next}–10 come with Pro. Try it free for 3 days.", { track: auto(TRACK_LABELS[track]), free: FREE_MAX_LEVEL, next: FREE_MAX_LEVEL + 1 }), "diamond-outline" as const]
       : reason === "locked_progression"
         ? ["Finish earlier levels first", `Pass the previous level (80% or more) to unlock Level ${level}.`, "lock-closed-outline" as const]
         : ["That's today's free lessons", "Free includes 3 lessons a day. Come back tomorrow, or go unlimited with Pro.", "moon-outline" as const];
@@ -161,7 +162,7 @@ function LessonRunner({
       setResult({ correct, total: questions.length, durationMs, xpEarned: res.xpEarned, passed: res.passed });
       void qc.invalidateQueries();
     } catch (err) {
-      Alert.alert("Couldn't save this lesson", err instanceof Error ? err.message : "Check your connection.");
+      alertT("Couldn't save this lesson", err instanceof Error ? err.message : "Check your connection.");
       setResult({ correct, total: questions.length, durationMs, xpEarned: 0, passed: correct / questions.length >= PASS_THRESHOLD });
     } finally {
       setSaving(false);
@@ -274,7 +275,7 @@ function Results({
       <Gradient colors={result.passed ? gradients.primary : gradients.ink} style={styles.resultHero}>
         <Txt style={{ fontSize: 46 }}>{result.passed ? "🎉" : "💪"}</Txt>
         <Txt variant="title" center color={colors.white} style={{ marginTop: 6 }}>
-          {result.passed ? `${info.name}: passed!` : "Not quite. Try again."}
+          {result.passed ? tr("{name}: passed!", { name: auto(info.name) }) : "Not quite. Try again."}
         </Txt>
         {result.passed && (
           <View style={{ marginTop: 10, alignItems: "center", gap: 6 }}>
@@ -292,7 +293,7 @@ function Results({
               ? "You've finished this track."
               : proLocked
                 ? `Levels ${level + 1}–10 come with Pro. Try it free for 3 days.`
-                : `Unlocked: Level ${level + 1}, ${nextInfo?.name ?? ""}.`
+                : tr("Unlocked: Level {n}, {name}.", { n: level + 1, name: auto(nextInfo?.name ?? "") })
             : `You need ${Math.round(PASS_THRESHOLD * 100)}% to advance.`}
         </Txt>
         <Row gap={8} style={{ marginTop: 18, alignSelf: "stretch" }}>
@@ -326,7 +327,13 @@ function Results({
         variant="secondary"
         onPress={() =>
           shareText(
-            `I just passed "${info.name}" (${TRACK_LABELS[track]} Level ${level}) in Rapid Math: ${accuracy}% at ${avg}s per answer. 🧠⚡`,
+            tr('I just passed "{name}" ({track} Level {n}) in Rapid Math: {acc}% at {avg}s per answer. 🧠⚡', {
+              name: auto(info.name),
+              track: auto(TRACK_LABELS[track]),
+              n: level,
+              acc: accuracy,
+              avg,
+            }),
           )
         }
       />
@@ -334,7 +341,7 @@ function Results({
       <CoachingReview items={review} />
 
       <View style={{ gap: 10 }}>
-        {onNext && <Button title={`Next: ${nextInfo?.name ?? `Level ${level + 1}`}`} icon="arrow-forward" onPress={onNext} />}
+        {onNext && <Button title={tr("Next: {name}", { name: nextInfo ? auto(nextInfo.name) : tr("Level {n}", { n: level + 1 }) })} icon="arrow-forward" onPress={onNext} />}
         {result.passed && proLocked && level < MAX_LEVEL && (
           <Button title={`Unlock Level ${level + 1} with Pro`} icon="diamond-outline" onPress={() => router.push("/pro")} />
         )}

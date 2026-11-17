@@ -12,6 +12,7 @@ import {
 } from "@/lib/confidence";
 import { finishHaptic } from "@/lib/native";
 import { colors, fonts } from "@/theme";
+import { auto, getLang, tr } from "@/lib/i18n";
 
 export function ConfidencePicker({ value, onChange }: { value: number | null; onChange: (v: number) => void }) {
   return (
@@ -45,7 +46,7 @@ export function ConfidenceCard() {
           <Txt variant="heading">{isCheckIn ? "Your 2-week check-in" : "Quick question"}</Txt>
           <Muted variant="caption" style={{ fontSize: 14, marginTop: 2 }}>
             {isCheckIn
-              ? `Two weeks ago you said: "${confidenceLevel(state.before!.value).label}". How do you feel now?`
+              ? tr('Two weeks ago you said: "{label}". How do you feel now?', { label: auto(confidenceLevel(state.before!.value).label) })
               : `How confident do you feel with numbers today? We'll ask again in ${CHECKIN_DAYS} days so you can see the change.`}
           </Muted>
         </View>
@@ -78,9 +79,9 @@ export function ConfidenceResult({ state = getConfidence() }: { state?: Confiden
   const headline = !after
     ? days === 0
       ? "Your check-in is ready on the Train tab."
-      : `Check-in in ${days} day${days === 1 ? "" : "s"}.`
+      : days === 1 ? tr("Check-in in 1 day.") : tr("Check-in in {n} days.", { n: days ?? 0 })
     : diff > 0
-      ? `Up ${diff} step${diff === 1 ? "" : "s"} in two weeks. That's real progress.`
+      ? diff === 1 ? tr("Up 1 step in two weeks. That's real progress.") : tr("Up {n} steps in two weeks. That's real progress.", { n: diff })
       : diff === 0
         ? "Holding steady. Keep the streak going and check again later."
         : "A dip happens. Keep going: confidence follows practice.";
@@ -89,7 +90,7 @@ export function ConfidenceResult({ state = getConfidence() }: { state?: Confiden
     <Card style={{ gap: 12 }}>
       <Txt variant="label">Confidence with numbers</Txt>
       <Row gap={10} style={{ alignItems: "center" }}>
-        <Side title="Start" emoji={before.emoji} label={before.label} />
+        <Side title={getLang() === "id" ? tr("At the start") : "Start"} emoji={before.emoji} label={before.label} />
         <Txt style={{ fontSize: 20 }} color={colors.mutedForeground}>
           →
         </Txt>

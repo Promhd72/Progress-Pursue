@@ -10,6 +10,7 @@ import { MEETING_SECONDS, buildMeetingRound, getMeetingStats, recordMeetingRound
 import { answerHaptic, finishHaptic, keyHaptic } from "@/lib/native";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts, radius } from "@/theme";
+import { auto, mark, tr } from "@/lib/i18n";
 
 type Answered = MeetingQuestion & { given: string; correct: boolean };
 type Phase = "intro" | "running" | "done";
@@ -280,8 +281,10 @@ function Results({
                     <View style={{ flex: 1, gap: 4 }}>
                       <Txt>{a.say}</Txt>
                       <Muted variant="caption">
-                        {a.math} = {a.answer}
-                        {a.correct ? "" : a.given ? ` · you said ${a.given}` : " · skipped"}
+                        {mark(
+                          `${auto(a.math)} = ${a.answer}` +
+                            (a.correct ? "" : a.given ? ` · ${tr("you said {n}", { n: a.given })}` : ` · ${tr("skipped")}`),
+                        )}
                       </Muted>
                     </View>
                     <Ionicons name={open === i ? "chevron-up" : "chevron-down"} size={18} color={colors.mutedForeground} />

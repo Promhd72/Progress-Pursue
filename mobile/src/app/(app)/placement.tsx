@@ -12,6 +12,7 @@ import { finishHaptic } from "@/lib/native";
 import { useProfile } from "@/lib/queries";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts } from "@/theme";
+import { alertT, auto, mark, tr } from "@/lib/i18n";
 
 type Phase = "intro" | "running" | "saving" | "done";
 
@@ -45,7 +46,7 @@ export default function PlacementScreen() {
       finishHaptic();
       setPhase("done");
     } catch (err) {
-      Alert.alert("Couldn't save your placement", err instanceof Error ? err.message : "Check your connection.");
+      alertT("Couldn't save your placement", err instanceof Error ? err.message : "Check your connection.");
       setPhase("intro");
     }
   }
@@ -93,7 +94,7 @@ export default function PlacementScreen() {
             onDone={finish}
             header={({ index, correct }) => (
               <DrillHeader
-                left={`Question ${index + 1} of ${questions.length} · ${TRACK_LABELS[questions[index].track]}`}
+                left={tr("Question {n} of {total} · {track}", { n: index + 1, total: questions.length, track: auto(TRACK_LABELS[questions[index].track]) })}
                 right={<Muted variant="caption">{correct} correct</Muted>}
               />
             )}
@@ -112,7 +113,7 @@ export default function PlacementScreen() {
           <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 12 }}>
             {TRACKS.map((t) => (
               <Card key={t} style={{ width: "48.3%", padding: 14 }}>
-                <Muted variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 12 }}>{TRACK_LABELS[t].toUpperCase()}</Muted>
+                <Muted variant="caption" style={{ fontFamily: fonts.semibold, fontSize: 12 }}>{mark(auto(TRACK_LABELS[t]).toUpperCase())}</Muted>
                 <Txt style={{ fontFamily: fonts.displayBold, fontSize: 24, marginTop: 4 }}>Level {levels[t]}</Txt>
               </Card>
             ))}
@@ -126,11 +127,13 @@ export default function PlacementScreen() {
                 </Txt>
               </Row>
               <Muted style={{ fontSize: 15 }}>
-                You placed at Level {FREE_MAX_LEVEL + 1}+ on{" "}
-                {TRACKS.filter((t) => levels[t] > FREE_MAX_LEVEL)
-                  .map((t) => TRACK_LABELS[t])
-                  .join(", ")}
-                . Free covers Levels 1–{FREE_MAX_LEVEL}, so unlock Pro to train at your real level.
+                {tr("You placed at Level {n}+ on {tracks}. Free covers Levels 1–{free}, so unlock Pro to train at your real level.", {
+                  n: FREE_MAX_LEVEL + 1,
+                  tracks: TRACKS.filter((t) => levels[t] > FREE_MAX_LEVEL)
+                    .map((t) => auto(TRACK_LABELS[t]))
+                    .join(", "),
+                  free: FREE_MAX_LEVEL,
+                })}
               </Muted>
               <Button title="Try Pro free for 3 days" icon="diamond-outline" onPress={() => router.push("/pro")} />
             </Card>

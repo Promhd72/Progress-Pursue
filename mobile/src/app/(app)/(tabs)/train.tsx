@@ -36,6 +36,7 @@ import { rankForXp } from "@/lib/drill-engine";
 import { dailyTargetFor, getOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, elevation, fonts, gradients, radius, trackColors } from "@/theme";
+import { auto, tr } from "@/lib/i18n";
 
 export default function Train() {
   const router = useRouter();
@@ -113,7 +114,7 @@ export default function Train() {
       />
 
       <View style={styles.statRow}>
-        <Stat icon="trophy" label={rank.name} value={profile.xp.toLocaleString()} sub={rank.next ? `${rank.toNext} XP to ${rank.next}` : "Top rank"} tint={colors.primary} bg={colors.primarySoft} />
+        <Stat icon="trophy" label={rank.name} value={profile.xp.toLocaleString()} sub={rank.next ? tr("{n} XP to {rank}", { n: rank.toNext, rank: auto(rank.next) }) : "Top rank"} tint={colors.primary} bg={colors.primarySoft} />
         <View style={styles.statDivider} />
         <Stat icon="locate" label="Accuracy" value={accuracy === null ? "–" : `${accuracy}%`} sub={totalQs > 0 ? "last 20 lessons" : "no lessons yet"} tint={colors.success} bg={colors.successSoft} />
         <View style={styles.statDivider} />
@@ -324,7 +325,7 @@ function Stat({
       </View>
       <Txt variant="number" numberOfLines={1} adjustsFontSizeToFit style={{ marginTop: 8, fontSize: 22 }}>{value}</Txt>
       <Txt variant="caption" numberOfLines={1} style={{ fontFamily: fonts.semibold, fontSize: 13 }}>{label}</Txt>
-      <Muted variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>{sub}</Muted>
+      <Muted variant="caption" numberOfLines={2} style={{ fontSize: 11, lineHeight: 14 }}>{sub}</Muted>
     </View>
   );
 }
@@ -358,8 +359,8 @@ function TrackCard({
           <Txt variant="label" style={{ fontSize: 17 }}>{TRACK_LABELS[track]}</Txt>
           <Muted variant="caption" numberOfLines={1}>
             {capped
-              ? `Practising L${playLevel}: ${levelSummary(track, playLevel).name} · L${currentLevel} needs Pro`
-              : `Next: L${currentLevel}, ${levelSummary(track, currentLevel).name}`}
+              ? tr("Practising L{a}: {name} · L{b} needs Pro", { a: playLevel, name: auto(levelSummary(track, playLevel).name), b: currentLevel })
+              : tr("Next: L{n}, {name}", { n: currentLevel, name: auto(levelSummary(track, currentLevel).name) })}
           </Muted>
           <Muted variant="caption" style={{ fontSize: 12 }}>
             {highestPassed}/{MAX_LEVEL} passed

@@ -4,6 +4,7 @@ import Svg, { Circle, Polyline, Text as SvgText } from "react-native-svg";
 import { Muted, Txt } from "@/components/ui";
 import type { Visual } from "@/lib/advanced-questions";
 import { colors, fonts, radius } from "@/theme";
+import { auto } from "@/lib/i18n";
 
 /** Native rendering of an Advanced scenario's table, bar chart or line chart. */
 export function AdvancedVisual({ visual }: { visual: Visual }) {
@@ -81,7 +82,7 @@ function LineChart({ data, unit }: { data: { label: string; value: number }[]; u
         ))}
         {data.map((d, i) => (
           <SvgText key={`l${i}`} x={x(i)} y={h - 6} fontSize={11} fill={colors.mutedForeground} textAnchor="middle">
-            {d.label}
+            {auto(d.label)}
           </SvgText>
         ))}
       </Svg>

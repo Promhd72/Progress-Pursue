@@ -5,6 +5,7 @@ import { coachingTip } from "@/lib/coaching";
 import type { SkillTrack } from "@/lib/curriculum";
 import { keyHaptic } from "@/lib/native";
 import { colors, fonts, radius } from "@/theme";
+import { auto, mark, tr } from "@/lib/i18n";
 
 const STORAGE_KEY = "rapidmath.coaching";
 
@@ -57,7 +58,7 @@ export function CoachingToggle({ enabled, onToggle }: { enabled: boolean; onTogg
     >
       <Ionicons name="school-outline" size={15} color={enabled ? colors.primary : colors.mutedForeground} />
       <Txt variant="caption" color={enabled ? colors.primary : colors.mutedForeground}>
-        Tips: {enabled ? "every question" : "mistakes"}
+        {enabled ? tr("Tips: every question") : tr("Tips: mistakes")}
       </Txt>
     </Pressable>
   );
@@ -136,7 +137,7 @@ export function TipCard({
       <View style={{ backgroundColor: colors.amberSoft, borderRadius: radius.md, padding: 12, flexDirection: "row", gap: 8 }}>
         <Ionicons name="star-outline" size={18} color={colors.amberText} style={{ marginTop: 1 }} />
         <Txt style={{ flex: 1, fontSize: 14, lineHeight: 20, fontFamily: fonts.semibold }} color={colors.amberText}>
-          Remember: {tip.remember}
+          {mark(`${tr("Remember:")} ${auto(tip.remember)}`)}
         </Txt>
       </View>
     </View>
