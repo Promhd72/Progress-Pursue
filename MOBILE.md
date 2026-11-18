@@ -258,7 +258,7 @@ What you fill in on App Store Connect:
 6. **Subscriptions.** Attach both subscriptions to the version before you submit, each with a
    review screenshot of the Pro screen. Add the Terms link (Apple's standard EULA is fine) in
    the App Description or the EULA field.
-7. **Screenshots.** Ready to upload in `store-screenshots/`: 6 for English (`en-*.png`) and 6
+7. **Screenshots.** Ready to upload in `store-screenshots/`: 7 for English (`en-*.png`) and 7
    for the Indonesian listing (`id-*.png`), 1320 × 2868 (the 6.9" iPhone size; Apple scales them
    for smaller iPhones). Upload them in numbered order.
 8. **Name.** "Rapid Math" may be taken on the App Store. Have a backup such as
