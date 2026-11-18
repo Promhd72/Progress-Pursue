@@ -128,14 +128,17 @@ Store guideline 5.1.1(v)).
 
 ## Pro (App Store subscriptions)
 
-Pro unlocks Levels 5 to 10 and removes the daily caps on lessons and scenarios.
+Pro unlocks every level beyond the free ones and removes the daily caps on lessons and scenarios.
 
-| Plan | Price (USD) | Free trial |
-| --- | --- | --- |
-| Monthly | $7.99 | 7 days |
-| Yearly | $29.99 (about $2.50/month) | 7 days |
+| Market | Monthly | Yearly | Free trial |
+| --- | --- | --- | --- |
+| All countries (base: United States) | USD 7.99 | USD 29.99 (about $2.50/month) | 7 days |
+| Indonesia (manual price) | Rp 59,000 | Rp 249,000 (about Rp 20,750/month) | 7 days |
 
-Apple converts these to local prices (AED in the UAE). The app always shows the store's real
+Everywhere except Indonesia, Apple converts the USD price to local currency (AED in the UAE,
+SAR in Saudi Arabia) and keeps it updated. Indonesia gets a lower, hand-set price because
+Apple's converted price (around Rp 130,000/month) is high for that market. Treat the Indonesian
+price as a first test: check similar apps in the Indonesian App Store and adjust after launch. The app always shows the store's real
 price. Both plans start with a 7-day free trial (people who already used one don't get another). Free users see "Try Pro free for 7 days" when they reach the end of their free levels, run out of daily lessons
 or scenarios, place above Level 4, and in Profile > Rapid Math Pro.
 
@@ -147,6 +150,25 @@ calls the same function for renewals, cancellations and expiry. The app can't un
 Purchases only work in a real build (TestFlight or the App Store). In Expo Go and the web preview
 the Pro screen works but no payment is taken, and in demo mode a "purchase" just unlocks Pro on
 that device.
+
+### Set the prices by country (5 minutes, per subscription)
+
+Do this for `rapidmath_pro_monthly` and again for `rapidmath_pro_yearly`:
+
+1. App Store Connect > your app > **Subscriptions** > Rapid Math Pro > the subscription >
+   **Subscription Prices** > **Add Subscription Price**.
+2. Choose **United States** as the base country and pick the price: USD 7.99 (monthly) or
+   USD 29.99 (yearly). Click **Next**: Apple fills in every other country automatically.
+3. On the review screen, find **Indonesia** and change its price to the nearest available
+   price point to Rp 59,000 (monthly) or Rp 249,000 (yearly). Leave every other country as
+   Apple set it.
+4. Confirm. The app needs no update: it always shows the price Apple charges in the person's
+   country, and the "SAVE %" badge is calculated from those local prices.
+5. Introductory offer (7-day free trial): add it under **Subscription Prices > Introductory
+   Offers** for **all countries**, including Indonesia.
+
+To change prices later, repeat step 1. Lowering a price applies to existing subscribers right
+away; raising one may need their consent (Apple emails them).
 
 ### Set it up (about an hour, once)
 
