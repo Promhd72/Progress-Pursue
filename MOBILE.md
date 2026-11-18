@@ -132,7 +132,7 @@ Pro unlocks Levels 5 to 10 and removes the daily caps on lessons and scenarios.
 
 | Plan | Price (USD) | Free trial |
 | --- | --- | --- |
-| Monthly | $4.99 | 7 days |
+| Monthly | $7.99 | 7 days |
 | Yearly | $29.99 (about $2.50/month) | 7 days |
 
 Apple converts these to local prices (AED in the UAE). The app always shows the store's real
@@ -154,7 +154,7 @@ that device.
    your bank and tax details. Subscriptions don't work until this is active.
 2. **Create the subscriptions:** App Store Connect > your app > Subscriptions.
    - Create a subscription group called `Rapid Math Pro`.
-   - Add two subscriptions: `rapidmath_pro_monthly` (1 month, USD 4.99) and
+   - Add two subscriptions: `rapidmath_pro_monthly` (1 month, USD 7.99) and
      `rapidmath_pro_yearly` (1 year, USD 29.99). Give each a display name and description.
    - On each one, add an **Introductory Offer**: Free, 1 week, all countries. The app reads the
      trial length from the store, so the Pro screen always matches what Apple charges.

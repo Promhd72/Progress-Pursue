@@ -144,7 +144,7 @@ export default function ProScreen() {
               p.id === "annual" && monthly && p.pkg && monthly.pkg
                 ? Math.round((1 - p.pkg.product.price / (monthly.pkg.product.price * 12)) * 100)
                 : p.id === "annual"
-                  ? 50
+                  ? 69
                   : null;
             return (
               <Pressable

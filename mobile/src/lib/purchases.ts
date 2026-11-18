@@ -35,7 +35,7 @@ export interface Plan {
 /** Fallback prices shown when there's no store (web preview, demo). */
 const FALLBACK: Plan[] = [
   { id: "annual", title: "Yearly", price: "$29.99", period: "year", perMonth: "$2.50", trialDays: TRIAL_DAYS },
-  { id: "monthly", title: "Monthly", price: "$4.99", period: "month", perMonth: null, trialDays: TRIAL_DAYS },
+  { id: "monthly", title: "Monthly", price: "$7.99", period: "month", perMonth: null, trialDays: TRIAL_DAYS },
 ];
 
 /** True when real App Store purchases are possible. */
