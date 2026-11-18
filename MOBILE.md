@@ -12,10 +12,10 @@ Store, so you don't need Xcode. The backend is your own Supabase project.
 
 ## 1. Create your Supabase project (10 minutes, free)
 
-1. Sign up at supabase.com and create a project. Pick the region closest to your users
-   (for the UAE, Frankfurt or Mumbai).
-2. **Create the database:** open **SQL Editor** and run these two files, in order
-   (paste the whole file, then Run):
+1. Sign up at supabase.com and create a project. Pick the region closest to your users:
+   **South Asia (Mumbai)** is a good middle point for the UAE and Indonesia.
+2. **Create the database:** open **SQL Editor**, paste the whole of `supabase/setup-all.sql`
+   and click **Run** (once only). It contains these files, in order:
    1. `supabase/migrations/20261110000000_rapidmath_init.sql`
    2. `supabase/migrations/20261111000000_feedback.sql`
    3. `supabase/migrations/20261112000000_pro_subscriptions.sql`
