@@ -14,6 +14,7 @@ import { DEMO_MODE } from "./backend";
 import { demoSetPro } from "./demo";
 
 export const ENTITLEMENT = "pro";
+export const TRIAL_DAYS = 7;
 export const MANAGE_URL = "https://apps.apple.com/account/subscriptions";
 
 const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
@@ -27,13 +28,14 @@ export interface Plan {
   period: "year" | "month";
   /** For the yearly plan, the monthly equivalent. */
   perMonth: string | null;
+  trialDays: number | null;
   pkg?: PurchasesPackage;
 }
 
 /** Fallback prices shown when there's no store (web preview, demo). */
 const FALLBACK: Plan[] = [
-  { id: "annual", title: "Yearly", price: "$29.99", period: "year", perMonth: "$2.50" },
-  { id: "monthly", title: "Monthly", price: "$4.99", period: "month", perMonth: null },
+  { id: "annual", title: "Yearly", price: "$29.99", period: "year", perMonth: "$2.50", trialDays: TRIAL_DAYS },
+  { id: "monthly", title: "Monthly", price: "$4.99", period: "month", perMonth: null, trialDays: TRIAL_DAYS },
 ];
 
 /** True when real App Store purchases are possible. */
@@ -67,6 +69,20 @@ export async function signOutPurchases() {
   loggedInAs = null;
 }
 
+function trialDaysOf(pkg: PurchasesPackage): number | null {
+  const intro = pkg.product.introPrice;
+  if (!intro || intro.price !== 0) return null;
+  const n = intro.periodNumberOfUnits;
+  switch (intro.periodUnit) {
+    case "DAY":
+      return n;
+    case "WEEK":
+      return n * 7;
+    default:
+      return null;
+  }
+}
+
 export async function getPlans(): Promise<Plan[]> {
   if (!storeEnabled) return FALLBACK;
   const Purchases = await sdk();
@@ -80,14 +96,25 @@ export async function getPlans(): Promise<Plan[]> {
       price: p.product.priceString,
       period: "year",
       perMonth: p.product.pricePerMonthString ?? null,
+      trialDays: trialDaysOf(p),
       pkg: p,
     });
   }
   if (offering?.monthly) {
     const p = offering.monthly;
-    plans.push({ id: "monthly", title: "Monthly", price: p.product.priceString, period: "month", perMonth: null, pkg: p });
+    plans.push({ id: "monthly", title: "Monthly", price: p.product.priceString, period: "month", perMonth: null, trialDays: trialDaysOf(p), pkg: p });
   }
   if (plans.length === 0) throw new Error("Subscriptions aren't available right now. Please try again later.");
+  // People who already used a free trial in this subscription group don't get another.
+  try {
+    const ids = plans.map((p) => p.pkg!.product.identifier);
+    const elig = await Purchases.checkTrialOrIntroductoryPriceEligibility(ids);
+    for (const p of plans) {
+      if (elig[p.pkg!.product.identifier]?.status === Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_INELIGIBLE) p.trialDays = null;
+    }
+  } catch {
+    // Unknown: keep what the store product says. Apple's payment sheet shows the real terms.
+  }
   return plans;
 }
 

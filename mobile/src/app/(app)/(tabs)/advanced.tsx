@@ -10,6 +10,7 @@ import { getAdvancedAccess, getAdvancedProgress, submitAdvancedAnswer } from "@/
 import { answerHaptic, keyHaptic } from "@/lib/native";
 import { colors, fonts, radius } from "@/theme";
 import { alertT, auto, tr } from "@/lib/i18n";
+import { TRIAL_DAYS } from "@/lib/purchases";
 
 export default function Advanced() {
   const router = useRouter();
@@ -112,7 +113,7 @@ export default function Advanced() {
           <IconBadge name="moon-outline" size={56} />
           <Txt variant="heading" center>That's today's free scenarios</Txt>
           <Muted center>Free gives you three each day. Come back tomorrow, or go unlimited with Pro.</Muted>
-          <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch", marginTop: 6 }} />
+          <Button title={tr("Try Pro free for {n} days", { n: TRIAL_DAYS })} icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch", marginTop: 6 }} />
           <Button title="Run a regular lesson" variant="secondary" onPress={() => router.navigate("/train")} style={{ alignSelf: "stretch", marginTop: 6 }} />
         </Card>
       ) : (

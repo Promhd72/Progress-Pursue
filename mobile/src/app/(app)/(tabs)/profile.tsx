@@ -16,7 +16,7 @@ import { getReminderPrefs, keyHaptic, trainedTodayFrom, updateReminderPrefs, typ
 import { DAILY_TARGETS, getOnboarding, saveOnboarding, type DailyTargetId } from "@/lib/onboarding";
 import { resolveIsPro } from "@/lib/plan";
 import { SUPPORT_EMAIL } from "@/lib/legal";
-import { MANAGE_URL, restore } from "@/lib/purchases";
+import { MANAGE_URL, restore, TRIAL_DAYS } from "@/lib/purchases";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, fonts, radius } from "@/theme";
 import { alertT, auto, tr } from "@/lib/i18n";
@@ -180,7 +180,7 @@ export default function Profile() {
             </>
           ) : (
             <>
-              <LinkRow icon="diamond-outline" label="Upgrade to Pro" onPress={() => router.push("/pro")} />
+              <LinkRow icon="diamond-outline" label={tr("Try Pro free for {n} days", { n: TRIAL_DAYS })} onPress={() => router.push("/pro")} />
               <Divider />
               <LinkRow icon="refresh-outline" label="Restore purchases" onPress={() => void restorePurchases()} />
             </>

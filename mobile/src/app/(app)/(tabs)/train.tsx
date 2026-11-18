@@ -37,6 +37,7 @@ import { dailyTargetFor, getOnboarding } from "@/lib/onboarding";
 import { useOverview, useProfile } from "@/lib/queries";
 import { colors, elevation, fonts, gradients, radius, trackColors } from "@/theme";
 import { auto, tr } from "@/lib/i18n";
+import { TRIAL_DAYS } from "@/lib/purchases";
 
 export default function Train() {
   const router = useRouter();
@@ -163,7 +164,7 @@ export default function Train() {
               </Muted>
             </View>
           </Row>
-          <Button title="Upgrade to Pro" onPress={() => router.push("/pro")} />
+          <Button title={tr("Try Pro free for {n} days", { n: TRIAL_DAYS })} onPress={() => router.push("/pro")} />
         </Card>
       )}
 

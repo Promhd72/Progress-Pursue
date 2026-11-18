@@ -25,6 +25,7 @@ import { useOverview } from "@/lib/queries";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts, gradients, radius } from "@/theme";
 import { alertT, auto, tr } from "@/lib/i18n";
+import { TRIAL_DAYS } from "@/lib/purchases";
 
 type Result = { correct: number; total: number; durationMs: number; xpEarned: number; passed: boolean };
 
@@ -119,7 +120,7 @@ function Locked({
       <Txt variant="title" center style={{ marginTop: 20 }}>{title}</Txt>
       <Muted center style={{ marginTop: 8 }}>{body}</Muted>
       {reason === "locked_pro" || reason === "daily_limit" ? (
-        <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ marginTop: 28, alignSelf: "stretch" }} />
+        <Button title={tr("Try Pro free for {n} days", { n: TRIAL_DAYS })} icon="diamond-outline" onPress={() => router.push("/pro")} style={{ marginTop: 28, alignSelf: "stretch" }} />
       ) : null}
       {reason === "locked_pro" && freeMax < FREE_MAX_LEVEL ? (
         <Button title="Retake placement test" variant="secondary" onPress={() => router.replace("/placement")} style={{ marginTop: 10, alignSelf: "stretch" }} />

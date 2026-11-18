@@ -13,6 +13,7 @@ import { useProfile } from "@/lib/queries";
 import { useQuitGuard } from "@/lib/useQuitGuard";
 import { colors, fonts } from "@/theme";
 import { alertT, auto, mark, tr } from "@/lib/i18n";
+import { TRIAL_DAYS } from "@/lib/purchases";
 
 type Phase = "intro" | "running" | "saving" | "done";
 
@@ -140,7 +141,7 @@ export default function PlacementScreen() {
                   free: FREE_MAX_LEVEL,
                 })}
               </Muted>
-              <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} />
+              <Button title={tr("Try Pro free for {n} days", { n: TRIAL_DAYS })} icon="diamond-outline" onPress={() => router.push("/pro")} />
             </Card>
           )}
           <CoachingReview items={review} />

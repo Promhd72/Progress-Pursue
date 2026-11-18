@@ -19,6 +19,7 @@ import { keyHaptic } from "@/lib/native";
 import { useLevelStats, useOverview } from "@/lib/queries";
 import { colors, fonts, radius, trackColors } from "@/theme";
 import { auto, tr } from "@/lib/i18n";
+import { TRIAL_DAYS } from "@/lib/purchases";
 
 type Status = "passed" | "next" | "open" | "locked" | "pro";
 
@@ -239,7 +240,7 @@ export default function Curriculum() {
               {tr("A strong placement result unlocks up to Level {n} free on that skill.", { n: FREE_MAX_LEVEL })}
             </Muted>
           ) : null}
-          <Button title="Upgrade to Pro" icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch" }} />
+          <Button title={tr("Try Pro free for {n} days", { n: TRIAL_DAYS })} icon="diamond-outline" onPress={() => router.push("/pro")} style={{ alignSelf: "stretch" }} />
           {!hasPlacement ? (
             <Button title="Take the placement test" variant="ghost" onPress={() => router.push("/placement")} style={{ alignSelf: "stretch" }} />
           ) : null}

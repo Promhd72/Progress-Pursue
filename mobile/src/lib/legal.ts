@@ -86,6 +86,7 @@ export const LEGAL: Record<LegalDoc, { title: string; intro: string; sections: L
         heading: "Rapid Math Pro",
         bullets: [
           "Pro is an auto-renewing subscription, billed monthly or yearly through your Apple Account.",
+          "If you start with a free trial, you won't be charged during the trial. When it ends, the subscription starts and you're charged the price shown, unless you cancel at least 24 hours before the trial ends.",
           "The subscription renews automatically unless you cancel at least 24 hours before the end of the current period.",
           "Manage or cancel any time in iPhone Settings > your name > Subscriptions. Deleting the app or your account doesn't cancel it.",
           "Prices are shown in the app before you buy and may vary by country. Refunds are handled by Apple.",
